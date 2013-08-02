@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -24,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -43,6 +45,7 @@ import com.hagia.glucloser.types.Meal;
 import com.hagia.glucloser.util.LocationUtil;
 import com.hagia.glucloser.util.database.save.SaveManager;
 
+@SuppressLint("ValidFragment")
 public class AddMealFragment extends Fragment 
 implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 	private static final String LOG_TAG = "Pump_Add_Meal_Activity";
@@ -67,7 +70,7 @@ implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListene
 	private List<String> foodViewList;
 	//private Map<String, List<TagToFood>> foodTags;
 
-	private TextView saveButton;
+	private Button saveButton;
 
 	private LocationListener savedPlacesLocationListener;
 
@@ -193,7 +196,7 @@ implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListene
 			}
 		});
 
-		saveButton = (TextView) view.findViewById(R.id.add_meal_save_button);
+		saveButton = (Button) view.findViewById(R.id.add_meal_save_button);
 		saveButton.setOnClickListener(new OnClickListener() {
 
 			@Override

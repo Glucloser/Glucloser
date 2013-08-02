@@ -15,8 +15,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="@string/food_name"
-            android:textAppearance="?android:attr/textAppearanceMedium" >
-
+            style="@style/sectionHeader" >
+			
             <requestFocus />
         </TextView>
 
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="@string/carbs_noun"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            style="@style/sectionHeader" />
 
         <EditText
             android:id="@+id/add_food_view_carbs_input"
