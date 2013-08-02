@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
@@ -24,32 +24,22 @@
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:src="@android:drawable/ic_menu_compass"
         android:text="@string/location_noun"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <ScrollView
-        android:id="@+id/add_meal_food_list_scroll_view"
-        android:layout_width="fill_parent"
-        android:layout_height="300dp"
-        android:layout_below="@+id/textView1"
-        android:layout_margin="10dp" >
-
-        <LinearLayout
-            android:id="@+id/add_meal_food_table_list_layout"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
-        </LinearLayout>
-    </ScrollView>
+   
 
     <TextView
         android:id="@+id/textView1"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        style="@style/sectionHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/add_meal_food_list_scroll_view"
         android:layout_below="@+id/add_meal_place_address"
-        android:text="@string/foods_noun"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="@string/foods_noun" />
 
     <TextView
         android:id="@+id/add_meal_add_food_item"
@@ -60,33 +50,58 @@
         android:text="@string/add_food_verb"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <TextView
-        android:id="@+id/add_meal_save_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/add_meal_food_list_scroll_view"
-        android:text="@string/save_verb"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+     <ScrollView
+        android:id="@+id/add_meal_food_list_scroll_view"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="10dp" >
 
-    <TextView
-        android:id="@+id/add_meal_edit_time_eaten_button"
-        android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/add_meal_food_table_list_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+        </LinearLayout>
+    </ScrollView>
+    
+     <View android:id="@+id/divider"
+        android:background="?android:attr/dividerHorizontal"
+        android:layout_height="1dp"
+        android:layout_width="match_parent" />
+     
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="20dip"
-        android:layout_toLeftOf="@+id/add_meal_save_button"
-        android:text="Edit Time"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:orientation="horizontal"
+        style="?android:attr/buttonBarStyle">
 
-    <TextView
-        android:id="@+id/add_meal_edit_date_eaten_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="20dip"
-        android:layout_toLeftOf="@id/add_meal_edit_time_eaten_button"
-        android:text="Edit Date"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/add_meal_save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save_verb"
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-</RelativeLayout>
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/add_meal_edit_time_eaten_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Edit Time"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/add_meal_edit_date_eaten_button"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Edit Date"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </LinearLayout>
+
+</LinearLayout>

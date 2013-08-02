@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -81,13 +82,13 @@ public class HistoryListAdapter extends BaseAdapter implements ListAdapter {
 	public View getView(int position, View reuseView, ViewGroup parent) {
 		final Meal meal = meals.get(position);
 
-		RelativeLayout theView = null;
+		LinearLayout theView = null;
 		final long requestId = RequestIdUtil.getNewId();
 
 		if (reuseView == null || reuseView.getId() != R.layout.history_list_item) {
-			theView = (RelativeLayout)inflater.inflate(R.layout.history_list_item, null);
+			theView = (LinearLayout)inflater.inflate(R.layout.history_list_item, null);
 		} else {
-			theView = (RelativeLayout) reuseView;
+			theView = (LinearLayout) reuseView;
 		}
 
 

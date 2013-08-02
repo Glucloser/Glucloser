@@ -58,4 +58,6 @@
     <string name="delete_place_dialog_message">Are you sure you want to delete this place? All related meals will also be deleted.</string>
     <string name="delete_verb">Delete</string>
     <string name="cancel_verb">Cancel</string>
+    <string name="parse_app_id">Na4SFkKF84qa0rcbvXoD1ZEgEzG6qscXw8W3r4FD</string>
+	<string name="parse_api_key">pq5dSQssa64mUyBq3y9S7B8Cwyoy1tjlAIalMWTq</string>
 </resources>
