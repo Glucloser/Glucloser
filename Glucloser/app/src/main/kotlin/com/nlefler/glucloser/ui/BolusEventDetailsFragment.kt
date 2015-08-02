@@ -180,6 +180,7 @@ public class BolusEventDetailsFragment : Fragment() {
             return
         }
 
+        // Catch foods left in fields
         addFoodFromFields()
 
         this.bolusEventParcelable!!.date = Date()
