@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import com.nlefler.glucloser.R
+import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.BolusEventParcelable
 import com.nlefler.glucloser.models.Food
@@ -78,6 +79,12 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
         this.insulinValueField?.setText(lang.String.valueOf(this.bolusEventParcelable?.getInsulin() ?: 0))
         this.beforeSugarValueField?.setText(lang.String.valueOf(this.bolusEventParcelable?.getBeforeSugarParcelable() ?: 0))
         this.correctionValueBox?.setChecked(this.bolusEventParcelable?.isCorrection() ?: false)
+
+        val foodsList = ArrayList<Food>()
+        for (foodParcelable in this.bolusEventParcelable?.getFoodParcelables()?.iterator()) {
+            foodsList.add(FoodFactory.FoodFromParcelable(foodParcelable, getActivity()))
+        }
+        this.foodListAdapter?.setFoods(foodsList)
     }
 
     private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusEventParcelable? {
