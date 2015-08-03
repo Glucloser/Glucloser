@@ -81,10 +81,13 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
         this.correctionValueBox?.setChecked(this.bolusEventParcelable?.isCorrection() ?: false)
 
         val foodsList = ArrayList<Food>()
-        for (foodParcelable in this.bolusEventParcelable?.getFoodParcelables()?.iterator()) {
-            foodsList.add(FoodFactory.FoodFromParcelable(foodParcelable, getActivity()))
+        val foodParcelables = this.bolusEventParcelable?.getFoodParcelables()
+        if (foodParcelables != null) {
+            for (foodParcelable in foodParcelables.iterator()) {
+                foodsList.add(FoodFactory.FoodFromParcelable(foodParcelable, getActivity()))
+            }
+            this.foodListAdapter?.setFoods(foodsList)
         }
-        this.foodListAdapter?.setFoods(foodsList)
     }
 
     private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusEventParcelable? {
