@@ -14,6 +14,7 @@ import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.BolusEventParcelable
 import com.nlefler.glucloser.models.Food
+import com.nlefler.glucloser.models.HasPlace
 import com.nlefler.glucloser.ui.DividerItemDecoration
 import java.lang
 import java.util.*
@@ -36,13 +37,6 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
     private var foodListAdapter: FoodListRecyclerAdapter? = null
     private var foods: MutableList<Food> = ArrayList<Food>()
 
-    override fun onCreate(bundle: Bundle?) {
-        super<Fragment>.onCreate(bundle)
-
-        this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
-        this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
-    }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val rootView = inflater!!.inflate(R.layout.fragment_historical_bolus_detail, container, false)
 
@@ -61,28 +55,29 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
         this.foodListView!!.setAdapter(this.foodListAdapter)
         this.foodListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
-        setupWithBundleAndPlace()
+        setupWithBundle(null)
 
         return rootView
     }
 
-    internal fun setupWithBundleAndPlace() {
+    public fun setupWithBundle(bundle: Bundle?) {
+        this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
+        if (this.bolusEventParcelable is HasPlace) {
+            this.placeName = (this.bolusEventParcelable as HasPlace).getPlace().getName()
+        }
+        else {
+            this.placeName = ""
+        }
+        setupWithBundleAndPlace()
+    }
+
+    private fun setupWithBundleAndPlace() {
         this.placeNameField?.setText(this.placeName ?: "")
 
         this.carbValueField?.setText(lang.String.valueOf(this.bolusEventParcelable?.getCarbs() ?: 0))
         this.insulinValueField?.setText(lang.String.valueOf(this.bolusEventParcelable?.getInsulin() ?: 0))
         this.beforeSugarValueField?.setText(lang.String.valueOf(this.bolusEventParcelable?.getBeforeSugarParcelable() ?: 0))
         this.correctionValueBox?.setChecked(this.bolusEventParcelable?.isCorrection() ?: false)
-    }
-
-    private fun getPlaceNameFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): String {
-        for (bundle in arrayOf<Bundle?>(savedInstanceState, args, extras)) {
-            if (bundle?.getParcelable<Parcelable>(HistoricalBolusDetailPlaceNameBundleKey) ?: null!= null) {
-                return bundle?.getString(HistoricalBolusDetailPlaceNameBundleKey) ?: ""
-            }
-        }
-
-        return ""
     }
 
     private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusEventParcelable? {
@@ -95,7 +90,6 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
     }
 
     companion object {
-        public val HistoricalBolusDetailPlaceNameBundleKey: String = "HistoricalBolusDetailPlaceNameBundleKey"
         public val HistoricalBolusEventBolusDetailParcelableBundleKey: String = "HistoricalBolusDetailBolusEventParcelableBundleKey"
     }
 }

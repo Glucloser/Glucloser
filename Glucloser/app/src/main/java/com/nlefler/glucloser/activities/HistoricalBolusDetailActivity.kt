@@ -7,9 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.PlaceFactory
-import com.nlefler.glucloser.models.BolusEvent
-import com.nlefler.glucloser.models.BolusEventParcelable
-import com.nlefler.glucloser.models.BolusEventType
+import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.ui.HistoricalBolusDetailActivityFragment
 
 public class HistoricalBolusDetailActivity : AppCompatActivity() {
@@ -46,21 +44,27 @@ public class HistoricalBolusDetailActivity : AppCompatActivity() {
     }
 
     private fun setupHistoricalBolusDetailsFragment(bolusEventParcelable: BolusEventParcelable) {
-        val fragment = HistoricalBolusDetailActivityFragment()
+        val fragment = getSupportFragmentManager().findFragmentById(R.id.historical_bolus_detail_activity_container)
+                as HistoricalBolusDetailActivityFragment?
 
         val args = Bundle()
         args.putParcelable(HistoricalBolusDetailActivityFragment.HistoricalBolusEventBolusDetailParcelableBundleKey,
                 bolusEventParcelable as Parcelable)
-        fragment.setArguments(args)
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.log_bolus_event_activity_container,
-                fragment, HistoricalBolusDetailActivityFragmentId).addToBackStack(null).commit()
+        fragment?.setupWithBundle(args)
     }
 
     private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, extras: Bundle?): BolusEventParcelable? {
         for (bundle in arrayOf<Bundle?>(savedInstanceState, extras)) {
             if (bundle?.containsKey(BolusKey) ?: false) {
-                return bundle?.getParcelable(BolusKey) as BolusEventParcelable?
+                val eventParcelable: Parcelable? = bundle?.getParcelable(BolusKey)
+                when ((eventParcelable as BolusEventParcelable?)?.getEventType()) {
+                    is BolusEventType.BolusEventTypeSnack -> {
+                        return eventParcelable as SnackParcelable?
+                    }
+                    is BolusEventType.BolusEventTypeMeal -> {
+                        return eventParcelable as MealParcelable?
+                    }
+                }
             }
         }
         return null
