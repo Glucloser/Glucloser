@@ -66,7 +66,7 @@ public class FoodFactory {
                 return null
             }
             val foodId = parseObject.getString(Food.FoodIdFieldName)
-            if (foodId == null || foodId.isEmpty()) {
+            if (foodId.length() == 0) {
                 Log.e(LOG_TAG, "Can't create Food from Parse object, no id")
             }
             val nameValue = parseObject.getString(Food.FoodNameFieldName)
