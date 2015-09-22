@@ -13,6 +13,7 @@ import java.util.List;
 public class MealParcelable implements Parcelable, BolusEventParcelable {
     private String id;
     private Date date;
+    private BolusPatternParcelable bolusPatternParcelable;
     private PlaceParcelable placeParcelable;
     private int carbs;
     private float insulin;
@@ -39,6 +40,10 @@ public class MealParcelable implements Parcelable, BolusEventParcelable {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public BolusPatternParcelable getBolusPatternParcelable() { return this.bolusPatternParcelable; }
+
+    public void setBolusPatternParcelable(BolusPatternParcelable patternParcelable) { this.bolusPatternParcelable = patternParcelable; }
 
     public PlaceParcelable getPlaceParcelable() {
         return placeParcelable;
@@ -93,15 +98,16 @@ public class MealParcelable implements Parcelable, BolusEventParcelable {
     /** Parcelable */
     protected MealParcelable(Parcel in) {
         id = in.readString();
-        placeParcelable = (PlaceParcelable) in.readValue(PlaceParcelable.class.getClassLoader());
+        placeParcelable = in.readParcelable(PlaceParcelable.class.getClassLoader());
         carbs = in.readInt();
         insulin = in.readFloat();
         correction = in.readInt() != 0;
-        beforeSugarParcelable = (BloodSugarParcelable)in.readParcelable(BloodSugar.class.getClassLoader());
+        beforeSugarParcelable = in.readParcelable(BloodSugar.class.getClassLoader());
         long time = in.readLong();
         if (time > 0) {
             date = new Date(time);
         }
+        bolusPatternParcelable = in.readParcelable(BolusPattern.class.getClassLoader());
         this.foodParcelables = new ArrayList<FoodParcelable>();
         in.readList(this.foodParcelables, FoodParcelable.class.getClassLoader());
     }

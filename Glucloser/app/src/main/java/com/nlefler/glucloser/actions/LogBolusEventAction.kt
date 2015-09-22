@@ -49,16 +49,15 @@ public class LogBolusEventAction : Parcelable {
         val sharedContext = GlucloserApplication.SharedApplication().getApplicationContext()
         val realm = Realm.getInstance(sharedContext)
 
-        var beforeSugar: BloodSugar? = null
-        if (bolusEventParcelable!!.getBeforeSugarParcelable() != null) {
-            beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(bolusEventParcelable!!.getBeforeSugarParcelable()!!, sharedContext)
-        }
+        val beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(bolusEventParcelable?.bloodSugarParcelable!!, sharedContext)
 
         val foodList = RealmList<Food>()
         for (foodParcelable in this.foodParcelableList) {
             val food = FoodFactory.FoodFromParcelable(foodParcelable, sharedContext)
             foodList.add(food)
         }
+
+        val bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
 
         when (this.bolusEventParcelable) {
             is MealParcelable -> {
@@ -69,15 +68,14 @@ public class LogBolusEventAction : Parcelable {
                     place = PlaceFactory.PlaceFromParcelable(this.placeParcelable!!, sharedContext)
                 }
                 realm.beginTransaction()
-                meal.setFoods(foodList)
+                meal.foods = foodList
 
                 if (place != null) {
-                    meal.setPlace(place)
+                    meal.place = place
                 }
 
-                if (beforeSugar != null) {
-                    meal.setBeforeSugar(beforeSugar)
-                }
+                meal.beforeSugar = beforeSugar
+                meal.bolusPattern = bolusPattern
 
                 realm.commitTransaction()
                 ParseUploader.SharedInstance().uploadBolusEvent(meal)
@@ -86,10 +84,9 @@ public class LogBolusEventAction : Parcelable {
                 val snack = SnackFactory.SnackFromParcelable(this.bolusEventParcelable as SnackParcelable, sharedContext)
                 realm.beginTransaction()
 
-                snack.setFoods(foodList)
-                if (beforeSugar != null) {
-                    snack.setBeforeSugar(beforeSugar)
-                }
+                snack.foods = foodList
+                snack.beforeSugar = beforeSugar
+                snack.bolusPattern = bolusPattern
 
                 realm.commitTransaction()
                 ParseUploader.SharedInstance().uploadBolusEvent(snack)
@@ -99,15 +96,15 @@ public class LogBolusEventAction : Parcelable {
 
     /** Parcelable  */
     public constructor(parcel: Parcel) {
-        this.placeParcelable = parcel.readParcelable<Parcelable>(javaClass<PlaceParcelable>().getClassLoader()) as PlaceParcelable
+        this.placeParcelable = parcel.readParcelable<Parcelable>(PlaceParcelable::class.java.classLoader) as PlaceParcelable
 
         val eventTypeName = parcel.readString()
         when (try {BolusEventType.valueOf(eventTypeName) } catch (e: Exception) { null }) {
-            is BolusEventType.BolusEventTypeMeal -> {
-                this.bolusEventParcelable = parcel.readParcelable<Parcelable>(javaClass<MealParcelable>().getClassLoader()) as MealParcelable
+            BolusEventType.BolusEventTypeMeal -> {
+                this.bolusEventParcelable = parcel.readParcelable<MealParcelable>(MealParcelable::class.java.classLoader)
             }
-            is BolusEventType.BolusEventTypeSnack -> {
-                this.bolusEventParcelable = parcel.readParcelable<Parcelable>(javaClass<SnackParcelable>().getClassLoader()) as SnackParcelable
+            BolusEventType.BolusEventTypeSnack -> {
+                this.bolusEventParcelable = parcel.readParcelable<SnackParcelable>(SnackParcelable::class.java.classLoader)
             }
         }
     }
@@ -132,13 +129,13 @@ public class LogBolusEventAction : Parcelable {
     companion object {
         private val LOG_TAG = "LogMealAction"
 
-        public val CREATOR: Parcelable.Creator<LogBolusEventAction> = object : Parcelable.Creator<LogBolusEventAction> {
-            override fun createFromParcel(`in`: Parcel): LogBolusEventAction {
-                return LogBolusEventAction(`in`)
+        public val CREATOR = object : Parcelable.Creator<LogBolusEventAction> {
+            override fun createFromParcel(parcel: Parcel): LogBolusEventAction {
+                return LogBolusEventAction(parcel)
             }
 
             override fun newArray(size: Int): Array<LogBolusEventAction?> {
-                return arrayOfNulls(size)
+                return Array(size, {i -> LogBolusEventAction() })
             }
         }
     }

@@ -47,8 +47,8 @@ public class FoodListRecyclerAdapter(private var foods: List<Food>) : RecyclerVi
 
         val food = this.foods.get(i)
         viewHolder.food = food
-        viewHolder.foodName.setText("${food.getName()}")
-        viewHolder.carbsValue.setText("${food.getCarbs()}")
+        viewHolder.foodName.setText("${food.name}")
+        viewHolder.carbsValue.setText("${food.carbs}")
     }
 
     override fun getItemCount(): Int {

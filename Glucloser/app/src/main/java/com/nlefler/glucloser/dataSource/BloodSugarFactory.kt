@@ -38,9 +38,9 @@ public class BloodSugarFactory {
             val realm = Realm.getInstance(ctx)
 
             realm.beginTransaction()
-            val sugar = BloodSugarForBloodSugarId(parcelable.getId(), realm, true)!!
-            sugar.setValue(parcelable.getValue())
-            sugar.setDate(parcelable.getDate())
+            val sugar = BloodSugarForBloodSugarId(parcelable.id, realm, true)!!
+            sugar.value = parcelable.value
+            sugar.date = parcelable.date
             realm.commitTransaction()
 
             return sugar
@@ -48,9 +48,9 @@ public class BloodSugarFactory {
 
         public fun ParcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
             val parcelable = BloodSugarParcelable()
-            parcelable.setId(sugar.getId())
-            parcelable.setValue(sugar.getValue())
-            parcelable.setDate(sugar.getDate())
+            parcelable.id = sugar.id
+            parcelable.value = sugar.value
+            parcelable.date = sugar.date
             return parcelable
         }
 
@@ -59,8 +59,8 @@ public class BloodSugarFactory {
                 return false
             }
 
-            val valueOk = sugar1.getValue() == sugar2.getValue()
-            val dateOK = sugar1.getDate() == sugar2.getDate()
+            val valueOk = sugar1.value == sugar2.value
+            val dateOK = sugar1.date == sugar2.date
 
             return valueOk && dateOK
         }
@@ -79,11 +79,11 @@ public class BloodSugarFactory {
 
             realm.beginTransaction()
             val sugar = BloodSugarForBloodSugarId(sugarId, realm, true)!!
-            if (sugarValue >= 0 && sugarValue != sugar.getValue()) {
-                sugar.setValue(sugarValue)
+            if (sugarValue >= 0 && sugarValue != sugar.value) {
+                sugar.value = sugarValue
             }
             if (sugarDate != null) {
-                sugar.setDate(sugarDate)
+                sugar.date = sugarDate
             }
             realm.commitTransaction()
 
@@ -101,14 +101,14 @@ public class BloodSugarFactory {
                 Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, action null")
                 return
             }
-            if (bloodSugar.getId()?.isEmpty() ?: true) {
+            if (bloodSugar.id?.isEmpty() ?: true) {
                 Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, blood sugar null or no id")
                 action.call(null, false)
                 return
             }
 
             val parseQuery = ParseQuery.getQuery<ParseObject>(BloodSugar.ParseClassName)
-            parseQuery.whereEqualTo(BloodSugar.IdFieldName, bloodSugar.getId())
+            parseQuery.whereEqualTo(BloodSugar.IdFieldName, bloodSugar.id)
 
             parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
                 val parseObject: ParseObject
@@ -119,9 +119,9 @@ public class BloodSugarFactory {
                 } else {
                     parseObject = parseObjects.get(0)
                 }
-                parseObject.put(BloodSugar.IdFieldName, bloodSugar.getId())
-                parseObject.put(BloodSugar.ValueFieldName, bloodSugar.getValue())
-                parseObject.put(BloodSugar.DateFieldName, bloodSugar.getDate())
+                parseObject.put(BloodSugar.IdFieldName, bloodSugar.id)
+                parseObject.put(BloodSugar.ValueFieldName, bloodSugar.value)
+                parseObject.put(BloodSugar.DateFieldName, bloodSugar.date)
                 action.call(parseObject, created)
             })
         }
@@ -129,7 +129,7 @@ public class BloodSugarFactory {
         private fun BloodSugarForBloodSugarId(id: String?, realm: Realm, create: Boolean): BloodSugar? {
             if (create && (id == null || id.isEmpty())) {
                 val sugar = realm.createObject<BloodSugar>(javaClass<BloodSugar>())
-                sugar.setId(UUID.randomUUID().toString())
+                sugar.id = UUID.randomUUID().toString()
                 return sugar
             }
 
@@ -140,7 +140,7 @@ public class BloodSugarFactory {
 
             if (result == null && create) {
                 result = realm.createObject<BloodSugar>(javaClass<BloodSugar>())
-                result!!.setId(id)
+                result!!.id = id
             }
 
             return result

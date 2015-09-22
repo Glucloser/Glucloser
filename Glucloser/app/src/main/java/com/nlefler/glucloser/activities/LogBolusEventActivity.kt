@@ -95,7 +95,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
 
         val args = Bundle()
         if (placeParcelable != null) {
-            args.putString(BolusEventDetailsFragment.BolusEventDetailPlaceNameBundleKey, placeParcelable.getName())
+            args.putString(BolusEventDetailsFragment.BolusEventDetailPlaceNameBundleKey, placeParcelable.name)
         }
         args.putParcelable(BolusEventDetailsFragment.BolusEventDetailBolusEventParcelableBundleKey, bolusEventParcelable as Parcelable)
         fragment.setArguments(args)

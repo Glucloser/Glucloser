@@ -23,7 +23,7 @@ public class FoodFactory {
             val realm = Realm.getInstance(ctx)
 
             realm.beginTransaction()
-            val food = FoodForFoodId(null, realm, true)!!
+            val food = FoodForFoodId("", realm, true)!!
             realm.commitTransaction()
 
             return food
@@ -33,9 +33,9 @@ public class FoodFactory {
             val realm = Realm.getInstance(ctx)
 
             realm.beginTransaction()
-            val food = FoodForFoodId(parcelable.getFoodId(), realm, true)!!
-            food.setName(parcelable.getFoodName())
-            food.setCarbs(parcelable.getCarbs())
+            val food = FoodForFoodId(parcelable.foodId, realm, true)!!
+            food.name = parcelable.foodName
+            food.carbs = parcelable.carbs
             realm.commitTransaction()
 
             return food
@@ -43,9 +43,9 @@ public class FoodFactory {
 
         public fun ParcelableFromFood(food: Food): FoodParcelable {
             val parcelable = FoodParcelable()
-            parcelable.setFoodId(food.getFoodId())
-            parcelable.setFoodName(food.getName())
-            parcelable.setCarbs(food.getCarbs())
+            parcelable.foodId = food.foodId
+            parcelable.foodName = food.name
+            parcelable.carbs = food.carbs
             return parcelable
         }
 
@@ -54,8 +54,8 @@ public class FoodFactory {
                 return false
             }
 
-            val nameOK = food1.getName().equals(food2.getName())
-            val carbsOK = food1.getCarbs() == food2.getCarbs()
+            val nameOK = food1.name.equals(food2.name)
+            val carbsOK = food1.carbs == food2.carbs
 
             return nameOK && carbsOK
         }
@@ -74,9 +74,9 @@ public class FoodFactory {
 
             realm.beginTransaction()
             val food = FoodForFoodId(foodId, realm, true)!!
-            food.setName(nameValue)
+            food.name = nameValue
             if (carbValue >= 0) {
-                food.setCarbs(carbValue)
+                food.carbs = carbValue
             }
             realm.commitTransaction()
 
@@ -88,14 +88,14 @@ public class FoodFactory {
                 Log.e(LOG_TAG, "Unable to create Parse object from Food, action null")
                 return
             }
-            if (food.getFoodId()?.isEmpty() ?: true) {
+            if (food.foodId.isEmpty()) {
                 Log.e(LOG_TAG, "Unable to create Parse object from Food, blood sugar null or no id")
                 action.call(null, false)
                 return
             }
 
             val parseQuery = ParseQuery.getQuery<ParseObject>(Food.ParseClassName)
-            parseQuery.whereEqualTo(Food.FoodIdFieldName, food.getFoodId())
+            parseQuery.whereEqualTo(Food.FoodIdFieldName, food.foodId)
 
             parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
                 val parseObject: ParseObject
@@ -106,28 +106,27 @@ public class FoodFactory {
                 } else {
                     parseObject = parseObjects.get(0)
                 }
-                parseObject.put(Food.FoodIdFieldName, food.getFoodId())
-                parseObject.put(Food.FoodNameFieldName, food.getName())
-                parseObject.put(Food.CarbsFieldName, food.getCarbs())
+                parseObject.put(Food.FoodIdFieldName, food.foodId)
+                parseObject.put(Food.FoodNameFieldName, food.name)
+                parseObject.put(Food.CarbsFieldName, food.carbs)
                 action.call(parseObject, created)
             })
         }
 
-        private fun FoodForFoodId(id: String?, realm: Realm, create: Boolean): Food? {
-            if (create && (id == null || id.isEmpty())) {
-                val food = realm.createObject<Food>(javaClass<Food>())
-                food.setFoodId(UUID.randomUUID().toString())
+        private fun FoodForFoodId(id: String, realm: Realm, create: Boolean): Food? {
+            if (create && id.isEmpty()) {
+                val food = realm.createObject<Food>(Food::class.java)
                 return food
             }
 
-            val query = realm.where<Food>(javaClass<Food>())
+            val query = realm.where<Food>(Food::class.java)
 
             query.equalTo(Food.FoodIdFieldName, id)
             var result: Food? = query.findFirst()
 
             if (result == null && create) {
                 result = realm.createObject<Food>(javaClass<Food>())
-                result!!.setFoodId(id)
+                result!!.foodId = id
             }
 
             return result

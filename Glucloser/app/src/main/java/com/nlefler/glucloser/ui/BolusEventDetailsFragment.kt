@@ -138,8 +138,8 @@ public class BolusEventDetailsFragment : Fragment() {
         val beforeSugarString = this.beforeSugarValueField!!.getText().toString()
         if (!beforeSugarString.isEmpty()) {
             val beforeSugarParcelable = BloodSugarParcelable()
-            beforeSugarParcelable.setDate(this.bolusEventParcelable!!.getDate())
-            beforeSugarParcelable.setValue(Integer.valueOf(beforeSugarString))
+            beforeSugarParcelable.date = this.bolusEventParcelable!!.getDate()
+            beforeSugarParcelable.value = Integer.valueOf(beforeSugarString)
             this.bolusEventParcelable!!.setBeforeSugarParcelable(beforeSugarParcelable)
         }
 

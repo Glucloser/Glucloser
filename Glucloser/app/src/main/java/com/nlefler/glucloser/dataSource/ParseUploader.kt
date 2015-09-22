@@ -26,7 +26,7 @@ public class ParseUploader private constructor() {
     }
 
     public fun uploadPlace(place: Place) {
-        val placeId = place.getFoursquareId()!!
+        val placeId = place.foursquareId!!
         this.getUploadedObjectObservable(placeId, place).subscribe({ parseObject: ParseObject ->
             parseObject.saveInBackground()
             inProgressUploads.remove(placeId)
@@ -44,7 +44,7 @@ public class ParseUploader private constructor() {
         }
 
         val beforeSugar = bolusEvent.getBeforeSugar()
-        val beforeSugarId = beforeSugar?.getId() ?: null
+        val beforeSugarId = beforeSugar?.id ?: null
         if (beforeSugarId != null) {
 //            finalObservable.subscribeOn(Schedulers.io())
             val bolusObservable = getUploadedObjectObservable(beforeSugarId, beforeSugar!!)
@@ -105,7 +105,7 @@ public class ParseUploader private constructor() {
     }
 
     public fun uploadBloodSugar(sugar: BloodSugar) {
-        val sugarId = sugar.getId()!!
+        val sugarId = sugar.id!!
         this.getUploadedObjectObservable(sugarId, sugar).subscribe({ parseObject: ParseObject ->
             parseObject.saveInBackground()
             inProgressUploads.remove(sugarId)
@@ -113,7 +113,7 @@ public class ParseUploader private constructor() {
     }
 
     public fun uploadFood(food: Food) {
-        val foodId = food.getFoodId()
+        val foodId = food.foodId
         this.getUploadedObjectObservable(foodId, food).subscribe({ parseObject: ParseObject ->
             parseObject.saveInBackground()
             inProgressUploads.remove(foodId)

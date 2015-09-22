@@ -16,6 +16,7 @@ import java.util.List;
 public class SnackParcelable implements Parcelable, BolusEventParcelable {
     private String id;
     private Date date;
+    private BolusPatternParcelable bolusPatternParcelable;
     private int carbs;
     private float insulin;
     private BloodSugarParcelable beforeSugarParcelable;
@@ -40,8 +41,17 @@ public class SnackParcelable implements Parcelable, BolusEventParcelable {
         return date;
     }
 
+    @Override
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    @Override
+    public BolusPatternParcelable getBolusPatternParcelable() { return this.bolusPatternParcelable; }
+
+    @Override
+    public void setBolusPatternParcelable(BolusPatternParcelable patternParcelable) {
+        this.bolusPatternParcelable = patternParcelable;
     }
 
     @Override
@@ -101,11 +111,12 @@ public class SnackParcelable implements Parcelable, BolusEventParcelable {
         carbs = in.readInt();
         insulin = in.readFloat();
         correction = in.readInt() != 0;
-        beforeSugarParcelable = (BloodSugarParcelable)in.readParcelable(BloodSugar.class.getClassLoader());
+        beforeSugarParcelable = in.readParcelable(BloodSugar.class.getClassLoader());
         long time = in.readLong();
         if (time > 0) {
             date = new Date();
         }
+        bolusPatternParcelable = in.readParcelable(BolusPatternParcelable.class.getClassLoader());
         this.foodParcelables = new ArrayList<FoodParcelable>();
         in.readList(this.foodParcelables, FoodParcelable.class.getClassLoader());
     }
@@ -125,6 +136,7 @@ public class SnackParcelable implements Parcelable, BolusEventParcelable {
         if (date != null) {
             dest.writeLong(date.getTime());
         }
+        dest.writeParcelable(bolusPatternParcelable, 0);
         dest.writeTypedList(this.foodParcelables);
     }
 

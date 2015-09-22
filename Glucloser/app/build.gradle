@@ -34,7 +34,7 @@ dependencies {
     compile fileTree(dir: 'libs/Parse-1.9.2', include: 'Parse-*.jar')
     compile fileTree(dir: 'libs/Parse-1.9.2', include: 'ParseCrashReporting-*.jar')
 
-    compile 'io.realm:realm-android:0.82.1'
+    compile 'io.realm:realm-android:0.82.2'
 
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.23.0'
@@ -81,7 +81,7 @@ dependencies {
 }
 
 buildscript {
-    ext.kotlin_version = '0.12.200'
+    ext.kotlin_version = '0.13.1513'
     repositories {
         mavenCentral()
     }
