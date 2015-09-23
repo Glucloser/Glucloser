@@ -27,7 +27,7 @@ public class FoursquareUserHelper {
     }
 
     public fun fetchAndStoreUserId() {
-        val info = this.restAdapter.create<NLFoursquareUserInfo>(javaClass<NLFoursquareUserInfo>())
+        val info = this.restAdapter.create<NLFoursquareUserInfo>(NLFoursquareUserInfo::class.java)
         val authParams = FoursquareAuthManager.SharedManager().getClientAuthParameters(GlucloserApplication.SharedApplication().getApplicationContext())
         info.getInfo(authParams.authenticationParameters(), NLFoursquareUserInfo.UserIdSelf, object : Callback<NLFoursquareResponse<NLFoursquareUserInfoResponse>> {
             override fun success(nlFoursquareUserInfoResponseNLFoursquareResponse: NLFoursquareResponse<NLFoursquareUserInfoResponse>, response: Response) {

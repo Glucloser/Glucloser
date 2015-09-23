@@ -11,34 +11,34 @@ import io.realm.annotations.RealmClass
  * Created by Nathan Lefler on 12/11/14.
  */
 @RealmClass
-public open data abstract class Meal : RealmObject(), BolusEvent, HasPlace {
+public abstract data class Meal : RealmObject(), BolusEvent, HasPlace {
 
     companion object {
-        Ignore
+        @Ignore
         public val ParseClassName: String = "Meal"
 
-        Ignore
+        @Ignore
         public val MealIdFieldName: String = "mealId"
 
-        Ignore
+        @Ignore
         public val MealDateFieldName: String = "date"
 
-        Ignore
+        @Ignore
         public val PlaceFieldName: String = "place"
 
-        Ignore
+        @Ignore
         public val CarbsFieldName: String = "carbs"
 
-        Ignore
+        @Ignore
         public val InsulinFieldName: String = "insulin"
 
-        Ignore
+        @Ignore
         public val BeforeSugarFieldName: String = "beforeSugar"
 
-        Ignore
+        @Ignore
         public val CorrectionFieldName: String = "correction"
 
-        Ignore
+        @Ignore
         public val FoodListFieldName: String = "foods"
 
         @Ignore

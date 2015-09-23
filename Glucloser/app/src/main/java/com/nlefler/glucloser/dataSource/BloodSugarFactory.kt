@@ -128,18 +128,18 @@ public class BloodSugarFactory {
 
         private fun BloodSugarForBloodSugarId(id: String?, realm: Realm, create: Boolean): BloodSugar? {
             if (create && (id == null || id.isEmpty())) {
-                val sugar = realm.createObject<BloodSugar>(javaClass<BloodSugar>())
+                val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
                 sugar.id = UUID.randomUUID().toString()
                 return sugar
             }
 
-            val query = realm.where<BloodSugar>(javaClass<BloodSugar>())
+            val query = realm.where<BloodSugar>(BloodSugar::class.java)
 
             query.equalTo(BloodSugar.IdFieldName, id)
             var result: BloodSugar? = query.findFirst()
 
             if (result == null && create) {
-                result = realm.createObject<BloodSugar>(javaClass<BloodSugar>())
+                result = realm.createObject<BloodSugar>(BloodSugar::class.java)
                 result!!.id = id
             }
 

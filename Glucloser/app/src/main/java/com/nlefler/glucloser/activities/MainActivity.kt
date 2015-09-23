@@ -101,7 +101,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
     override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
         when (position) {
             1 -> {
-                val intent = Intent(view.getContext(), javaClass<LoginActivity>())
+                val intent = Intent(view.getContext(), LoginActivity::class.java)
                 startActivity(intent)
             }
             2 -> {
@@ -152,7 +152,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             val logMealButton = rootView.findViewById(R.id.fab_log_meal_item) as FloatingActionButton
             logMealButton.setOnClickListener(object : View.OnClickListener {
                 override fun onClick(view: View) {
-                    val intent = Intent(view.getContext(), javaClass<LogBolusEventActivity>())
+                    val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
                     intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name())
 
                     activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
@@ -162,7 +162,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             val logSnackButton = rootView.findViewById(R.id.fab_log_snack_item) as FloatingActionButton
             logSnackButton.setOnClickListener(object : View.OnClickListener {
                 override fun onClick(view: View) {
-                    val intent = Intent(view.getContext(), javaClass<LogBolusEventActivity>())
+                    val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
                     intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeSnack.name())
 
                     activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
@@ -177,12 +177,12 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         internal fun updateMealHistory() {
             val realm = Realm.getInstance(getActivity())
-            val mealResults = realm.allObjectsSorted(javaClass<Meal>(), Meal.MealDateFieldName, false)
-            val snackResults = realm.allObjectsSorted(javaClass<Snack>(), Snack.SnackDateFieldName, false)
+            val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, false)
+            val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, false)
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
-                    return -1 * a.getDate().compareTo(b.getDate())
+                    return -1 * a.date.compareTo(b.date)
                 }
 
                 override fun equals(other: Any?): Boolean {

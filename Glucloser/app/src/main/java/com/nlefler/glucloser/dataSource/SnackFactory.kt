@@ -39,7 +39,7 @@ public class SnackFactory {
                 Log.e(LOG_TAG, "Unable to fetch Snack, action is null")
                 return
             }
-            if (id == null || id.isEmpty() || ctx == null) {
+            if (id.isEmpty() || ctx == null) {
                 Log.e(LOG_TAG, "Unable to fetch Snack, invalid args")
                 action.call(null)
                 return
@@ -80,7 +80,7 @@ public class SnackFactory {
             parcelable.id = snack.id
             parcelable.isCorrection = snack.isCorrection
             if (snack.beforeSugar != null) {
-                parcelable.beforeSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(snack.beforeSugar!!)
+                parcelable.bloodSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(snack.beforeSugar!!)
             }
             parcelable.date = snack.date
 
@@ -91,8 +91,8 @@ public class SnackFactory {
             val realm = Realm.getInstance(ctx)
 
             var beforeSugar: BloodSugar? = null
-            if (parcelable.beforeSugarParcelable != null) {
-                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.beforeSugarParcelable!!, ctx)
+            if (parcelable.bloodSugarParcelable != null) {
+                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!, ctx)
             }
 
             realm.beginTransaction()
@@ -197,13 +197,13 @@ public class SnackFactory {
                 return snack
             }
 
-            val query = realm.where<Snack>(javaClass<Snack>())
+            val query = realm.where<Snack>(Snack::class.java)
 
             query.equalTo(Snack.SnackIdFieldName, id)
             var result: Snack? = query.findFirst()
 
             if (result == null && create) {
-                result = realm.createObject<Snack>(javaClass<Snack>())
+                result = realm.createObject<Snack>(Snack::class.java)
                 result!!.id = id
             }
 

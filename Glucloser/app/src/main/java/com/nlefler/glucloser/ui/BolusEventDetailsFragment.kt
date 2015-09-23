@@ -133,23 +133,23 @@ public class BolusEventDetailsFragment : Fragment() {
             return
         }
 
-        this.bolusEventParcelable!!.setDate(Date())
+        this.bolusEventParcelable!!.date = Date()
 
         val beforeSugarString = this.beforeSugarValueField!!.getText().toString()
         if (!beforeSugarString.isEmpty()) {
             val beforeSugarParcelable = BloodSugarParcelable()
-            beforeSugarParcelable.date = this.bolusEventParcelable!!.getDate()
+            beforeSugarParcelable.date = this.bolusEventParcelable!!.date
             beforeSugarParcelable.value = Integer.valueOf(beforeSugarString)
-            this.bolusEventParcelable!!.setBeforeSugarParcelable(beforeSugarParcelable)
+            this.bolusEventParcelable!!.bloodSugarParcelable = beforeSugarParcelable
         }
 
         if (this.insulinValueField!!.getText() != null && this.insulinValueField!!.getText().length() > 0) {
-            this.bolusEventParcelable!!.setInsulin(java.lang.Float.valueOf(this.insulinValueField!!.getText().toString()))
+            this.bolusEventParcelable!!.insulin = java.lang.Float.valueOf(this.insulinValueField!!.getText().toString())
         }
         if (this.carbValueField!!.getText() != null && this.carbValueField!!.getText().length() > 0) {
-            this.bolusEventParcelable!!.setCarbs(Integer.valueOf(this.carbValueField!!.getText().toString())!!)
+            this.bolusEventParcelable!!.carbs = Integer.valueOf(this.carbValueField!!.getText().toString())!!
         }
-        this.bolusEventParcelable!!.setCorrection(this.correctionValueBox!!.isSelected())
+        this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
 
         (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)
     }

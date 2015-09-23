@@ -91,7 +91,7 @@ public class FoursquarePlaceHelper(private val context: Context) {
             parametersBuilder.query(searchTerm)
         }
 
-        val venueSearch = restAdapter.create<NLFoursquareVenueSearch>(javaClass<NLFoursquareVenueSearch>())
+        val venueSearch = restAdapter.create<NLFoursquareVenueSearch>(NLFoursquareVenueSearch::class.java)
         venueSearch.search(parametersBuilder.buildWithClientParameters(FoursquareAuthManager.SharedManager().getClientAuthParameters(this.context)), object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
             override fun success(foursquareResponse: NLFoursquareResponse<NLFoursquareVenueSearchResponse>, response: Response) {
                 subscriber.onNext(foursquareResponse.response.venues)

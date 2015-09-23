@@ -125,7 +125,7 @@ public class FoodFactory {
             var result: Food? = query.findFirst()
 
             if (result == null && create) {
-                result = realm.createObject<Food>(javaClass<Food>())
+                result = realm.createObject<Food>(Food::class.java)
                 result!!.foodId = id
             }
 

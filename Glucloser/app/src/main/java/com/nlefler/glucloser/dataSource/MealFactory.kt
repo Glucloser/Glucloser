@@ -79,7 +79,7 @@ public class MealFactory {
             parcelable.id = meal.id
             parcelable.isCorrection = meal.isCorrection
             if (meal.beforeSugar != null) {
-                parcelable.beforeSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(meal.beforeSugar!!)
+                parcelable.bloodSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(meal.beforeSugar!!)
             }
             parcelable.date = meal.date
             parcelable.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(meal.bolusPattern)
@@ -92,12 +92,12 @@ public class MealFactory {
 
             var place: Place? = null
             if (parcelable.placeParcelable != null) {
-                place = PlaceFactory.PlaceFromParcelable(parcelable.placeParcelable, ctx)
+                place = PlaceFactory.PlaceFromParcelable(parcelable.placeParcelable!!, ctx)
             }
 
             var beforeSugar: BloodSugar? = null
-            if (parcelable.beforeSugarParcelable != null) {
-                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.beforeSugarParcelable, ctx)
+            if (parcelable.bloodSugarParcelable != null) {
+                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!, ctx)
             }
 
             realm.beginTransaction()
@@ -106,9 +106,11 @@ public class MealFactory {
             meal.carbs = parcelable.carbs
             meal.place = place
             meal.beforeSugar = beforeSugar
-            meal.isCorrection = parcelable.isCorrection()
-            meal.date = parcelable.getDate()
-            meal.bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(parcelable.bolusPatternParcelable)
+            meal.isCorrection = parcelable.isCorrection
+            meal.date = parcelable.date
+            if (parcelable.bolusPatternParcelable != null) {
+                meal.bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
+            }
             realm.commitTransaction()
 
             return meal
@@ -171,7 +173,7 @@ public class MealFactory {
                 Log.e(LOG_TAG, "Unable to create Parse object from Meal, action null")
                 return
             }
-            if (meal.id.length() ?: 0 == 0) {
+            if (meal.id.length() == 0) {
                 Log.e(LOG_TAG, "Unable to create Parse object from Meal, meal null or no id")
                 action.call(null, false)
                 return
@@ -181,8 +183,6 @@ public class MealFactory {
             parseQuery.whereEqualTo(Meal.MealIdFieldName, meal.id)
             parseQuery.setLimit(1)
             parseQuery.firstInBackground.continueWithTask({ task ->
-                val parseObject: ParseObject
-                var created = false
                 if (task.result == null) {
                     Task.forResult(Pair(ParseObject(Meal.ParseClassName), true))
                 } else {
@@ -216,13 +216,13 @@ public class MealFactory {
                 return meal
             }
 
-            val query = realm.where<Meal>(javaClass<Meal>())
+            val query = realm.where<Meal>(Meal::class.java)
 
             query.equalTo(Meal.MealIdFieldName, id)
             var result: Meal? = query.findFirst()
 
             if (result == null && create) {
-                result = realm.createObject<Meal>(javaClass<Meal>())
+                result = realm.createObject<Meal>(Meal::class.java)
                 result!!.id = id
             }
 

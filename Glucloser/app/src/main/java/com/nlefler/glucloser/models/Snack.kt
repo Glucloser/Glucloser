@@ -11,24 +11,31 @@ import io.realm.annotations.RealmClass
  * Created by Nathan Lefler on 5/8/15.
  */
 @RealmClass
-public open abstract data class Snack : RealmObject(), BolusEvent {
+public abstract data class Snack : RealmObject(), BolusEvent {
 
     companion object {
-        Ignore
+        @Ignore
         public var ParseClassName: String = "Snack"
-        Ignore
+
+        @Ignore
         public var SnackIdFieldName: String = "snackId"
-        Ignore
+
+        @Ignore
         public var SnackDateFieldName: String = "date"
-        Ignore
+
+        @Ignore
         public var CarbsFieldName: String = "carbs"
-        Ignore
+
+        @Ignore
         public var InsulinFieldName: String = "insulin"
-        Ignore
+
+        @Ignore
         public var BeforeSugarFieldName: String = "beforeSugar"
-        Ignore
+
+        @Ignore
         public var CorrectionFieldName: String = "correction"
-        Ignore
+
+        @Ignore
         public var FoodListFieldName: String = "foods"
     }
 }

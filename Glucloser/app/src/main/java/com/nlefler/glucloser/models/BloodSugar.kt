@@ -16,16 +16,16 @@ public open data class BloodSugar : RealmObject() {
     public open var date: Date? = null
 
     companion object {
-        Ignore
+        @Ignore
         public val ParseClassName: String = "BloodSugar"
 
-        Ignore
+        @Ignore
         public val IdFieldName: String = "id"
 
-        Ignore
+        @Ignore
         public val ValueFieldName: String = "value"
 
-        Ignore
+        @Ignore
         public val DateFieldName: String = "date"
     }
 }

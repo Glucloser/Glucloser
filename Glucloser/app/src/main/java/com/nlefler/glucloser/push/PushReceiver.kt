@@ -50,7 +50,7 @@ public class PushReceiver : ParsePushBroadcastReceiver() {
             activityIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uriString!!))
             activityIntent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name())
         } else {
-            activityIntent = Intent(context, javaClass<MainActivity>())
+            activityIntent = Intent(context, MainActivity::class.java)
         }
         activityIntent.putExtras(intent.getExtras())
         if (Build.VERSION.SDK_INT >= 16) {

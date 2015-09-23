@@ -147,9 +147,7 @@ public class PlaceFactory {
             if (place.foursquareId?.isEmpty() ?: false) {
                 place.foursquareId = foursquareId
             }
-            if (name != null && !name.isEmpty() && place.name.equals(name)) {
-                place.name = name
-            }
+            place.name = name
             if (lat != 0f && place.latitude != lat) {
                 place.latitude = lat
             }
@@ -209,20 +207,20 @@ public class PlaceFactory {
                 Log.e(LOG_TAG, "Cannot create Place from check-in data, parse bundle null")
                 return null
             }
-            val checkInData = (Gson()).fromJson<CheckInPushedData>(checkInDataSerialized, javaClass<CheckInPushedData>())
+            val checkInData = (Gson()).fromJson<CheckInPushedData>(checkInDataSerialized, CheckInPushedData::class.java)
             if (checkInData == null) {
                 Log.e(LOG_TAG, "Cannot create Place from check-in data, couldn't parse data")
                 return null
             }
 
             val placeParcelable = PlaceParcelable()
-            placeParcelable.foursquareId = checkInData.getVenueId()
-            placeParcelable.name = checkInData.getVenueName()
-            if (checkInData.getVenueLat() != 0f) {
-                placeParcelable.latitude = checkInData.getVenueLat()
+            placeParcelable.foursquareId = checkInData.venueId
+            placeParcelable.name = checkInData.venueName
+            if (checkInData.venueLat != 0f) {
+                placeParcelable.latitude = checkInData.venueLat
             }
-            if (checkInData.getVenueLon() != 0f) {
-                placeParcelable.longitude = checkInData.getVenueLon()
+            if (checkInData.venueLon != 0f) {
+                placeParcelable.longitude = checkInData.venueLon
             }
 
             return placeParcelable
@@ -230,16 +228,16 @@ public class PlaceFactory {
 
         private fun PlaceForFoursquareId(id: String?, realm: Realm, create: Boolean): Place? {
             if (create && (id == null || id.isEmpty())) {
-                return realm.createObject<Place>(javaClass<Place>())
+                return realm.createObject<Place>(Place::class.java)
             }
 
-            val query = realm.where<Place>(javaClass<Place>())
+            val query = realm.where<Place>(Place::class.java)
 
             query.equalTo(Place.FoursquareIdFieldName, id)
             var result: Place? = query.findFirst()
 
             if (result == null && create) {
-                result = realm.createObject<Place>(javaClass<Place>())
+                result = realm.createObject<Place>(Place::class.java)
                 result!!.foursquareId = id
             }
 

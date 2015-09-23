@@ -134,7 +134,8 @@ public class FoursquareAuthManager private constructor() {
         public val FOURSQUARE_TOKEN_EXCHG_INTENT_CODE: Int = 39229
 
         private var _sharedInstance: FoursquareAuthManager? = null
-        synchronized public fun SharedManager(): FoursquareAuthManager {
+        @Synchronized
+        public fun SharedManager(): FoursquareAuthManager {
             if (_sharedInstance == null) {
                 _sharedInstance = FoursquareAuthManager()
             }

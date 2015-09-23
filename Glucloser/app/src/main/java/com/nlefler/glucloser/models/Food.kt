@@ -15,16 +15,16 @@ public open data class Food : RealmObject() {
     public open var name: String = ""
 
     companion object {
-        Ignore
+        @Ignore
         public val ParseClassName: String = "Food"
 
-        Ignore
+        @Ignore
         public val FoodIdFieldName: String = "foodId"
 
-        Ignore
+        @Ignore
         public val CarbsFieldName: String = "carbs"
 
-        Ignore
+        @Ignore
         public val FoodNameFieldName: String = "name"
     }
 }

@@ -37,16 +37,15 @@ public class ParseUploader private constructor() {
 
         var finalObservable: Observable<ParseObject>? = null
         var placeId: String = ""
-        if (bolusEvent is HasPlace) {
-            val place = bolusEvent.getPlace()
-            placeId = place.getFoursquareId()!!
+        if (bolusEvent is HasPlace && bolusEvent.place != null) {
+            val place = bolusEvent.place!!
+            placeId = place.foursquareId!!
             finalObservable = getUploadedObjectObservable(placeId, place)
         }
 
-        val beforeSugar = bolusEvent.getBeforeSugar()
-        val beforeSugarId = beforeSugar?.id ?: null
-        if (beforeSugarId != null) {
-//            finalObservable.subscribeOn(Schedulers.io())
+        val beforeSugar = bolusEvent.beforeSugar
+        val beforeSugarId: String = beforeSugar?.id ?: ""
+        if (!beforeSugarId.isEmpty()) {
             val bolusObservable = getUploadedObjectObservable(beforeSugarId, beforeSugar!!)
             if (finalObservable != null) {
                 finalObservable = Observable.merge<ParseObject>(finalObservable, bolusObservable)
@@ -57,8 +56,8 @@ public class ParseUploader private constructor() {
         }
 
         val foodIds = ArrayList<String>()
-        for (food in bolusEvent.getFoods()) {
-            val foodId = food.getFoodId()
+        for (food in bolusEvent.foods) {
+            val foodId = food.foodId
             foodIds.add(foodId)
             finalObservable = Observable.merge<ParseObject>(finalObservable, getUploadedObjectObservable(foodId, food))
         }
@@ -74,7 +73,7 @@ public class ParseUploader private constructor() {
             val foodParseObjects = ArrayList<ParseObject>()
 
             override fun onCompleted() {
-                val bolusEventId = bolusEvent.getId();
+                val bolusEventId = bolusEvent.id;
                 getUploadedObjectObservable(bolusEventId, bolusEvent, beforeSugarParseObject, foodParseObjects, placeParseObject).subscribe({ mealObject: ParseObject ->
                     mealObject.saveInBackground()
                     inProgressUploads.remove(bolusEventId)
@@ -121,7 +120,8 @@ public class ParseUploader private constructor() {
     }
 
     /** Helpers  */
-    synchronized private fun getUploadedObjectObservable(localId: String, toUpload: Any, vararg args: Any?): Observable<ParseObject> {
+    @Synchronized
+    private fun getUploadedObjectObservable(localId: String, toUpload: Any, vararg args: Any?): Observable<ParseObject> {
         if (this.inProgressUploads.containsKey(localId)) {
             return this.inProgressUploads.get(localId)!!
         } else {
@@ -136,7 +136,7 @@ public class ParseUploader private constructor() {
                                 subscriber.onError(IllegalArgumentException("Invalid specific arguments for Meal"))
                                 return
                             }
-                            @suppress("UNCHECKED_CAST")
+                            @Suppress("UNCHECKED_CAST")
                             MealFactory.ParseObjectFromMeal(toUpload,
                                     args[0] as ParseObject?,
                                     args[1] as List<ParseObject>,
@@ -151,7 +151,7 @@ public class ParseUploader private constructor() {
                                 subscriber.onError(IllegalArgumentException("Invalid specific arguments for Snack"))
                                 return
                             }
-                            @suppress("UNCHECKED_CAST")
+                            @Suppress("UNCHECKED_CAST")
                             SnackFactory.ParseObjectFromSnack(toUpload,
                                     args[0] as ParseObject?,
                                     args[1] as List<ParseObject>,
@@ -201,7 +201,8 @@ public class ParseUploader private constructor() {
 
         private var _sharedInstance: ParseUploader? = null
 
-        synchronized public fun SharedInstance(): ParseUploader {
+        @Synchronized
+        public fun SharedInstance(): ParseUploader {
             if (_sharedInstance == null) {
                 _sharedInstance = ParseUploader()
             }

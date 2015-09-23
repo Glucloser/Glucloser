@@ -44,7 +44,7 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
                         return
                     }
 
-                    val intent = Intent(view.getContext(), javaClass<HistoricalBolusDetailActivity>())
+                    val intent = Intent(view.getContext(), HistoricalBolusDetailActivity::class.java)
                     intent.putExtra(HistoricalBolusDetailActivity.BolusKey, bolusEventParcelable)
 
                     activity.startActivity(intent)
@@ -77,13 +77,13 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
         val bolusEvent = this.bolusEvents!!.get(i)
         viewHolder.bolusEvent = bolusEvent
         if (bolusEvent is Meal) {
-            viewHolder.placeName.setText(bolusEvent.getPlace()?.getName() ?: "")
+            viewHolder.placeName.setText(bolusEvent.place?.name ?: "")
         }
         else {
             viewHolder.placeName.setText(GlucloserApplication.SharedApplication().getString(R.string.snack))
         }
-        viewHolder.carbsValue.setText("${bolusEvent.getCarbs()}")
-        viewHolder.insulinValue.setText("${bolusEvent.getInsulin()}")
+        viewHolder.carbsValue.setText("${bolusEvent.carbs}")
+        viewHolder.insulinValue.setText("${bolusEvent.insulin}")
     }
 
     override fun getItemCount(): Int {

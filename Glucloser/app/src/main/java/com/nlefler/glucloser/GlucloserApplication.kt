@@ -71,7 +71,8 @@ public class GlucloserApplication : Application() {
 
         private var _sharedApplication: GlucloserApplication? = null
 
-        synchronized public fun SharedApplication(): GlucloserApplication {
+        @Synchronized
+        public fun SharedApplication(): GlucloserApplication {
             return _sharedApplication!!
         }
     }

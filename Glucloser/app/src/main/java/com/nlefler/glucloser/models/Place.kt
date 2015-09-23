@@ -15,19 +15,19 @@ public open data class Place : RealmObject() {
     public open var longitude: Float = 0.toFloat()
 
     companion object {
-        Ignore
+        @Ignore
         public val ParseClassName: String = "Place"
 
-        Ignore
+        @Ignore
         public val NameFieldName: String = "name"
 
-        Ignore
+        @Ignore
         public val FoursquareIdFieldName: String = "foursquareId"
 
-        Ignore
+        @Ignore
         public val LatitudeFieldName: String = "latitude"
 
-        Ignore
+        @Ignore
         public val LongitudeFieldName: String = "longitude"
     }
 }
