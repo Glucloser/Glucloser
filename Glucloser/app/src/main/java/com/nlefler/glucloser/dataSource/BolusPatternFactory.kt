@@ -16,10 +16,7 @@ import java.util.*
  */
 public class BolusPatternFactory {
     companion object {
-        public fun BolusPatternFromParseObject(parseObj: ParseObject): BolusPattern? {
-            if (!parseObj.getClassName().equals(BolusPattern.ParseClassName)) {
-                return null;
-            }
+        public fun BolusPatternFromParseObject(parseObj: ParseObject): BolusPattern {
             val pattern = BolusPattern()
             pattern.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
 
@@ -31,13 +28,32 @@ public class BolusPatternFactory {
             return pattern
         }
 
+        public fun ParcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
+            val parcel = BolusPatternParcelable()
+            parcel.rateCount = pattern.rateCount
+            for (rate in pattern.rates) {
+                parcel.rates.add(BolusRateFactory.ParcelableFromBolusRate(rate))
+            }
+            return parcel
+        }
+
+        public fun ParseObjectFromBolusPattern(pattern: BolusPattern): ParseObject {
+            val prs = ParseObject.create(BolusPattern.ParseClassName)
+            prs.put(BolusPattern.RateCountFieldName, pattern.rateCount)
+            for (rate in pattern.rates) {
+                prs.add(BolusPattern.RatesFieldName, BolusRateFactory.ParseObjectFromBolusRate(rate))
+            }
+
+            return prs
+        }
+
         public fun CurrentBolusPattern(): Task<BolusPattern?> {
             val query = ParseQuery<ParseObject>(BolusPattern.ParseClassName)
             query.orderByDescending("updatedAt")
             query.setLimit(1)
             query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK)
 
-            return query.getFirstInBackground().onSuccessTask({ task ->
+            return query.getFirstInBackground().continueWithTask({ task ->
                 // Get all rates
                 task.getResult().fetchIfNeededInBackground<ParseObject>()
             }).continueWith({ task ->

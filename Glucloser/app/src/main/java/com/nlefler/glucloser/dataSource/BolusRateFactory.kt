@@ -21,6 +21,15 @@ public class BolusRateFactory {
             return rate
         }
 
+        public fun ParcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
+            val parcel = BolusRateParcelable()
+            parcel.ordinal = rate.ordinal
+            parcel.rate = rate.rate
+            parcel.startTime = rate.startTime
+
+            return parcel
+        }
+
         public fun BolusRateFromParseObject(parseObj: ParseObject): BolusRate? {
             if (!parseObj.getClassName().equals(BolusRate.ParseClassName)) {
                 return null;
@@ -30,6 +39,15 @@ public class BolusRateFactory {
             rate.rate = parseObj.getInt(BolusRate.RateFieldName)
             rate.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
             return rate
+        }
+
+        public fun ParseObjectFromBolusRate(rate: BolusRate): ParseObject {
+            val prs = ParseObject.create(BolusRate.ParseClassName)
+            prs.put(BolusRate.OridnalFieldName, rate.ordinal)
+            prs.put(BolusRate.RateFieldName, rate.rate)
+            prs.put(BolusRate.StartTimeFieldName, rate.startTime)
+
+            return prs
         }
     }
 }

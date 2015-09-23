@@ -2,6 +2,7 @@ package com.nlefler.glucloser.dataSource
 
 import android.content.Context
 import android.util.Log
+import bolts.Task
 import com.nlefler.glucloser.models.BloodSugar
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.models.MealParcelable
@@ -32,18 +33,18 @@ public class MealFactory {
             val realm = Realm.getInstance(ctx)
 
             realm.beginTransaction()
-            val meal = MealForMealId(null, realm, true)!!
+            val meal = MealForMealId("", realm, true)!!
             realm.commitTransaction()
 
             return meal
         }
 
-        public fun FetchMeal(id: String?, ctx: Context?, action: Action1<Meal>?) {
+        public fun FetchMeal(id: String, ctx: Context?, action: Action1<Meal>?) {
             if (action == null) {
                 Log.e(LOG_TAG, "Unable to fetch Meal, action is null")
                 return
             }
-            if (id?.length() == 0|| ctx == null) {
+            if (id.length() == 0|| ctx == null) {
                 Log.e(LOG_TAG, "Unable to fetch Meal, invalid args")
                 action.call(null)
                 return
@@ -80,8 +81,8 @@ public class MealFactory {
             if (meal.beforeSugar != null) {
                 parcelable.beforeSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(meal.beforeSugar!!)
             }
-            parcelable.setDate(meal.date)
-            parcelable.bolusPatternParcelable =
+            parcelable.date = meal.date
+            parcelable.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(meal.bolusPattern)
 
             return parcelable
         }
@@ -107,7 +108,7 @@ public class MealFactory {
             meal.beforeSugar = beforeSugar
             meal.isCorrection = parcelable.isCorrection()
             meal.date = parcelable.getDate()
-            meal.setBolusPattern
+            meal.bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(parcelable.bolusPatternParcelable)
             realm.commitTransaction()
 
             return meal
@@ -149,7 +150,7 @@ public class MealFactory {
             if (mealDate != null) {
                 meal.date = mealDate
             }
-            meal.setBolusPattern
+            meal.bolusPattern = BolusPatternFactory.BolusPatternFromParseObject(parseObject.getParseObject(Meal.BolusPatternFieldName))
             realm.commitTransaction()
 
             return meal
@@ -178,16 +179,19 @@ public class MealFactory {
 
             val parseQuery = ParseQuery.getQuery<ParseObject>(Meal.ParseClassName)
             parseQuery.whereEqualTo(Meal.MealIdFieldName, meal.id)
-
-            parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
+            parseQuery.setLimit(1)
+            parseQuery.firstInBackground.continueWithTask({ task ->
                 val parseObject: ParseObject
                 var created = false
-                if (parseObjects.isEmpty()) {
-                    parseObject = ParseObject(Meal.ParseClassName)
-                    created = true
+                if (task.result == null) {
+                    Task.forResult(Pair(ParseObject(Meal.ParseClassName), true))
                 } else {
-                    parseObject = parseObjects.get(0)
+                    Task.forResult(Pair(task.result, false))
                 }
+            }).continueWith({ task ->
+                val resultPair = task.result
+                val parseObject = resultPair.first
+                val created = resultPair.second
                 parseObject.put(Meal.MealIdFieldName, meal.id)
                 if (placeObject != null) {
                     parseObject.put(Meal.PlaceFieldName, placeObject)
@@ -200,13 +204,13 @@ public class MealFactory {
                 parseObject.put(Meal.InsulinFieldName, meal.insulin)
                 parseObject.put(Meal.MealDateFieldName, meal.date)
                 parseObject.put(Meal.FoodListFieldName, foodObjects)
-                parseObject.put(Meal.BolusPatternFieldName,)
+                parseObject.put(Meal.BolusPatternFieldName, BolusPatternFactory.ParseObjectFromBolusPattern(meal.bolusPattern))
                 action.call(parseObject, created)
             })
         }
 
-        private fun MealForMealId(id: String?, realm: Realm, create: Boolean): Meal? {
-            if (create && (id == null || id.length() == 0)) {
+        private fun MealForMealId(id: String, realm: Realm, create: Boolean): Meal? {
+            if (create && id.length() == 0) {
                 val meal = realm.createObject<Meal>(Meal::class.java)
                 meal.id = UUID.randomUUID().toString()
                 return meal

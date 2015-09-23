@@ -9,7 +9,7 @@ import java.util.*
  */
 public data class BolusPatternParcelable(): Parcelable {
     public var rateCount: Int? = null
-    public var rates: List<BolusRateParcelable> = ArrayList<BolusRateParcelable>()
+    public var rates: MutableList<BolusRateParcelable> = ArrayList<BolusRateParcelable>()
 
     private constructor(parcel: Parcel) : this() {
         rateCount = parcel.readInt()

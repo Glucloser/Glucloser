@@ -40,5 +40,8 @@ public open data abstract class Meal : RealmObject(), BolusEvent, HasPlace {
 
         Ignore
         public val FoodListFieldName: String = "foods"
+
+        @Ignore
+        public val BolusPatternFieldName: String = "bolusPattern"
     }
 }
