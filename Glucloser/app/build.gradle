@@ -2,13 +2,15 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    kotlinOptions.moduleName = "com.nlefler.glucloser"
 
     defaultConfig {
         applicationId "com.nlefler.glucloser"
         minSdkVersion 21
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
         multiDexEnabled = true
@@ -26,6 +28,9 @@ android {
     }
     sourceSets {
         main.java.srcDirs += 'src/main'
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
     }
 }
 
@@ -45,22 +50,22 @@ dependencies {
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
 
     // Google
-    compile 'com.google.android.gms:play-services-base:7.5.0'
-    compile 'com.google.android.gms:play-services-gcm:7.5.0'
-    compile 'com.google.android.gms:play-services-location:7.5.0'
-    compile 'com.google.android.gms:play-services-maps:7.5.0'
-    compile 'com.google.android.gms:play-services-ads:7.5.0'
-    compile 'com.google.android.gms:play-services-nearby:7.5.0'
-    compile 'com.google.android.gms:play-services-panorama:7.5.0'
-    compile 'com.google.android.gms:play-services-games:7.5.0'
-    compile 'com.google.android.gms:play-services-safetynet:7.5.0'
-    compile 'com.google.android.gms:play-services-wallet:7.5.0'
-    compile 'com.google.android.gms:play-services-wearable:7.5.0'
+    compile 'com.google.android.gms:play-services-base:7.8.0'
+    compile 'com.google.android.gms:play-services-gcm:7.8.0'
+    compile 'com.google.android.gms:play-services-location:7.8.0'
+//    compile 'com.google.android.gms:play-services-maps:7.8.0'
+//    compile 'com.google.android.gms:play-services-ads:7.8.0'
+//    compile 'com.google.android.gms:play-services-nearby:7.8.0'
+//    compile 'com.google.android.gms:play-services-panorama:7.8.0'
+//    compile 'com.google.android.gms:play-services-games:7.8.0'
+//    compile 'com.google.android.gms:play-services-safetynet:7.8.0'
+//    compile 'com.google.android.gms:play-services-wallet:7.8.0'
+//    compile 'com.google.android.gms:play-services-wearable:7.8.0'
 
-    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.android.support:multidex:1.0.1'
-    compile 'com.android.support:cardview-v7:22.2.1'
-    compile 'com.android.support:recyclerview-v7:22.2.1'
+    compile 'com.android.support:cardview-v7:23.0.1'
+    compile 'com.android.support:recyclerview-v7:23.0.1'
     compile 'com.google.code.gson:gson:2.3.1'
 
     // Static Libs
@@ -73,7 +78,6 @@ dependencies {
     compile 'com.getbase:floatingactionbutton:1.9.0'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
     // Project
     compile project(':libNLFoursquare')
@@ -81,7 +85,7 @@ dependencies {
 }
 
 buildscript {
-    ext.kotlin_version = '0.13.1513'
+    ext.kotlin_version = '0.13.1514'
     repositories {
         mavenCentral()
     }
