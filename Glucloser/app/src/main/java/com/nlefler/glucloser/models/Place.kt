@@ -8,7 +8,7 @@ import io.realm.annotations.RealmClass
  * Created by Nathan Lefler on 12/11/14.
  */
 @RealmClass
-public open data class Place : RealmObject() {
+public open class Place : RealmObject() {
     public open var name: String? = null
     public open var foursquareId: String? = null
     public open var latitude: Float = 0.toFloat()

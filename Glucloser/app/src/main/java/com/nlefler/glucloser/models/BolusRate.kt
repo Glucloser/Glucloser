@@ -9,7 +9,7 @@ import java.util.*
  * Created by nathan on 8/30/15.
  */
 @RealmClass
-public open data class BolusRate : RealmObject() {
+public open class BolusRate : RealmObject() {
     public open var ordinal: Int? = null
     public open var rate: Int? = null
     public open var startTime: Int? = null
@@ -19,7 +19,7 @@ public open data class BolusRate : RealmObject() {
         val ParseClassName = "BolusRate"
 
         @Ignore
-        val OridnalFieldName = "oridnal"
+        val OridnalFieldName = "ordinal"
 
         @Ignore
         val RateFieldName = "rate"

@@ -10,7 +10,7 @@ import io.realm.annotations.RealmClass
  * Created by Nathan Lefler on 1/4/15.
  */
 @RealmClass
-public open data class BloodSugar : RealmObject() {
+public open class BloodSugar : RealmObject() {
     public open var id: String? = null
     public open var value: Int = 0
     public open var date: Date? = null

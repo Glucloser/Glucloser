@@ -10,7 +10,7 @@ import io.realm.RealmList
 public interface BolusEvent {
     var id: String
     var date: Date
-    var bolusPattern: BolusPattern
+    var bolusPattern: BolusPattern?
     var carbs: Int
     var insulin: Float
     var beforeSugar: BloodSugar?

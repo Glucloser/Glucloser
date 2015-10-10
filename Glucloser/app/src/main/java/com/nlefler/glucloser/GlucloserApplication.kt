@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Debug
 import android.support.multidex.MultiDex
 import android.util.Log
+import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.models.Food
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.models.Snack
@@ -46,6 +47,8 @@ public class GlucloserApplication : Application() {
         Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
 
         this.subscribeToPush()
+
+        BolusPatternFactory.CurrentBolusPattern()
     }
 
     private fun subscribeToPush() {

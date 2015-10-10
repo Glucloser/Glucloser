@@ -10,7 +10,7 @@ import io.realm.annotations.RealmClass
  * Created by nathan on 9/19/15.
  */
 @RealmClass
-public open data class BolusPattern : RealmObject() {
+public open class BolusPattern : RealmObject() {
     public open var rateCount: Int? = null
     public open var rates = RealmList<BolusRate>()
 

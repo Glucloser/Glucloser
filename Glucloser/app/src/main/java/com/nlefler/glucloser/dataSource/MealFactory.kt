@@ -82,7 +82,9 @@ public class MealFactory {
                 parcelable.bloodSugarParcelable = BloodSugarFactory.ParcelableFromBloodSugar(meal.beforeSugar!!)
             }
             parcelable.date = meal.date
-            parcelable.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(meal.bolusPattern)
+            if (meal.bolusPattern != null) {
+                parcelable.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(meal.bolusPattern!!)
+            }
 
             return parcelable
         }
@@ -204,7 +206,9 @@ public class MealFactory {
                 parseObject.put(Meal.InsulinFieldName, meal.insulin)
                 parseObject.put(Meal.MealDateFieldName, meal.date)
                 parseObject.put(Meal.FoodListFieldName, foodObjects)
-                parseObject.put(Meal.BolusPatternFieldName, BolusPatternFactory.ParseObjectFromBolusPattern(meal.bolusPattern))
+                if (meal.bolusPattern != null) {
+                    parseObject.put(Meal.BolusPatternFieldName, BolusPatternFactory.ParseObjectFromBolusPattern(meal.bolusPattern!!))
+                }
                 action.call(parseObject, created)
             })
         }

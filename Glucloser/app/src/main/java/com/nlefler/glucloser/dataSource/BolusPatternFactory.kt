@@ -56,8 +56,17 @@ public class BolusPatternFactory {
             return query.getFirstInBackground().continueWithTask({ task ->
                 // Get all rates
                 task.getResult().fetchIfNeededInBackground<ParseObject>()
-            }).continueWith({ task ->
-                BolusPatternFromParseObject(task.getResult())
+            }).continueWithTask({ task ->
+                val parseObj = task.getResult()
+
+                val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
+                val rateParseObjPromises = ArrayList<Task<ParseObject>>();
+                for (rateParseObj in rateParseObjs) {
+                    rateParseObjPromises.add(rateParseObj.fetchIfNeededInBackground())
+                }
+                Task.whenAll(rateParseObjPromises).continueWith({ task ->
+                    BolusPatternFromParseObject(parseObj)
+                })
             })
         }
 
