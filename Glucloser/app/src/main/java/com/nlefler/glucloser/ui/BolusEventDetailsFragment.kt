@@ -23,9 +23,7 @@ import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
-
-import java.util.ArrayList
-import java.util.Date
+import java.util.*
 
 /**
  * Created by Nathan Lefler on 12/24/14.
@@ -109,6 +107,7 @@ public class BolusEventDetailsFragment : Fragment() {
         }
 
         val foodParcelable = FoodParcelable()
+        foodParcelable.foodId = UUID.randomUUID().toString()
 
         val foodNameString = this.addFoodNameField!!.getText().toString()
         if (!foodNameString.isEmpty()) {
