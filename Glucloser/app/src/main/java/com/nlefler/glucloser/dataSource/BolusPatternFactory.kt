@@ -47,7 +47,7 @@ public class BolusPatternFactory {
             return prs
         }
 
-        public fun CurrentBolusPattern(): Task<BolusPattern?> {
+        public fun FetchCurrentBolusPattern(): Task<BolusPattern?> {
             val query = ParseQuery<ParseObject>(BolusPattern.ParseClassName)
             query.orderByDescending("updatedAt")
             query.setLimit(1)

@@ -47,7 +47,7 @@ public class LogBolusEventAction : Parcelable {
         }
 
         val sharedContext = GlucloserApplication.SharedApplication().getApplicationContext()
-        val realm = Realm.getInstance(sharedContext)
+        val realm = Realm.getDefaultInstance()
 
         val beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(bolusEventParcelable?.bloodSugarParcelable!!, sharedContext)
 

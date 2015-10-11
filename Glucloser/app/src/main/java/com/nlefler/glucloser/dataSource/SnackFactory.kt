@@ -25,7 +25,7 @@ public class SnackFactory {
         private val LOG_TAG = "SnackFactory"
 
         public fun Snack(ctx: Context): Snack {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val snack = SnackForSnackId("", realm, true)!!
@@ -44,7 +44,7 @@ public class SnackFactory {
                 action.call(null)
                 return
             }
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
             realm.beginTransaction()
             val snack = SnackForSnackId(id, realm, false)
             if (snack != null) {
@@ -88,7 +88,7 @@ public class SnackFactory {
         }
 
         public fun SnackFromParcelable(parcelable: SnackParcelable, ctx: Context): Snack {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             var beforeSugar: BloodSugar? = null
             if (parcelable.bloodSugarParcelable != null) {

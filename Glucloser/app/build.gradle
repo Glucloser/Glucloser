@@ -75,7 +75,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Location
-     compile 'pl.charmas.android:android-reactive-location:0.6@aar'
+     compile 'pl.charmas.android:android-reactive-location:0.8@aar'
 
     // UI
     compile 'com.getbase:floatingactionbutton:1.9.0'

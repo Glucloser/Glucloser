@@ -25,7 +25,7 @@ public class BloodSugarFactory {
         private val LOG_TAG = "BloodSugarFactory"
 
         public fun BloodSugar(ctx: Context): BloodSugar {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val sugar = BloodSugarForBloodSugarId(null, realm, true)!!
@@ -35,7 +35,7 @@ public class BloodSugarFactory {
         }
 
         public fun BloodSugarFromParcelable(parcelable: BloodSugarParcelable, ctx: Context): BloodSugar {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val sugar = BloodSugarForBloodSugarId(parcelable.id, realm, true)!!

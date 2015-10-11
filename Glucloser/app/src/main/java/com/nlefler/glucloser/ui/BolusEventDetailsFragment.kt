@@ -18,6 +18,8 @@ import android.widget.TextView
 
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.activities.LogBolusEventActivity
+import com.nlefler.glucloser.dataSource.BolusPatternFactory
+import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
@@ -46,12 +48,19 @@ public class BolusEventDetailsFragment : Fragment() {
     private var foods: MutableList<Food> = ArrayList<Food>()
 
     private var totalCarbs = 0
+    private var totalInsulin = 0f
+
+    private var bolusPattern: BolusPattern? = null
 
     override fun onCreate(bundle: Bundle?) {
         super<Fragment>.onCreate(bundle)
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
+
+        BolusPatternFactory.FetchCurrentBolusPattern().onSuccess { task ->
+            bolusPattern = task.result
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -95,7 +104,7 @@ public class BolusEventDetailsFragment : Fragment() {
     }
 
     fun addFoodFromFields() {
-        if (getActivity() !is FoodDetailDelegate) {
+        if (activity !is FoodDetailDelegate) {
             return
         }
 
@@ -176,6 +185,15 @@ public class BolusEventDetailsFragment : Fragment() {
     private fun addToTotalCarbs(carbValue: Int) {
         this.totalCarbs += carbValue
         this.carbValueField!!.setText(java.lang.String.valueOf(this.totalCarbs))
+        updateInsulinWithCarbs(carbValue)
+    }
+
+    private fun updateInsulinWithCarbs(carbValue: Int) {
+        if (this.bolusPattern == null) {
+            return;
+        }
+        this.totalInsulin += BolusPatternUtils.InsulinForCarbsAtCurrentTime(this.bolusPattern!!, carbValue)
+        this.insulinValueField!!.setText(java.lang.String.valueOf(this.totalInsulin))
     }
 
     companion object {

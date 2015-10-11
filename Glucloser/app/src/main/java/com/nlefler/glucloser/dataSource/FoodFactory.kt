@@ -20,7 +20,7 @@ public class FoodFactory {
         private val LOG_TAG = "BloodSugarFactory"
 
         public fun Food(ctx: Context): Food {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val food = FoodForFoodId("", realm, true)!!
@@ -30,7 +30,7 @@ public class FoodFactory {
         }
 
         public fun FoodFromParcelable(parcelable: FoodParcelable, ctx: Context): Food {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val food = FoodForFoodId(parcelable.foodId, realm, true)!!

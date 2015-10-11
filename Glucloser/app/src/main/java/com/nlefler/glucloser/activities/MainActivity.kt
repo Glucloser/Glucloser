@@ -1,9 +1,13 @@
 package com.nlefler.glucloser.activities
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
@@ -58,6 +62,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         getSupportActionBar().setHomeButtonEnabled(true)
 
         ParseAnalytics.trackAppOpenedInBackground(getIntent())
+
+        requestLocationPermission()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -125,6 +131,60 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
     }
 
+    private fun requestLocationPermission() {
+                if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+    }
+
+    @Override
+    public fun onRequestPermissionsResult(requestCode: Int,
+            permissions: Array<String>, grantResults: Array<Int>) {
+//        when (requestCode) {
+//            is MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    // permission was granted, yay! Do the
+//                    // contacts-related task you need to do.
+//
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//
+//            // other 'case' lines to check for other
+//            // permissions this app might request
+//        }
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -176,7 +236,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val realm = Realm.getInstance(getActivity())
+            val realm = Realm.getDefaultInstance()
             val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, false)
             val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, false)
 
@@ -204,7 +264,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
     companion object {
         private val LOG_TAG = "MainActivity"
-        protected val LogBolusEventActivityIntentCode: Int = 4136;
+        private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 22
+        protected val LogBolusEventActivityIntentCode: Int = 4136
         protected val HistoryFragmentId: String = "HistoryFragmentId"
     }
 }

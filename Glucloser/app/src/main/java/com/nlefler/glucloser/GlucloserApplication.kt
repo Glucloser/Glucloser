@@ -2,8 +2,11 @@ package com.nlefler.glucloser
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Debug
 import android.support.multidex.MultiDex
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.models.Food
@@ -18,6 +21,7 @@ import com.parse.ParsePush
 import com.parse.SaveCallback
 import com.squareup.leakcanary.LeakCanary
 import io.realm.Realm
+import io.realm.RealmConfiguration
 import io.realm.RealmMigration
 import io.realm.internal.ColumnType
 import io.realm.internal.Table
@@ -48,8 +52,22 @@ public class GlucloserApplication : Application() {
 
         this.subscribeToPush()
 
-        BolusPatternFactory.CurrentBolusPattern()
+        val realmConfig = RealmConfiguration.Builder(this)
+        .name("myrealm.realm")
+//        .encryptionKey(getKey())
+        .schemaVersion(1)
+//        .migration(new MyMigration())
+        .build();
+
+        Realm.setDefaultConfiguration(realmConfig);
+
+
+        // TODO: Don't do this here
+        // Prefetch for cache
+        BolusPatternFactory.FetchCurrentBolusPattern()
     }
+
+
 
     private fun subscribeToPush() {
         ParsePush.subscribeInBackground("", {e: ParseException? ->

@@ -30,7 +30,7 @@ public class MealFactory {
         private val LOG_TAG = "MealFactory"
 
         public fun Meal(ctx: Context): Meal {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val meal = MealForMealId("", realm, true)!!
@@ -49,7 +49,7 @@ public class MealFactory {
                 action.call(null)
                 return
             }
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
             realm.beginTransaction()
             val meal = MealForMealId(id, realm, false)
             if (meal != null) {
@@ -90,7 +90,7 @@ public class MealFactory {
         }
 
         public fun MealFromParcelable(parcelable: MealParcelable, ctx: Context): Meal {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             var place: Place? = null
             if (parcelable.placeParcelable != null) {

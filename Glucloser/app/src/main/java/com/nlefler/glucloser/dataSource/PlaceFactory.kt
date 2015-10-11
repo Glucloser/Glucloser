@@ -39,7 +39,7 @@ public class PlaceFactory {
                 return
             }
 
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
             val place = PlaceForFoursquareId(id, realm, false)
             if (place != null) {
                 action.call(place)
@@ -79,7 +79,7 @@ public class PlaceFactory {
                 return null
             }
 
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val place = PlaceForFoursquareId(venue.id, realm, true)
@@ -103,7 +103,7 @@ public class PlaceFactory {
         }
 
         public fun PlaceFromParcelable(parcelable: PlaceParcelable, ctx: Context): Place {
-            val realm = Realm.getInstance(ctx)
+            val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()
             val place = PlaceForFoursquareId(parcelable.foursquareId, realm, true)
