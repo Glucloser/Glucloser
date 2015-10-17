@@ -1,5 +1,6 @@
 var bolus = require('cloud/bolus.js');
 var aggregateJobHelper = require('cloud/aggregate_job_helper.js');
+var uuid = require('cloud/uuid.js');
 var _ = require('underscore');
 
 exports.RegisterAggregateBolusRates = function() {
@@ -14,6 +15,7 @@ exports.RegisterAggregateBolusRates = function() {
   config.ChangeEventDeserializeFun = bolus.DeserializeBolusChangeEvent;
   config.ChangeEventLogFormatFun = bolus.LogFormatBolusChangeEvent;
   config.ChangeEventSaveFun = function (parseObj, changeObj) {
+    parseObj.set('NLID', uuid.v4());
     parseObj.set('rate', changeObj.Rate);
     parseObj.set('ordinal', changeObj.ProfileIndex);
     parseObj.set('startTime', changeObj.StartTime);
@@ -23,6 +25,7 @@ exports.RegisterAggregateBolusRates = function() {
   config.PatternChangeEventDeserializeFun = bolus.DeserializeBolusPatternChangeEvent;
   config.PatternChangeEventLogFormatFun = bolus.LogFormatBolusPatternChangeEvent;
   config.PatternChangeEventSaveFun = function (parseObj, changeObj) {
+    parseObj.set('NLID', uuid.v4());
     parseObj.set('rateCount', changeObj.NumRatios);
     parseObj.set('timestamp', changeObj.Timestamp);
 
