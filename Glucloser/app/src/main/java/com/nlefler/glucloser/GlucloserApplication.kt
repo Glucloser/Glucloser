@@ -8,17 +8,13 @@ import android.support.multidex.MultiDex
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import com.nlefler.glucloser.actions.StartupAction
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.models.Food
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.models.Snack
+import com.parse.*
 
-import com.parse.Parse
-import com.parse.ParseAnalytics
-import com.parse.ParseCrashReporting
-import com.parse.ParseException
-import com.parse.ParsePush
-import com.parse.SaveCallback
 import com.squareup.leakcanary.LeakCanary
 import io.realm.Realm
 import io.realm.RealmConfiguration
@@ -49,6 +45,7 @@ public class GlucloserApplication : Application() {
         }
 
         Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
+        ParseInstallation.getCurrentInstallation().saveInBackground()
 
         this.subscribeToPush()
 
@@ -61,10 +58,8 @@ public class GlucloserApplication : Application() {
 
         Realm.setDefaultConfiguration(realmConfig);
 
-
-        // TODO: Don't do this here
-        // Prefetch for cache
-        BolusPatternFactory.FetchCurrentBolusPattern()
+        var startupAction: StartupAction? = StartupAction()
+        startupAction?.run()?.continueWith { startupAction = null }
     }
 
 
@@ -81,6 +76,14 @@ public class GlucloserApplication : Application() {
         ParsePush.subscribeInBackground("foursquareCheckin", {e: ParseException? ->
             if (e == null) {
                 Log.d("com.parse.push", "successfully subscribed to the checkin channel.")
+            } else {
+                Log.e("com.parse.push", "failed to subscribe for push", e)
+            }
+        })
+
+        ParsePush.subscribeInBackground("comcon", {e: ParseException? ->
+            if (e == null) {
+                Log.d("com.parse.push", "successfully subscribed to the comcon channel.")
             } else {
                 Log.e("com.parse.push", "failed to subscribe for push", e)
             }

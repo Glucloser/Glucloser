@@ -159,6 +159,13 @@ public class BolusEventDetailsFragment : Fragment() {
         }
         this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
 
+        if (this.bolusPattern != null) {
+            this.bolusEventParcelable!!.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(this.bolusPattern!!)
+        }
+        else {
+            this.bolusEventParcelable!!.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(BolusPatternFactory.EmptyPattern())
+        }
+
         (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)
     }
 
@@ -192,7 +199,9 @@ public class BolusEventDetailsFragment : Fragment() {
             return;
         }
         this.totalInsulin += BolusPatternUtils.InsulinForCarbsAtCurrentTime(this.bolusPattern!!, carbValue)
-        this.insulinValueField!!.setText(java.lang.String.valueOf(this.totalInsulin))
+        val frmtr = Formatter()
+        frmtr.format("%.2f", this.totalInsulin);
+        this.insulinValueField!!.setText(frmtr.out().toString())
     }
 
     companion object {

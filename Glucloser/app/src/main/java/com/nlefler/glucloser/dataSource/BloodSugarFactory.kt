@@ -34,7 +34,7 @@ public class BloodSugarFactory {
             return sugar
         }
 
-        public fun BloodSugarFromParcelable(parcelable: BloodSugarParcelable, ctx: Context): BloodSugar {
+        public fun BloodSugarFromParcelable(parcelable: BloodSugarParcelable): BloodSugar {
             val realm = Realm.getDefaultInstance()
 
             realm.beginTransaction()

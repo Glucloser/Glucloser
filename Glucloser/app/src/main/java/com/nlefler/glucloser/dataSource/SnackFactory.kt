@@ -92,7 +92,7 @@ public class SnackFactory {
 
             var beforeSugar: BloodSugar? = null
             if (parcelable.bloodSugarParcelable != null) {
-                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!, ctx)
+                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
             }
 
             realm.beginTransaction()

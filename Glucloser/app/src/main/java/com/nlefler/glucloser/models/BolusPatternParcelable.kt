@@ -8,15 +8,18 @@ import java.util.*
  * Created by nathan on 9/20/15.
  */
 public data class BolusPatternParcelable(): Parcelable {
+    public var id: String? = null
     public var rateCount: Int? = null
     public var rates: MutableList<BolusRateParcelable> = ArrayList<BolusRateParcelable>()
 
     private constructor(parcel: Parcel) : this() {
+        id = parcel.readString()
         rateCount = parcel.readInt()
         parcel.readTypedList<BolusRateParcelable>(rates, BolusRateParcelable.CREATOR)
     }
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
+        dest?.writeString(id ?: "")
         dest?.writeInt(rateCount ?: 0)
         dest?.writeTypedList<BolusRateParcelable>(rates)
     }

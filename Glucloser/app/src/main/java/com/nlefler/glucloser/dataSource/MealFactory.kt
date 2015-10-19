@@ -99,8 +99,10 @@ public class MealFactory {
 
             var beforeSugar: BloodSugar? = null
             if (parcelable.bloodSugarParcelable != null) {
-                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!, ctx)
+                beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
             }
+
+            val bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
 
             realm.beginTransaction()
             val meal = MealForMealId(parcelable.id, realm, true)!!
@@ -110,8 +112,8 @@ public class MealFactory {
             meal.beforeSugar = beforeSugar
             meal.isCorrection = parcelable.isCorrection
             meal.date = parcelable.date
-            if (parcelable.bolusPatternParcelable != null) {
-                meal.bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
+            if (bolusPattern != null) {
+                meal.bolusPattern = bolusPattern
             }
             realm.commitTransaction()
 
