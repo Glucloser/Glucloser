@@ -11,7 +11,4 @@ import org.junit.Before
  */
 public class BolusPatternFactoryTests {
 
-    Test public fun testA() {
-        assert(false)
-    }
 }

@@ -25,7 +25,7 @@ public open class Snack : RealmObject(), BolusEvent {
         public var ParseClassName: String = "Snack"
 
         @Ignore
-        public var SnackIdFieldName: String = "snackId"
+        public var SnackIdFieldName: String = "id"
 
         @Ignore
         public var SnackDateFieldName: String = "date"

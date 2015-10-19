@@ -8,6 +8,7 @@ import com.nlefler.glucloser.models.BolusPatternParcelable
 import com.nlefler.glucloser.models.BolusRate
 import com.parse.ParseObject
 import com.parse.ParseQuery
+import io.realm.Realm
 import io.realm.RealmList
 import java.util.*
 
@@ -16,14 +17,36 @@ import java.util.*
  */
 public class BolusPatternFactory {
     companion object {
-        public fun BolusPatternFromParseObject(parseObj: ParseObject): BolusPattern {
-            val pattern = BolusPattern()
-            pattern.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
+        public fun EmptyPattern(): BolusPattern {
+            val rate = BolusRateFactory.EmptyRate()
+            Realm.getDefaultInstance().beginTransaction()
+            val pattern = BolusPatternForId("__glucloser_special_empty_bolus_pattern", Realm.getDefaultInstance(), true)
+            pattern?.rateCount = 1
+            pattern?.rates?.add(rate)
+            Realm.getDefaultInstance().commitTransaction()
 
+            return pattern!!
+        }
+
+        public fun BolusPatternFromParseObject(parseObj: ParseObject): BolusPattern? {
+            val patternId = parseObj.getString(BolusPattern.IdFieldName) ?: return null
+            var pattern: BolusPattern?
+
+            val rates = ArrayList<BolusRate?>()
             val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
             for (rateParseObj in rateParseObjs) {
-               pattern.rates.add(BolusRateFactory.BolusRateFromParseObject(rateParseObj))
+                val rate = BolusRateFactory.BolusRateFromParseObject(rateParseObj)
+                if (rate != null) {
+                    rates.add(rate)
+                }
             }
+
+            Realm.getDefaultInstance().beginTransaction()
+            pattern = BolusPatternForId(patternId, Realm.getDefaultInstance(), true)
+            pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
+
+            pattern?.rates?.addAll(rates)
+            Realm.getDefaultInstance().commitTransaction()
 
             return pattern
         }
@@ -47,11 +70,24 @@ public class BolusPatternFactory {
             return prs
         }
 
+        public fun UpdateCurrentBolusPatternCache(): Task<BolusPattern?> {
+            return FetchCurrentBolusPatternFromNetwork(true)
+        }
+
         public fun FetchCurrentBolusPattern(): Task<BolusPattern?> {
+            return FetchCurrentBolusPatternFromNetwork(false)
+        }
+
+        private fun FetchCurrentBolusPatternFromNetwork(fromNetwork: Boolean): Task<BolusPattern?> {
             val query = ParseQuery<ParseObject>(BolusPattern.ParseClassName)
             query.orderByDescending("updatedAt")
             query.setLimit(1)
-            query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK)
+            if (fromNetwork) {
+                query.setCachePolicy(ParseQuery.CachePolicy.NETWORK_ONLY)
+            }
+            else {
+                query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK)
+            }
 
             return query.getFirstInBackground().continueWithTask({ task ->
                 // Get all rates
@@ -71,14 +107,40 @@ public class BolusPatternFactory {
         }
 
         public fun BolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
-            val pattern = BolusPattern()
-            pattern.rateCount = parcelable.rateCount
+            val id = parcelable.id ?: UUID.randomUUID().toString()
+            val rates = ArrayList<BolusRate>()
 
             for (rateParcelable in parcelable.rates) {
-                pattern.rates.add(BolusRateFactory.BolusRateFromParcelable(rateParcelable))
+                rates.add(BolusRateFactory.BolusRateFromParcelable(rateParcelable))
             }
 
+            Realm.getDefaultInstance().beginTransaction()
+            val pattern = BolusPatternForId(id, Realm.getDefaultInstance(), true)
+            pattern!!.rateCount = parcelable.rateCount
+            pattern.rates.addAll(rates)
+
+            Realm.getDefaultInstance().commitTransaction()
+
             return pattern
+        }
+
+        private fun BolusPatternForId(id: String, realm: Realm, create: Boolean): BolusPattern? {
+            if (create && id.length() == 0) {
+                val rate = realm.createObject<BolusPattern>(BolusPattern::class.java)
+                return rate
+            }
+
+            val query = realm.where<BolusPattern>(BolusPattern::class.java)
+
+            query.equalTo(BolusPattern.IdFieldName, id)
+            var result: BolusPattern? = query.findFirst()
+
+            if (result == null && create) {
+                result = realm.createObject<BolusPattern>(BolusPattern::class.java)
+                result!!.NLID = id
+            }
+
+            return result
         }
     }
 }

@@ -26,7 +26,7 @@ public open class Meal : RealmObject(), BolusEvent, HasPlace {
         public val ParseClassName: String = "Meal"
 
         @Ignore
-        public val MealIdFieldName: String = "mealId"
+        public val MealIdFieldName: String = "id"
 
         @Ignore
         public val MealDateFieldName: String = "date"

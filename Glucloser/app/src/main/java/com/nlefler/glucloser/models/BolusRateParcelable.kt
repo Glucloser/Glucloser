@@ -7,11 +7,14 @@ import android.os.Parcelable
  * Created by nathan on 9/20/15.
  */
 public data class BolusRateParcelable(): Parcelable {
+    public var id: String? = null
     public var ordinal: Int? = null
     public var rate: Int? = null
     public var startTime: Int? = null
 
     private constructor(parcel: Parcel) : this() {
+        id = parcel.readString()
+
         ordinal = parcel.readInt()
         ordinal = if (ordinal?:-1 > 0) ordinal else null
 
@@ -23,6 +26,7 @@ public data class BolusRateParcelable(): Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
+        dest?.writeString(id ?: "")
         dest?.writeInt(ordinal ?: -1)
         dest?.writeInt(rate ?: -1)
         dest?.writeInt(startTime ?: -1)
