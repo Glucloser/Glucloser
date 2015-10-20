@@ -8,88 +8,89 @@ import bolts.Task
 import com.nlefler.glucloser.models.BolusRateParcelable
 import io.realm.Realm
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Created by nathan on 9/1/15.
  */
 public class BolusRateFactory {
-    companion object {
-        public fun EmptyRate(): BolusRate {
-            var rate: BolusRate? = null
-            Realm.getDefaultInstance().beginTransaction()
-            rate = BolusRateForId("__glucloser_special_empty_bolus_rate", Realm.getDefaultInstance(), true)
-            rate?.ordinal = 0
-            rate?.rate = 0
-            rate?.startTime = 0
-            Realm.getDefaultInstance().commitTransaction()
+    @Inject lateinit var realm: Realm
 
-            return rate!!
+    public fun emptyRate(): BolusRate {
+        var rate: BolusRate?
+        realm.beginTransaction()
+        rate = bolusRateForId("__glucloser_special_empty_bolus_rate", true)
+        rate?.ordinal = 0
+        rate?.rate = 0
+        rate?.startTime = 0
+        realm.commitTransaction()
+
+        return rate!!
+    }
+
+    public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
+        var rate: BolusRate?
+        realm.beginTransaction()
+        rate = bolusRateForId("", true)
+        rate?.ordinal = parcelable.ordinal
+        rate?.rate = parcelable.rate
+        rate?.startTime = parcelable.startTime
+        realm.commitTransaction()
+
+        return rate!!
+    }
+
+    public fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
+        val parcel = BolusRateParcelable()
+        parcel.ordinal = rate.ordinal
+        parcel.rate = rate.rate
+        parcel.startTime = rate.startTime
+
+        return parcel
+    }
+
+    public fun bolusRateFromParseObject(parseObj: ParseObject): BolusRate? {
+        if (!parseObj.getClassName().equals(BolusRate.ParseClassName)) {
+            return null;
         }
+        val patternId = parseObj.getString(BolusRate.IdFieldName) ?: return null
 
-        public fun BolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
-            var rate: BolusRate? = null
-            Realm.getDefaultInstance().beginTransaction()
-            rate = BolusRateForId("", Realm.getDefaultInstance(), true)
-            rate?.ordinal = parcelable.ordinal
-            rate?.rate = parcelable.rate
-            rate?.startTime = parcelable.startTime
-            Realm.getDefaultInstance().commitTransaction()
+        var rate: BolusRate?
+        realm.beginTransaction()
+        rate = bolusRateForId(patternId, true)
+        rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
+        rate?.rate = parseObj.getInt(BolusRate.RateFieldName)
+        rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
+        realm.commitTransaction()
 
-            return rate!!
-        }
+        return rate
+    }
 
-        public fun ParcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
-            val parcel = BolusRateParcelable()
-            parcel.ordinal = rate.ordinal
-            parcel.rate = rate.rate
-            parcel.startTime = rate.startTime
+    public fun parseObjectFromBolusRate(rate: BolusRate): ParseObject {
+        val prs = ParseObject.create(BolusRate.ParseClassName)
+        prs.put(BolusRate.OridnalFieldName, rate.ordinal)
+        prs.put(BolusRate.RateFieldName, rate.rate)
+        prs.put(BolusRate.StartTimeFieldName, rate.startTime)
 
-            return parcel
-        }
+        return prs
+    }
 
-        public fun BolusRateFromParseObject(parseObj: ParseObject): BolusRate? {
-            if (!parseObj.getClassName().equals(BolusRate.ParseClassName)) {
-                return null;
-            }
-            val patternId = parseObj.getString(BolusRate.IdFieldName) ?: return null
-
-            var rate: BolusRate? = null
-            Realm.getDefaultInstance().beginTransaction()
-            rate = BolusRateForId(patternId, Realm.getDefaultInstance(), true)
-            rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
-            rate?.rate = parseObj.getInt(BolusRate.RateFieldName)
-            rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
-            Realm.getDefaultInstance().commitTransaction()
-
+    private fun bolusRateForId(id: String, create: Boolean): BolusRate? {
+        if (create && id.length() == 0) {
+            val rate = realm.createObject<BolusRate>(BolusRate::class.java)
             return rate
         }
 
-        public fun ParseObjectFromBolusRate(rate: BolusRate): ParseObject {
-            val prs = ParseObject.create(BolusRate.ParseClassName)
-            prs.put(BolusRate.OridnalFieldName, rate.ordinal)
-            prs.put(BolusRate.RateFieldName, rate.rate)
-            prs.put(BolusRate.StartTimeFieldName, rate.startTime)
+        val query = realm.where<BolusRate>(BolusRate::class.java)
 
-            return prs
+        query.equalTo(BolusRate.IdFieldName, id)
+        var result: BolusRate? = query.findFirst()
+
+        if (result == null && create) {
+            result = realm.createObject<BolusRate>(BolusRate::class.java)
+            result!!.NLID = id
         }
 
-        private fun BolusRateForId(id: String, realm: Realm, create: Boolean): BolusRate? {
-            if (create && id.length() == 0) {
-                val rate = realm.createObject<BolusRate>(BolusRate::class.java)
-                return rate
-            }
-
-            val query = realm.where<BolusRate>(BolusRate::class.java)
-
-            query.equalTo(BolusRate.IdFieldName, id)
-            var result: BolusRate? = query.findFirst()
-
-            if (result == null && create) {
-                result = realm.createObject<BolusRate>(BolusRate::class.java)
-                result!!.NLID = id
-            }
-
-            return result
-        }
+        return result
     }
 }

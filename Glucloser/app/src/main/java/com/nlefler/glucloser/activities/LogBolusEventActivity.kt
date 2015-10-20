@@ -12,8 +12,11 @@ import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.ui.BolusEventDetailsFragment
 import com.nlefler.glucloser.ui.PlaceSelectionFragment
+import javax.inject.Inject
 
 public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
+
+    @Inject lateinit var placeFactory: PlaceFactory
 
     private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
@@ -60,7 +63,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
                 val intent = getIntent()
                 val extras = intent.getExtras()
                 if (extras != null) {
-                    val placeParcelable = PlaceFactory.PlaceParcelableFromCheckInData(extras)
+                    val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
                     if (placeParcelable != null) {
                         this.placeSelected(placeParcelable)
                     }

@@ -6,7 +6,7 @@ import android.os.Parcelable
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public data class PlaceParcelable() : Parcelable {
+public class PlaceParcelable() : Parcelable {
     public var name: String? = null
     public var foursquareId: String? = null
     public var latitude: Float = 0.toFloat()

@@ -11,6 +11,7 @@ import com.nlefler.glucloser.R
 import com.nlefler.glucloser.models.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/20/14.
@@ -18,6 +19,8 @@ import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionDelegate, private var venues: List<NLFoursquareVenue>?) : RecyclerView.Adapter<PlaceSelectionRecyclerAdapter.ViewHolder>() {
 
     public class ViewHolder(itemView: View, delegate: PlaceSelectionDelegate?) : RecyclerView.ViewHolder(itemView) {
+        @Inject lateinit var placeFactory: PlaceFactory
+
         internal var venue: NLFoursquareVenue
         internal var placeName: TextView
         internal var placeDistance: TextView
@@ -40,7 +43,7 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
         }
 
         private fun getPlaceParcelable(): PlaceParcelable? {
-            return PlaceFactory.ParcelableFromFoursquareVenue(this.venue)
+            return placeFactory.parcelableFromFoursquareVenue(this.venue)
         }
     }
 
