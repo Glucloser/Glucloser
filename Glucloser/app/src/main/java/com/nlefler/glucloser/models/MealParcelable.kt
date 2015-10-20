@@ -7,7 +7,7 @@ import java.util.*
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public data class MealParcelable() : Parcelable, BolusEventParcelable {
+public class MealParcelable() : Parcelable, BolusEventParcelable {
     public var placeParcelable: PlaceParcelable? = null
 
     override var id: String = UUID.randomUUID().toString()

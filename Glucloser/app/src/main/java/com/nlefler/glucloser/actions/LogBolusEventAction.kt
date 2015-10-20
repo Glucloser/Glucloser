@@ -15,11 +15,19 @@ import java.util.Date
 import io.realm.Realm
 import io.realm.RealmList
 import java.util.ArrayList
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
 public class LogBolusEventAction : Parcelable {
+    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
+    @Inject lateinit var mealFactory: MealFactory
+    @Inject lateinit var bloodSugarFactory: BloodSugarFactory
+    @Inject lateinit var foodFactory: FoodFactory
+    @Inject lateinit var placeFactory: PlaceFactory
+    @Inject lateinit var snackFactory: SnackFactory
+    @Inject lateinit var realm: Realm
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -46,30 +54,27 @@ public class LogBolusEventAction : Parcelable {
             return
         }
 
-        val sharedContext = GlucloserApplication.SharedApplication().getApplicationContext()
-        val realm = Realm.getDefaultInstance()
-
         var beforeSugar: BloodSugar? = null
         var beforeSugarParcelable = bolusEventParcelable?.bloodSugarParcelable;
         if (beforeSugarParcelable != null) {
-            beforeSugar = BloodSugarFactory.BloodSugarFromParcelable(beforeSugarParcelable)
+            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(beforeSugarParcelable)
         }
 
         val foodList = RealmList<Food>()
         for (foodParcelable in this.foodParcelableList) {
-            val food = FoodFactory.FoodFromParcelable(foodParcelable, sharedContext)
+            val food = foodFactory.foodFromParcelable(foodParcelable)
             foodList.add(food)
         }
 
-        val bolusPattern = BolusPatternFactory.BolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
+        val bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
 
         when (this.bolusEventParcelable) {
             is MealParcelable -> {
-                val meal = MealFactory.MealFromParcelable(this.bolusEventParcelable as MealParcelable, sharedContext)
+                val meal = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
 
                 var place: Place? = null
                 if (this.placeParcelable != null) {
-                    place = PlaceFactory.PlaceFromParcelable(this.placeParcelable!!, sharedContext)
+                    place = placeFactory.placeFromParcelable(this.placeParcelable!!)
                 }
                 realm.beginTransaction()
                 meal.foods = foodList
@@ -85,7 +90,7 @@ public class LogBolusEventAction : Parcelable {
                 ParseUploader.SharedInstance().uploadBolusEvent(meal)
             }
             is SnackParcelable -> {
-                val snack = SnackFactory.SnackFromParcelable(this.bolusEventParcelable as SnackParcelable, sharedContext)
+                val snack = snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
                 realm.beginTransaction()
 
                 snack.foods = foodList

@@ -6,7 +6,7 @@ import android.os.Parcelable
 /**
  * Created by nathan on 9/20/15.
  */
-public data class BolusRateParcelable(): Parcelable {
+public class BolusRateParcelable(): Parcelable {
     public var id: String? = null
     public var ordinal: Int? = null
     public var rate: Int? = null

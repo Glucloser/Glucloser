@@ -24,11 +24,14 @@ import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
 public class BolusEventDetailsFragment : Fragment() {
+    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
+    @Inject lateinit var foodFactory: FoodFactory
 
     private var placeName: String? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -56,7 +59,7 @@ public class BolusEventDetailsFragment : Fragment() {
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
-        BolusPatternFactory.FetchCurrentBolusPattern().onSuccess { task ->
+        bolusPatternFactory.fetchCurrentBolusPattern().onSuccess { task ->
             bolusPattern = task.result
         }
     }
@@ -127,7 +130,7 @@ public class BolusEventDetailsFragment : Fragment() {
             foodParcelable.setCarbs(0)
         }
 
-        this.foods.add(FoodFactory.FoodFromParcelable(foodParcelable, getActivity()))
+        this.foods.add(foodFactory.foodFromParcelable(foodParcelable))
         this.foodListAdapter?.setFoods(this.foods)
         (getActivity() as FoodDetailDelegate).foodDetailUpdated(foodParcelable)
 
@@ -160,10 +163,10 @@ public class BolusEventDetailsFragment : Fragment() {
         this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
 
         if (this.bolusPattern != null) {
-            this.bolusEventParcelable!!.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(this.bolusPattern!!)
+            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(this.bolusPattern!!)
         }
         else {
-            this.bolusEventParcelable!!.bolusPatternParcelable = BolusPatternFactory.ParcelableFromBolusPattern(BolusPatternFactory.EmptyPattern())
+            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(bolusPatternFactory.emptyPattern())
         }
 
         (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)

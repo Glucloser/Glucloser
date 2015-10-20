@@ -14,6 +14,7 @@ import com.nlefler.glucloser.R
 import com.nlefler.glucloser.models.BolusEvent
 import com.nlefler.glucloser.models.BolusEventParcelable
 import com.nlefler.glucloser.models.Meal
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/25/14.
@@ -21,6 +22,7 @@ import com.nlefler.glucloser.models.Meal
 public class MealHistoryRecyclerAdapter(private var activity: Activity,
                                         private var bolusEvents: List<BolusEvent>?) :
         RecyclerView.Adapter<MealHistoryRecyclerAdapter.ViewHolder>() {
+    @Inject lateinit var bolusEventFactory: BolusEventFactory
 
     public inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         internal var bolusEvent: BolusEvent? = null
@@ -39,7 +41,7 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
                     if (bolusEvent == null) {
                         return
                     }
-                    val bolusEventParcelable = BolusEventFactory.ParcelableFromBolusEvent(bolusEvent!!)
+                    val bolusEventParcelable = bolusEventFactory.parcelableFromBolusEvent(bolusEvent!!)
                     if (bolusEventParcelable == null) {
                         return
                     }

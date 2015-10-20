@@ -7,7 +7,7 @@ import java.util.*
 /**
  * Created by nathan on 9/20/15.
  */
-public data class BolusPatternParcelable(): Parcelable {
+public class BolusPatternParcelable(): Parcelable {
     public var id: String? = null
     public var rateCount: Int? = null
     public var rates: MutableList<BolusRateParcelable> = ArrayList<BolusRateParcelable>()
