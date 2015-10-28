@@ -22,11 +22,11 @@ import javax.inject.Inject
 public class ParseUploader private constructor() {
     private val inProgressUploads: MutableMap<String, Observable<ParseObject>>
 
-    @Inject lateinit var mealFactory: MealFactory
-    @Inject lateinit var snackFactory: SnackFactory
-    @Inject lateinit var bloodSugarFactory: BloodSugarFactory
-    @Inject lateinit var foodFactory: FoodFactory
-    @Inject lateinit var placeFactory: PlaceFactory
+    @Inject var mealFactory: MealFactory? = null
+    @Inject var snackFactory: SnackFactory? = null
+    @Inject var bloodSugarFactory: BloodSugarFactory? = null
+    @Inject var foodFactory: FoodFactory? = null
+    @Inject var placeFactory: PlaceFactory? = null
 
     init {
         inProgressUploads = HashMap<String, Observable<ParseObject>>()
@@ -136,7 +136,7 @@ public class ParseUploader private constructor() {
                 override fun call(subscriber: Subscriber<in ParseObject>) {
                     when (toUpload) {
                         is Place -> {
-                            placeFactory.parseObjectFromPlace(toUpload, createParseObjectReadyAction(subscriber))
+                            placeFactory?.parseObjectFromPlace(toUpload, createParseObjectReadyAction(subscriber))
                         }
                         is Meal -> {
                             if (args.size() < 3) {
@@ -144,14 +144,14 @@ public class ParseUploader private constructor() {
                                 return
                             }
                             @Suppress("UNCHECKED_CAST")
-                            mealFactory.parseObjectFromMeal(toUpload,
+                            mealFactory?.parseObjectFromMeal(toUpload,
                                     args[0] as ParseObject?,
                                     args[1] as List<ParseObject>,
                                     args[2] as ParseObject?,
                                     createParseObjectReadyAction(subscriber))
                         }
                         is BloodSugar -> {
-                            bloodSugarFactory.parseObjectFromBloodSugar(toUpload, createParseObjectReadyAction(subscriber))
+                            bloodSugarFactory?.parseObjectFromBloodSugar(toUpload, createParseObjectReadyAction(subscriber))
                         }
                         is Snack -> {
                             if (args.size() < 2) {
@@ -159,13 +159,13 @@ public class ParseUploader private constructor() {
                                 return
                             }
                             @Suppress("UNCHECKED_CAST")
-                            snackFactory.parseObjectFromSnack(toUpload,
+                            snackFactory?.parseObjectFromSnack(toUpload,
                                     args[0] as ParseObject?,
                                     args[1] as List<ParseObject>,
                                     createParseObjectReadyAction(subscriber))
                         }
                         is Food -> {
-                            foodFactory.parseObjectFromFood(toUpload, createParseObjectReadyAction(subscriber))
+                            foodFactory?.parseObjectFromFood(toUpload, createParseObjectReadyAction(subscriber))
                         }
                         else -> {
                             subscriber.onError(IllegalArgumentException("Invalid type for upload object"))

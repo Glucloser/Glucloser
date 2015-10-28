@@ -1,6 +1,5 @@
 package com.nlefler.glucloser.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
@@ -12,17 +11,20 @@ import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.ui.BolusEventDetailsFragment
 import com.nlefler.glucloser.ui.PlaceSelectionFragment
-import javax.inject.Inject
+import com.nlefler.glucloser.DaggerDataFactoryComponent
 
 public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
 
-    @Inject lateinit var placeFactory: PlaceFactory
+    var placeFactory: PlaceFactory? = null
 
     private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super<AppCompatActivity>.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
+
+        val dataFactoryProvider = DaggerDataFactoryComponent.create()
+        placeFactory = dataFactoryProvider.placeFactory()
 
         val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras())
         if (bolusEventType == null) {
@@ -63,7 +65,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
                 val intent = getIntent()
                 val extras = intent.getExtras()
                 if (extras != null) {
-                    val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
+                    val placeParcelable = placeFactory?.placeParcelableFromCheckInData(extras)
                     if (placeParcelable != null) {
                         this.placeSelected(placeParcelable)
                     }

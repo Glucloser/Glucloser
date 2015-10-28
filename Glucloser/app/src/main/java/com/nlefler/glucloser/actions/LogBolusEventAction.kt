@@ -21,13 +21,13 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/24/14.
  */
 public class LogBolusEventAction : Parcelable {
-    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
-    @Inject lateinit var mealFactory: MealFactory
-    @Inject lateinit var bloodSugarFactory: BloodSugarFactory
-    @Inject lateinit var foodFactory: FoodFactory
-    @Inject lateinit var placeFactory: PlaceFactory
-    @Inject lateinit var snackFactory: SnackFactory
-    @Inject lateinit var realm: Realm
+    @Inject var bolusPatternFactory: BolusPatternFactory? = null
+    @Inject var mealFactory: MealFactory? = null
+    @Inject var bloodSugarFactory: BloodSugarFactory? = null
+    @Inject var foodFactory: FoodFactory? = null
+    @Inject var placeFactory: PlaceFactory? = null
+    @Inject var snackFactory: SnackFactory? = null
+    @Inject var realm: Realm? = null
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -57,48 +57,52 @@ public class LogBolusEventAction : Parcelable {
         var beforeSugar: BloodSugar? = null
         var beforeSugarParcelable = bolusEventParcelable?.bloodSugarParcelable;
         if (beforeSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(beforeSugarParcelable)
+            beforeSugar = bloodSugarFactory?.bloodSugarFromParcelable(beforeSugarParcelable)
         }
 
         val foodList = RealmList<Food>()
         for (foodParcelable in this.foodParcelableList) {
-            val food = foodFactory.foodFromParcelable(foodParcelable)
+            val food = foodFactory?.foodFromParcelable(foodParcelable)
             foodList.add(food)
         }
 
-        val bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
+        val bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
 
         when (this.bolusEventParcelable) {
             is MealParcelable -> {
-                val meal = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
+                val meal = mealFactory?.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
 
                 var place: Place? = null
                 if (this.placeParcelable != null) {
-                    place = placeFactory.placeFromParcelable(this.placeParcelable!!)
+                    place = placeFactory?.placeFromParcelable(this.placeParcelable!!)
                 }
-                realm.beginTransaction()
-                meal.foods = foodList
+                realm?.beginTransaction()
+                meal?.foods = foodList
 
                 if (place != null) {
-                    meal.place = place
+                    meal?.place = place
                 }
 
-                meal.beforeSugar = beforeSugar
-                meal.bolusPattern = bolusPattern
+                meal?.beforeSugar = beforeSugar
+                meal?.bolusPattern = bolusPattern
 
-                realm.commitTransaction()
-                ParseUploader.SharedInstance().uploadBolusEvent(meal)
+                realm?.commitTransaction()
+                if (meal != null) {
+                    ParseUploader.SharedInstance().uploadBolusEvent(meal)
+                }
             }
             is SnackParcelable -> {
-                val snack = snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
-                realm.beginTransaction()
+                val snack = snackFactory?.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
+                realm?.beginTransaction()
 
-                snack.foods = foodList
-                snack.beforeSugar = beforeSugar
-                snack.bolusPattern = bolusPattern
+                snack?.foods = foodList
+                snack?.beforeSugar = beforeSugar
+                snack?.bolusPattern = bolusPattern
 
-                realm.commitTransaction()
-                ParseUploader.SharedInstance().uploadBolusEvent(snack)
+                realm?.commitTransaction()
+                if (snack != null) {
+                    ParseUploader.SharedInstance().uploadBolusEvent(snack)
+                }
             }
         }
     }

@@ -1,12 +1,10 @@
 package com.nlefler.glucloser.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,23 +13,20 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
-
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.activities.LogBolusEventActivity
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
 import java.util.*
-import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
 public class BolusEventDetailsFragment : Fragment() {
-    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
-    @Inject lateinit var foodFactory: FoodFactory
+    var bolusPatternFactory: BolusPatternFactory? = null
+    var foodFactory: FoodFactory? = null
 
     private var placeName: String? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -54,12 +49,16 @@ public class BolusEventDetailsFragment : Fragment() {
     private var bolusPattern: BolusPattern? = null
 
     override fun onCreate(bundle: Bundle?) {
-        super<Fragment>.onCreate(bundle)
+        super.onCreate(bundle)
+
+        val dataFactoryComponent = DaggerDataFactoryComponent.create()
+        bolusPatternFactory = dataFactoryComponent.bolusPatternFactory()
+        foodFactory = dataFactoryComponent.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
-        bolusPatternFactory.fetchCurrentBolusPattern().onSuccess { task ->
+        bolusPatternFactory?.fetchCurrentBolusPattern()?.onSuccess { task ->
             bolusPattern = task.result
         }
     }
@@ -130,7 +129,10 @@ public class BolusEventDetailsFragment : Fragment() {
             foodParcelable.setCarbs(0)
         }
 
-        this.foods.add(foodFactory.foodFromParcelable(foodParcelable))
+        val food = foodFactory?.foodFromParcelable(foodParcelable)
+        if (food != null) {
+            this.foods.add(food)
+        }
         this.foodListAdapter?.setFoods(this.foods)
         (getActivity() as FoodDetailDelegate).foodDetailUpdated(foodParcelable)
 
@@ -163,10 +165,13 @@ public class BolusEventDetailsFragment : Fragment() {
         this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
 
         if (this.bolusPattern != null) {
-            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(this.bolusPattern!!)
+            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(this.bolusPattern!!)
         }
         else {
-            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(bolusPatternFactory.emptyPattern())
+            val emptyPattern = bolusPatternFactory?.emptyPattern()
+            if (emptyPattern != null) {
+                this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(emptyPattern)
+            }
         }
 
         (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)
