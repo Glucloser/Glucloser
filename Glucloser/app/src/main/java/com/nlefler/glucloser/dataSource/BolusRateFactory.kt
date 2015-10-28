@@ -14,28 +14,28 @@ import javax.inject.Inject
  * Created by nathan on 9/1/15.
  */
 public class BolusRateFactory {
-    @Inject lateinit var realm: Realm
+    @Inject var realm: Realm? = null
 
     public fun emptyRate(): BolusRate {
         var rate: BolusRate?
-        realm.beginTransaction()
+        realm?.beginTransaction()
         rate = bolusRateForId("__glucloser_special_empty_bolus_rate", true)
         rate?.ordinal = 0
         rate?.rate = 0
         rate?.startTime = 0
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return rate!!
     }
 
     public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
         var rate: BolusRate?
-        realm.beginTransaction()
+        realm?.beginTransaction()
         rate = bolusRateForId("", true)
         rate?.ordinal = parcelable.ordinal
         rate?.rate = parcelable.rate
         rate?.startTime = parcelable.startTime
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return rate!!
     }
@@ -56,12 +56,12 @@ public class BolusRateFactory {
         val patternId = parseObj.getString(BolusRate.IdFieldName) ?: return null
 
         var rate: BolusRate?
-        realm.beginTransaction()
+        realm?.beginTransaction()
         rate = bolusRateForId(patternId, true)
         rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
         rate?.rate = parseObj.getInt(BolusRate.RateFieldName)
         rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return rate
     }
@@ -77,17 +77,17 @@ public class BolusRateFactory {
 
     private fun bolusRateForId(id: String, create: Boolean): BolusRate? {
         if (create && id.length() == 0) {
-            val rate = realm.createObject<BolusRate>(BolusRate::class.java)
+            val rate = realm?.createObject<BolusRate>(BolusRate::class.java)
             return rate
         }
 
-        val query = realm.where<BolusRate>(BolusRate::class.java)
+        val query = realm?.where<BolusRate>(BolusRate::class.java)
 
-        query.equalTo(BolusRate.IdFieldName, id)
-        var result: BolusRate? = query.findFirst()
+        query?.equalTo(BolusRate.IdFieldName, id)
+        var result: BolusRate? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm.createObject<BolusRate>(BolusRate::class.java)
+            result = realm?.createObject<BolusRate>(BolusRate::class.java)
             result!!.NLID = id
         }
 

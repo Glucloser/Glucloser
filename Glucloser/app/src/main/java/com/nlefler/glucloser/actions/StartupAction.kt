@@ -9,13 +9,15 @@ import javax.inject.Inject
  * Created by nathan on 10/18/15.
  */
 public class StartupAction {
-    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
+    @Inject var bolusPatternFactory: BolusPatternFactory? = null
 
     public fun run(): Task<Void> {
         val task = Task.create<Void>()
         val tasks = ArrayList<Task<*>>()
 
-        tasks.add(bolusPatternFactory.updateCurrentBolusPatternCache())
+        if (bolusPatternFactory != null) {
+            tasks.add(bolusPatternFactory!!.updateCurrentBolusPatternCache())
+        }
 
         Task.whenAll(tasks).continueWith { task.trySetResult(null)  }
 

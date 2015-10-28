@@ -28,7 +28,6 @@ import java.io.File
 /**
  * Created by Nathan Lefler on 12/12/14.
  */
-@Module
 public class GlucloserApplication : Application() {
 
     override fun attachBaseContext(context: Context) {
@@ -64,11 +63,6 @@ public class GlucloserApplication : Application() {
         var startupAction: StartupAction? = StartupAction()
         startupAction?.run()?.continueWith { startupAction = null }
     }
-
-    @Provides public fun provideRealm(): Realm {
-        return Realm.getDefaultInstance()
-    }
-
 
     private fun subscribeToPush() {
         ParsePush.subscribeInBackground("", {e: ParseException? ->

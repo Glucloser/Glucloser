@@ -28,7 +28,7 @@ import javax.inject.Inject
 public class PlaceFactory {
     private val LOG_TAG = "PlaceFactory"
 
-    @Inject lateinit var realm: Realm
+    @Inject var realm: Realm? = null
 
     public fun placeForId(id: String?, action: Action1<Place>?) {
         if (action == null) {
@@ -82,13 +82,13 @@ public class PlaceFactory {
 
         val realm = realm
 
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val place = placeForFoursquareId(venue.id, true)
         place!!.name = venue.name
         place.foursquareId = venue.id
         place.latitude = venue.location.lat
         place.longitude = venue.location.lng
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return place
     }
@@ -104,13 +104,13 @@ public class PlaceFactory {
     }
 
     public fun placeFromParcelable(parcelable: PlaceParcelable): Place {
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val place = placeForFoursquareId(parcelable.foursquareId, true)
         place!!.name = parcelable.name
         place.foursquareId = parcelable.foursquareId
         place.latitude = parcelable.latitude
         place.longitude = parcelable.longitude
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return place
     }
@@ -141,7 +141,7 @@ public class PlaceFactory {
         val lat = parseObject.getDouble(Place.LatitudeFieldName).toFloat()
         val lon = parseObject.getDouble(Place.LongitudeFieldName).toFloat()
 
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val place = placeForFoursquareId(foursquareId, true)!!
         if (place.foursquareId?.isEmpty() ?: false) {
             place.foursquareId = foursquareId
@@ -153,7 +153,7 @@ public class PlaceFactory {
         if (lon != 0f && place.longitude != lon) {
             place.longitude = lon
         }
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return place
     }
@@ -227,16 +227,16 @@ public class PlaceFactory {
 
     private fun placeForFoursquareId(id: String?, create: Boolean): Place? {
         if (create && (id == null || id.isEmpty())) {
-            return realm.createObject<Place>(Place::class.java)
+            return realm?.createObject<Place>(Place::class.java)
         }
 
-        val query = realm.where<Place>(Place::class.java)
+        val query = realm?.where<Place>(Place::class.java)
 
-        query.equalTo(Place.FoursquareIdFieldName, id)
-        var result: Place? = query.findFirst()
+        query?.equalTo(Place.FoursquareIdFieldName, id)
+        var result: Place? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm.createObject<Place>(Place::class.java)
+            result = realm?.createObject<Place>(Place::class.java)
             result!!.foursquareId = id
         }
 

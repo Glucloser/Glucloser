@@ -190,9 +190,19 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
      */
     public class HistoryListFragment : Fragment() {
 
+        var realm: Realm? = null
+
         private var mealHistoryListView: RecyclerView? = null
         private var mealHistoryLayoutManager: RecyclerView.LayoutManager? = null
         private var mealHistoryAdapter: MealHistoryRecyclerAdapter? = null
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+
+            val dataFactoryComponent = DaggerDataFactoryComponent.create()
+            realm = dataFactoryComponent.realm()
+
+        }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val rootView = inflater!!.inflate(R.layout.fragment_main, container, false)
@@ -236,9 +246,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val realm = Realm.getDefaultInstance()
-            val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, false)
-            val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, false)
+            val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, false)
+            val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, false)
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
@@ -250,8 +259,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
             }
             val sortedResults = ArrayList<BolusEvent>()
-            sortedResults.addAll(mealResults)
-            sortedResults.addAll(snackResults)
+            sortedResults.addAll(mealResults ?: ArrayList())
+            sortedResults.addAll(snackResults ?: ArrayList())
             Collections.sort(sortedResults, comparator)
 
             this.mealHistoryAdapter!!.setEvents(sortedResults)

@@ -19,7 +19,7 @@ import javax.inject.Inject
 public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionDelegate, private var venues: List<NLFoursquareVenue>?) : RecyclerView.Adapter<PlaceSelectionRecyclerAdapter.ViewHolder>() {
 
     public class ViewHolder(itemView: View, delegate: PlaceSelectionDelegate?) : RecyclerView.ViewHolder(itemView) {
-        @Inject lateinit var placeFactory: PlaceFactory
+        @Inject var placeFactory: PlaceFactory? = null
 
         internal var venue: NLFoursquareVenue
         internal var placeName: TextView
@@ -43,7 +43,7 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
         }
 
         private fun getPlaceParcelable(): PlaceParcelable? {
-            return placeFactory.parcelableFromFoursquareVenue(this.venue)
+            return placeFactory?.parcelableFromFoursquareVenue(this.venue)
         }
     }
 

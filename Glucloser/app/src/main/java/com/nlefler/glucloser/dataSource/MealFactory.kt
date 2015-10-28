@@ -28,17 +28,17 @@ import javax.inject.Inject
 public class MealFactory {
     private val LOG_TAG = "MealFactory"
 
-    @Inject lateinit var realm: Realm
-    @Inject lateinit var bolusPatternFactory: BolusPatternFactory
-    @Inject lateinit var bloodSugarFactory: BloodSugarFactory
-    @Inject lateinit var placeFactory: PlaceFactory
+    @Inject var realm: Realm? = null
+    @Inject var bolusPatternFactory: BolusPatternFactory? = null
+    @Inject var bloodSugarFactory: BloodSugarFactory? = null
+    @Inject var placeFactory: PlaceFactory? = null
 
     public fun meal(): Meal {
         val realm = realm
 
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val meal = mealForMealId("", true)!!
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return meal
     }
@@ -53,7 +53,7 @@ public class MealFactory {
             action.call(null)
             return
         }
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val meal = mealForMealId(id, false)
         if (meal != null) {
             action.call(meal)
@@ -75,18 +75,18 @@ public class MealFactory {
     public fun parcelableFromMeal(meal: Meal): MealParcelable {
         val parcelable = MealParcelable()
         if (meal.place != null) {
-            parcelable.placeParcelable = placeFactory.parcelableFromPlace(meal.place!!)
+            parcelable.placeParcelable = placeFactory?.parcelableFromPlace(meal.place!!)
         }
         parcelable.carbs = meal.carbs
         parcelable.insulin = meal.insulin
         parcelable.id = meal.id
         parcelable.isCorrection = meal.isCorrection
         if (meal.beforeSugar != null) {
-            parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(meal.beforeSugar!!)
+            parcelable.bloodSugarParcelable = bloodSugarFactory?.parcelableFromBloodSugar(meal.beforeSugar!!)
         }
         parcelable.date = meal.date
         if (meal.bolusPattern != null) {
-            parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(meal.bolusPattern!!)
+            parcelable.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(meal.bolusPattern!!)
         }
 
         return parcelable
@@ -95,17 +95,17 @@ public class MealFactory {
     public fun mealFromParcelable(parcelable: MealParcelable): Meal {
         var place: Place? = null
         if (parcelable.placeParcelable != null) {
-            place = placeFactory.placeFromParcelable(parcelable.placeParcelable!!)
+            place = placeFactory?.placeFromParcelable(parcelable.placeParcelable!!)
         }
 
         var beforeSugar: BloodSugar? = null
         if (parcelable.bloodSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
+            beforeSugar = bloodSugarFactory?.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
         }
 
-        val bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
+        val bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
 
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val meal = mealForMealId(parcelable.id, true)!!
         meal.insulin = parcelable.insulin
         meal.carbs = parcelable.carbs
@@ -116,7 +116,7 @@ public class MealFactory {
         if (bolusPattern != null) {
             meal.bolusPattern = bolusPattern
         }
-        realm.commitTransaction()
+        realm?.commitTransaction()
 
         return meal
     }
@@ -134,10 +134,10 @@ public class MealFactory {
         val insulin = parseObject.getDouble(Meal.InsulinFieldName).toFloat()
         val correction = parseObject.getBoolean(Meal.CorrectionFieldName)
         val mealDate = parseObject.getDate(Meal.MealDateFieldName)
-        val place = placeFactory.placeFromParseObject(parseObject.getParseObject(Meal.PlaceFieldName))
-        val beforeSugar = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Meal.BeforeSugarFieldName))
+        val place = placeFactory?.placeFromParseObject(parseObject.getParseObject(Meal.PlaceFieldName))
+        val beforeSugar = bloodSugarFactory?.bloodSugarFromParseObject(parseObject.getParseObject(Meal.BeforeSugarFieldName))
 
-        realm.beginTransaction()
+        realm?.beginTransaction()
         val meal = mealForMealId(mealId, true)!!
         if (carbs >= 0 && carbs != meal.carbs) {
             meal.carbs = carbs
@@ -145,20 +145,20 @@ public class MealFactory {
         if (insulin >= 0 && meal.insulin != insulin) {
             meal.insulin = insulin
         }
-        if (beforeSugar != null && !bloodSugarFactory.areBloodSugarsEqual(meal.beforeSugar, beforeSugar)) {
+        if (beforeSugar != null && bloodSugarFactory?.areBloodSugarsEqual(meal.beforeSugar, beforeSugar) ?: false) {
             meal.beforeSugar = beforeSugar
         }
         if (meal.isCorrection != correction) {
             meal.isCorrection = correction
         }
-        if (place != null && !placeFactory.arePlacesEqual(place, meal.place)) {
+        if (place != null && placeFactory?.arePlacesEqual(place, meal.place) ?: false) {
             meal.place = place
         }
         if (mealDate != null) {
             meal.date = mealDate
         }
-        meal.bolusPattern = bolusPatternFactory.bolusPatternFromParseObject(parseObject.getParseObject(Meal.BolusPatternFieldName))
-        realm.commitTransaction()
+        meal.bolusPattern = bolusPatternFactory?.bolusPatternFromParseObject(parseObject.getParseObject(Meal.BolusPatternFieldName))
+        realm?.commitTransaction()
 
         return meal
     }
@@ -210,7 +210,7 @@ public class MealFactory {
             parseObject.put(Meal.MealDateFieldName, meal.date)
             parseObject.put(Meal.FoodListFieldName, foodObjects)
             if (meal.bolusPattern != null) {
-                parseObject.put(Meal.BolusPatternFieldName, bolusPatternFactory.parseObjectFromBolusPattern(meal.bolusPattern!!))
+                parseObject.put(Meal.BolusPatternFieldName, bolusPatternFactory?.parseObjectFromBolusPattern(meal.bolusPattern!!))
             }
             action.call(parseObject, created)
         })
@@ -218,18 +218,18 @@ public class MealFactory {
 
     private fun mealForMealId(id: String, create: Boolean): Meal? {
         if (create && id.length() == 0) {
-            val meal = realm.createObject<Meal>(Meal::class.java)
-            meal.id = UUID.randomUUID().toString()
+            val meal = realm?.createObject<Meal>(Meal::class.java)
+            meal?.id = UUID.randomUUID().toString()
             return meal
         }
 
-        val query = realm.where<Meal>(Meal::class.java)
+        val query = realm?.where<Meal>(Meal::class.java)
 
-        query.equalTo(Meal.MealIdFieldName, id)
-        var result: Meal? = query.findFirst()
+        query?.equalTo(Meal.MealIdFieldName, id)
+        var result: Meal? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm.createObject<Meal>(Meal::class.java)
+            result = realm?.createObject<Meal>(Meal::class.java)
             result!!.id = id
         }
 
