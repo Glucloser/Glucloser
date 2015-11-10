@@ -16,25 +16,23 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 5/19/15.
  */
-public class FoodFactory {
+public class FoodFactory @Inject constructor(val realm: Realm) {
     private val LOG_TAG = "BloodSugarFactory"
 
-    @Inject var realm: Realm? = null
-
     public fun food(): Food {
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val food = foodForFoodId("", true)!!
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return food
     }
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Food {
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val food = foodForFoodId(parcelable.foodId, true)!!
         food.name = parcelable.foodName
         food.carbs = parcelable.carbs
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return food
     }
@@ -70,13 +68,13 @@ public class FoodFactory {
         val nameValue = parseObject.getString(Food.FoodNameFieldName)
         val carbValue = parseObject.getInt(Food.CarbsFieldName)
 
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val food = foodForFoodId(foodId, true)!!
         food.name = nameValue
         if (carbValue >= 0) {
             food.carbs = carbValue
         }
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return food
     }
@@ -113,17 +111,17 @@ public class FoodFactory {
 
     private fun foodForFoodId(id: String, create: Boolean): Food? {
         if (create && id.isEmpty()) {
-            val food = realm?.createObject<Food>(Food::class.java)
+            val food = realm.createObject<Food>(Food::class.java)
             return food
         }
 
-        val query = realm?.where<Food>(Food::class.java)
+        val query = realm.where<Food>(Food::class.java)
 
         query?.equalTo(Food.FoodIdFieldName, id)
         var result: Food? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm?.createObject<Food>(Food::class.java)
+            result = realm.createObject<Food>(Food::class.java)
             result!!.foodId = id
         }
 

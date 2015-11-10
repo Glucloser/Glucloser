@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 
@@ -35,7 +34,6 @@ import rx.schedulers.Schedulers
  */
 public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenue>>, PlaceSelectionDelegate {
 
-
     private var foursquareHelper: FoursquarePlaceHelper? = null
     private var closestPlacesSubscription: Subscription? = null
     private var subscriptionScheduler: Scheduler? = null
@@ -49,6 +47,9 @@ public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenu
         super<Fragment>.onCreate(bundle)
 
         this.setHasOptionsMenu(true)
+
+        val dataFactory = DaggerDataFactoryComponent.create()
+        dataFactory.inject(logMealAction)
 
         foursquareHelper = FoursquarePlaceHelper(getActivity())
         subscriptionScheduler = Schedulers.newThread()
