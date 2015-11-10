@@ -9,14 +9,12 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 7/2/15.
  */
-public class BolusEventFactory {
-    @Inject var mealFactory: MealFactory? = null
-    @Inject var snackFactory: SnackFactory? = null
+public class BolusEventFactory @Inject constructor(val mealFactory: MealFactory, val snackFactory: SnackFactory) {
 
     public fun parcelableFromBolusEvent(bolusEvent: BolusEvent): Parcelable? {
         when (bolusEvent) {
-            is Snack -> return snackFactory?.parcelableFromSnack(bolusEvent)
-            is Meal -> return mealFactory?.parcelableFromMeal(bolusEvent)
+            is Snack -> return snackFactory.parcelableFromSnack(bolusEvent)
+            is Meal -> return mealFactory.parcelableFromMeal(bolusEvent)
             else -> return null
         }
     }

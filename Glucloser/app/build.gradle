@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-1103'
+    repositories {
+        jcenter()
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -5,7 +18,7 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
 
-    kotlinOptions.moduleName = "com.nlefler.glucloser"
+//    kotlinOptions.moduleName = "com.nlefler.glucloser"
 
     defaultConfig {
         applicationId "com.nlefler.glucloser"
@@ -13,7 +26,7 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        multiDexEnabled = true
+//        multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -29,7 +42,8 @@ android {
         disable 'InvalidPackage'
     }
     sourceSets {
-        main.java.srcDirs += 'src/main'
+//        main.java.srcDirs += 'src/main'
+        main.java.srcDirs += 'src/main/kotlin'
         androidTest.java.srcDirs += 'src/androidTest/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
     }
@@ -43,8 +57,8 @@ dependencies {
     compile fileTree(dir: 'libs/Parse-1.10.3', include: 'Parse-*.jar')
     compile fileTree(dir: 'libs/Parse-1.10.3', include: 'ParseCrashReporting-*.jar')
 
-    compile 'io.realm:realm-android:0.84.0'
-    kapt 'io.realm:realm-android:0.84.0'
+    compile 'io.realm:realm-android:0.84.1'
+    kapt 'io.realm:realm-android:0.84.1'
 
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.23.0'
@@ -59,9 +73,9 @@ dependencies {
     provided 'org.glassfish:javax.annotation:10.0-b28'
 
     // Google
-    compile 'com.google.android.gms:play-services-base:8.1.0'
-    compile 'com.google.android.gms:play-services-gcm:8.1.0'
-    compile 'com.google.android.gms:play-services-location:8.1.0'
+    compile 'com.google.android.gms:play-services-base:8.3.0'
+    compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    compile 'com.google.android.gms:play-services-location:8.3.0'
 //    compile 'com.google.android.gms:play-services-maps:7.8.0'
 //    compile 'com.google.android.gms:play-services-ads:7.8.0'
 //    compile 'com.google.android.gms:play-services-nearby:7.8.0'
@@ -106,16 +120,8 @@ dependencies {
     androidTestCompile 'com.google.truth:truth:0.27'
 }
 
-buildscript {
-    ext.kotlin_version = '1.0.0-beta-1038'
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 repositories {
+    jcenter()
     mavenCentral()
+    mavenLocal()
 }

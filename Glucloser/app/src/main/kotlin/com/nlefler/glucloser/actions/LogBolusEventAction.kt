@@ -1,16 +1,11 @@
 package com.nlefler.glucloser.actions
 
-import android.app.Application
-import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 
-import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.dataSource.*
 import com.nlefler.glucloser.models.*
-
-import java.util.Date
 
 import io.realm.Realm
 import io.realm.RealmList
@@ -28,6 +23,7 @@ public class LogBolusEventAction : Parcelable {
     @Inject var placeFactory: PlaceFactory? = null
     @Inject var snackFactory: SnackFactory? = null
     @Inject var realm: Realm? = null
+    @Inject var parseUploader: ParseUploader? = null
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -88,7 +84,7 @@ public class LogBolusEventAction : Parcelable {
 
                 realm?.commitTransaction()
                 if (meal != null) {
-                    ParseUploader.SharedInstance().uploadBolusEvent(meal)
+                    parseUploader?.uploadBolusEvent(meal)
                 }
             }
             is SnackParcelable -> {
@@ -101,7 +97,7 @@ public class LogBolusEventAction : Parcelable {
 
                 realm?.commitTransaction()
                 if (snack != null) {
-                    ParseUploader.SharedInstance().uploadBolusEvent(snack)
+                    parseUploader?.uploadBolusEvent(snack)
                 }
             }
         }

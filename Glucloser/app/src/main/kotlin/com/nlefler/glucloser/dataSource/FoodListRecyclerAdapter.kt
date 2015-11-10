@@ -7,13 +7,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.models.Food
-import java.util.ArrayList
+import java.util.*
 
-/**
- * Created by Nathan Lefler on 5/16/15.
- */
 public class FoodListRecyclerAdapter(private var foods: List<Food>) : RecyclerView.Adapter<FoodListRecyclerAdapter.ViewHolder>() {
-
 
     init {
         this.foods = ArrayList<Food>()

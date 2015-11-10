@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
+import com.nlefler.glucloser.DaggerDataFactoryComponent
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager

@@ -16,17 +16,15 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/19/15.
  */
-public class BolusPatternFactory {
-    @Inject var realm: Realm? = null
-    @Inject var bolusRateFactory: BolusRateFactory? = null
+public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolusRateFactory: BolusRateFactory) {
 
     public fun emptyPattern(): BolusPattern {
-        val rate = bolusRateFactory?.emptyRate()
-        realm?.beginTransaction()
+        val rate = bolusRateFactory.emptyRate()
+        realm.beginTransaction()
         val pattern = bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
         pattern?.rateCount = 1
         pattern?.rates?.add(rate)
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return pattern!!
     }
@@ -38,18 +36,18 @@ public class BolusPatternFactory {
         val rates = ArrayList<BolusRate?>()
         val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
         for (rateParseObj in rateParseObjs) {
-            val rate = bolusRateFactory?.bolusRateFromParseObject(rateParseObj)
+            val rate = bolusRateFactory.bolusRateFromParseObject(rateParseObj)
             if (rate != null) {
                 rates.add(rate)
             }
         }
 
-        realm?.beginTransaction()
+        realm.beginTransaction()
         pattern = bolusPatternForId(patternId, true)
         pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
 
         pattern?.rates?.addAll(rates)
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return pattern
     }
@@ -58,7 +56,7 @@ public class BolusPatternFactory {
         val parcel = BolusPatternParcelable()
         parcel.rateCount = pattern.rateCount
         for (rate in pattern.rates) {
-            parcel.rates.add(bolusRateFactory!!.parcelableFromBolusRate(rate))
+            parcel.rates.add(bolusRateFactory.parcelableFromBolusRate(rate))
         }
         return parcel
     }
@@ -67,7 +65,7 @@ public class BolusPatternFactory {
         val prs = ParseObject.create(BolusPattern.ParseClassName)
         prs.put(BolusPattern.RateCountFieldName, pattern.rateCount)
         for (rate in pattern.rates) {
-            prs.add(BolusPattern.RatesFieldName, bolusRateFactory?.parseObjectFromBolusRate(rate))
+            prs.add(BolusPattern.RatesFieldName, bolusRateFactory.parseObjectFromBolusRate(rate))
         }
 
         return prs
@@ -114,32 +112,32 @@ public class BolusPatternFactory {
         val rates = ArrayList<BolusRate>()
 
         for (rateParcelable in parcelable.rates) {
-            rates.add(bolusRateFactory!!.bolusRateFromParcelable(rateParcelable))
+            rates.add(bolusRateFactory.bolusRateFromParcelable(rateParcelable))
         }
 
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val pattern = bolusPatternForId(id, true)
         pattern!!.rateCount = parcelable.rateCount
         pattern.rates.addAll(rates)
 
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return pattern
     }
 
     private fun bolusPatternForId(id: String, create: Boolean): BolusPattern? {
         if (create && id.length() == 0) {
-            val rate = realm?.createObject<BolusPattern>(BolusPattern::class.java)
+            val rate = realm.createObject<BolusPattern>(BolusPattern::class.java)
             return rate
         }
 
-        val query = realm?.where<BolusPattern>(BolusPattern::class.java)
+        val query = realm.where<BolusPattern>(BolusPattern::class.java)
 
         query?.equalTo(BolusPattern.IdFieldName, id)
         var result: BolusPattern? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm?.createObject<BolusPattern>(BolusPattern::class.java)
+            result = realm.createObject<BolusPattern>(BolusPattern::class.java)
             result!!.NLID = id
         }
 
