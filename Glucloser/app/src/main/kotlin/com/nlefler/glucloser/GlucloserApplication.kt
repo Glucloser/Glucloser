@@ -45,10 +45,9 @@ public class GlucloserApplication : Application() {
 
         Realm.setDefaultConfiguration(realmConfig);
 
-        var startupAction: StartupAction? = StartupAction()
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(startupAction)
-        startupAction?.run()?.continueWith { startupAction = null }
+//        val dataFactory = DaggerDataFactoryComponent.create()
+//        var startupAction: dataFactory.startupAction()
+//        startupAction?.run()?.continueWith { startupAction = null }
     }
 
     private fun subscribeToPush() {

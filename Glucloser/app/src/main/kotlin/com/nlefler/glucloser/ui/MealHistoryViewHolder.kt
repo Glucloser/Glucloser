@@ -13,7 +13,7 @@ import javax.inject.Inject
  * Created by nathan on 10/27/15.
  */
 public class MealHistoryViewHolder(itemView: View, activity: Activity) : RecyclerView.ViewHolder(itemView) {
-    @Inject var bolusEventFactory: BolusEventFactory? = null
+    @Inject public var bolusEventFactory: BolusEventFactory? = null
 
     var bolusEvent: BolusEvent? = null
     var placeName: TextView
@@ -21,7 +21,7 @@ public class MealHistoryViewHolder(itemView: View, activity: Activity) : Recycle
     var insulinValue: TextView
     var clickListener: View.OnClickListener
 
-    init{
+    init {
 
         this.placeName = itemView.findViewById(R.id.meal_detail_card_place_name) as TextView
         this.carbsValue = itemView.findViewById(R.id.meal_detail_card_carbs_value) as TextView
@@ -31,10 +31,7 @@ public class MealHistoryViewHolder(itemView: View, activity: Activity) : Recycle
                 if (bolusEvent == null) {
                     return
                 }
-                val bolusEventParcelable = bolusEventFactory?.parcelableFromBolusEvent(bolusEvent!!)
-                if (bolusEventParcelable == null) {
-                    return
-                }
+                val bolusEventParcelable = bolusEventFactory?.parcelableFromBolusEvent(bolusEvent!!) ?: return
 
                 val intent = android.content.Intent(view.getContext(), com.nlefler.glucloser.HistoricalBolusDetailActivity::class.java)
                 intent.putExtra(com.nlefler.glucloser.HistoricalBolusDetailActivity.BolusKey, bolusEventParcelable)

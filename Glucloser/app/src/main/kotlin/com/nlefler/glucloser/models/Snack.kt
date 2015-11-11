@@ -11,14 +11,14 @@ import java.util.*
  */
 @RealmClass
 public open class Snack : RealmObject(), BolusEvent {
-    override open var id: String = UUID.randomUUID().toString()
-    override open var date: Date = Date()
-    override open var bolusPattern: BolusPattern? = null
-    override open var carbs: Int = 0
-    override open var insulin: Float = 0f
-    override open var beforeSugar: BloodSugar? = null
-    override open var isCorrection: Boolean = false
-    override open var foods: RealmList<Food> = RealmList<Food>()
+    override var id: String = UUID.randomUUID().toString()
+    override var date: Date = Date()
+    override var bolusPattern: BolusPattern? = null
+    override var carbs: Int = 0
+    override var insulin: Float = 0f
+    override var beforeSugar: BloodSugar? = null
+    override var isCorrection: Boolean = false
+    override var foods: RealmList<Food> = RealmList()
 
     companion object {
         @Ignore

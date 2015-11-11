@@ -20,16 +20,13 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 4/25/15.
  */
-public class SnackFactory {
+public class SnackFactory @Inject constructor(val realm: Realm, val bloodSugarFactory: BloodSugarFactory) {
     private val LOG_TAG = "SnackFactory"
 
-    @Inject var realm: Realm? = null
-    @Inject var bloodSugarFactory: BloodSugarFactory? = null
-
     public fun snack(): Snack {
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val snack = snackForSnackId("", true)!!
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return snack
     }
@@ -44,7 +41,7 @@ public class SnackFactory {
             action.call(null)
             return
         }
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val snack = snackForSnackId(id, false)
         if (snack != null) {
             action.call(snack)
@@ -79,7 +76,7 @@ public class SnackFactory {
         parcelable.id = snack.id
         parcelable.isCorrection = snack.isCorrection
         if (snack.beforeSugar != null) {
-            parcelable.bloodSugarParcelable = bloodSugarFactory?.parcelableFromBloodSugar(snack.beforeSugar!!)
+            parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(snack.beforeSugar!!)
         }
         parcelable.date = snack.date
 
@@ -90,10 +87,10 @@ public class SnackFactory {
 
         var beforeSugar: BloodSugar? = null
         if (parcelable.bloodSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory?.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
+            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
         }
 
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val snack = snackForSnackId(parcelable.id, true)!!
         snack.insulin = parcelable.insulin
         snack.carbs = parcelable.carbs
@@ -102,7 +99,7 @@ public class SnackFactory {
             snack.beforeSugar = beforeSugar
         }
         snack.date = parcelable.date
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return snack
     }
@@ -120,9 +117,9 @@ public class SnackFactory {
         val insulin = parseObject.getDouble(Snack.InsulinFieldName).toFloat()
         val correction = parseObject.getBoolean(Snack.CorrectionFieldName)
         val snackDate = parseObject.getDate(Snack.SnackDateFieldName)
-        val beforeSugar = bloodSugarFactory?.bloodSugarFromParseObject(parseObject.getParseObject(Snack.BeforeSugarFieldName))
+        val beforeSugar = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Snack.BeforeSugarFieldName))
 
-        realm?.beginTransaction()
+        realm.beginTransaction()
         val snack = snackForSnackId(snackId, true)!!
         if (carbs >= 0 && carbs != snack.carbs) {
             snack.carbs = carbs
@@ -130,7 +127,7 @@ public class SnackFactory {
         if (insulin >= 0 && snack.insulin != insulin) {
             snack.insulin = insulin
         }
-        if (beforeSugar != null && bloodSugarFactory?.areBloodSugarsEqual(snack.beforeSugar, beforeSugar) ?: false) {
+        if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(snack.beforeSugar, beforeSugar)) {
             snack.beforeSugar = beforeSugar
         }
         if (snack.isCorrection != correction) {
@@ -139,7 +136,7 @@ public class SnackFactory {
         if (snackDate != null) {
             snack.date = snackDate
         }
-        realm?.commitTransaction()
+        realm.commitTransaction()
 
         return snack
     }
@@ -190,18 +187,18 @@ public class SnackFactory {
 
     private fun snackForSnackId(id: String, create: Boolean): Snack? {
         if (create && id.isEmpty()) {
-            val snack = realm?.createObject<Snack>(Snack::class.java)
+            val snack = realm.createObject<Snack>(Snack::class.java)
             snack?.id = UUID.randomUUID().toString()
             return snack
         }
 
-        val query = realm?.where<Snack>(Snack::class.java)
+        val query = realm.where<Snack>(Snack::class.java)
 
         query?.equalTo(Snack.SnackIdFieldName, id)
         var result: Snack? = query?.findFirst()
 
         if (result == null && create) {
-            result = realm?.createObject<Snack>(Snack::class.java)
+            result = realm.createObject<Snack>(Snack::class.java)
             result!!.id = id
         }
 

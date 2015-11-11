@@ -105,7 +105,7 @@ public class FoursquareAuthManager private constructor() {
             val entity = Entity(CONCEAL_ENTITY_NAME)
             val encryptedToken = Base64.decode(encryptedBase64Token, Base64.DEFAULT)
 
-            if (encryptedToken.size() > 0) {
+            if (encryptedToken.size > 0) {
                 return String(this.crypto.decrypt(encryptedToken, entity), "UTF-8")
             } else {
                 return ""

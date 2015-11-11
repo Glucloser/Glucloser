@@ -46,9 +46,9 @@ public class PushReceiver : ParsePushBroadcastReceiver() {
 
         val cls = getActivity(context, intent)
         val activityIntent: Intent
-        if (uriString?.length() ?: 0 > 0) {
+        if (uriString?.length ?: 0 > 0) {
             activityIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uriString!!))
-            activityIntent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name())
+            activityIntent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
         } else {
             activityIntent = Intent(context, MainActivity::class.java)
         }

@@ -51,9 +51,9 @@ public class BolusEventDetailsFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactoryComponent = DaggerDataFactoryComponent.create()
-        bolusPatternFactory = dataFactoryComponent.bolusPatternFactory()
-        foodFactory = dataFactoryComponent.foodFactory()
+//        val dataFactoryComponent = DaggerDataFactoryComponent.create()
+//        bolusPatternFactory = dataFactoryComponent.bolusPatternFactory()
+//        foodFactory = dataFactoryComponent.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
@@ -156,10 +156,10 @@ public class BolusEventDetailsFragment : Fragment() {
             this.bolusEventParcelable!!.bloodSugarParcelable = beforeSugarParcelable
         }
 
-        if (this.insulinValueField!!.getText() != null && this.insulinValueField!!.getText().length() > 0) {
+        if (this.insulinValueField!!.getText() != null && this.insulinValueField!!.getText().length > 0) {
             this.bolusEventParcelable!!.insulin = java.lang.Float.valueOf(this.insulinValueField!!.getText().toString())
         }
-        if (this.carbValueField!!.getText() != null && this.carbValueField!!.getText().length() > 0) {
+        if (this.carbValueField!!.getText() != null && this.carbValueField!!.getText().length > 0) {
             this.bolusEventParcelable!!.carbs = Integer.valueOf(this.carbValueField!!.getText().toString())!!
         }
         this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()

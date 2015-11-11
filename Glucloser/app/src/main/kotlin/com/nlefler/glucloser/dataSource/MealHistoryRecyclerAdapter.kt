@@ -29,8 +29,8 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
         // Setup view
 
         val viewHolder = MealHistoryViewHolder(view, activity)
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(viewHolder)
+//        val dataFactory = DaggerDataFactoryComponent.create()
+//        dataFactory.inject(viewHolder)
 
         return viewHolder
     }

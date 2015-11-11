@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
-import com.nlefler.glucloser.DaggerDataFactoryComponent
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
@@ -200,8 +199,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            val dataFactoryComponent = DaggerDataFactoryComponent.create()
-            realm = dataFactoryComponent.realm()
+//            val dataFactoryComponent = DaggerDataFactoryComponent.create()
+//            realm = dataFactoryComponent.realm()
 
         }
 
@@ -224,7 +223,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             logMealButton.setOnClickListener(object : View.OnClickListener {
                 override fun onClick(view: View) {
                     val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
-                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name())
+                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
 
                     activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
                     floatingActionsMenu.collapse()
@@ -234,7 +233,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             logSnackButton.setOnClickListener(object : View.OnClickListener {
                 override fun onClick(view: View) {
                     val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
-                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeSnack.name())
+                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeSnack.name)
 
                     activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
                     floatingActionsMenu.collapse()
@@ -275,7 +274,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
     companion object {
         private val LOG_TAG = "MainActivity"
         private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 22
-        protected val LogBolusEventActivityIntentCode: Int = 4136
-        protected val HistoryFragmentId: String = "HistoryFragmentId"
+        internal val LogBolusEventActivityIntentCode: Int = 4136
+        internal val HistoryFragmentId: String = "HistoryFragmentId"
     }
 }

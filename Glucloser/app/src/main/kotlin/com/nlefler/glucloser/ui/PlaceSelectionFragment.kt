@@ -48,8 +48,8 @@ public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenu
 
         this.setHasOptionsMenu(true)
 
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(logMealAction)
+//        val dataFactory = DaggerDataFactoryComponent.create()
+//        dataFactory.inject(logMealAction)
 
         foursquareHelper = FoursquarePlaceHelper(getActivity())
         subscriptionScheduler = Schedulers.newThread()
