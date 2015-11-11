@@ -87,7 +87,7 @@ public class FoursquarePlaceHelper(private val context: Context) {
                 .intent(NLFoursquareVenueSearchIntent.NLFoursquareVenueSearchIntentCheckIn)
                 .radius(500.0).limitToCategories(this.foursquareSearchCategories)
                 .limit(100)
-        if (searchTerm?.length() ?: 0 > 0) {
+        if (searchTerm?.length ?: 0 > 0) {
             parametersBuilder.query(searchTerm)
         }
 
@@ -99,7 +99,7 @@ public class FoursquarePlaceHelper(private val context: Context) {
             }
 
             override fun failure(error: RetrofitError) {
-                Log.e("4SQ", error.getMessage())
+                Log.e("4SQ", error.message)
                 Log.e("4SQ", error.getBody().toString())
                 subscriber.onError(error)
             }

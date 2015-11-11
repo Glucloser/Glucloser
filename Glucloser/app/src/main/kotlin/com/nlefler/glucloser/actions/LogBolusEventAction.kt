@@ -16,14 +16,14 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/24/14.
  */
 public class LogBolusEventAction : Parcelable {
-    @Inject var bolusPatternFactory: BolusPatternFactory? = null
-    @Inject var mealFactory: MealFactory? = null
-    @Inject var bloodSugarFactory: BloodSugarFactory? = null
-    @Inject var foodFactory: FoodFactory? = null
-    @Inject var placeFactory: PlaceFactory? = null
-    @Inject var snackFactory: SnackFactory? = null
-    @Inject var realm: Realm? = null
-    @Inject var parseUploader: ParseUploader? = null
+    @Inject public var bolusPatternFactory: BolusPatternFactory? = null
+    @Inject public var mealFactory: MealFactory? = null
+    @Inject public var bloodSugarFactory: BloodSugarFactory? = null
+    @Inject public var foodFactory: FoodFactory? = null
+    @Inject public var placeFactory: PlaceFactory? = null
+    @Inject public var snackFactory: SnackFactory? = null
+    @Inject public var realm: Realm? = null
+    @Inject public var parseUploader: ParseUploader? = null
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -126,10 +126,10 @@ public class LogBolusEventAction : Parcelable {
         out.writeParcelable(this.placeParcelable, flags)
         when (this.bolusEventParcelable) {
             is MealParcelable -> {
-                out.writeString(BolusEventType.BolusEventTypeMeal.name())
+                out.writeString(BolusEventType.BolusEventTypeMeal.name)
             }
             is SnackParcelable -> {
-                out.writeString(BolusEventType.BolusEventTypeSnack.name())
+                out.writeString(BolusEventType.BolusEventTypeSnack.name)
             }
         }
         out.writeParcelable(this.bolusEventParcelable as Parcelable, flags)

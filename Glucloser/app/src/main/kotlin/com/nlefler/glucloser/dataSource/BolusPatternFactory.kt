@@ -126,7 +126,7 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
     }
 
     private fun bolusPatternForId(id: String, create: Boolean): BolusPattern? {
-        if (create && id.length() == 0) {
+        if (create && id.length == 0) {
             val rate = realm.createObject<BolusPattern>(BolusPattern::class.java)
             return rate
         }

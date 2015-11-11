@@ -30,15 +30,15 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
         val view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.place_selection_list_item, viewGroup, false)
 
         val viewHolder = PlaceSelectionViewHolder(view, delegate)
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(viewHolder)
+//        val dataFactory = DaggerDataFactoryComponent.create()
+//        dataFactory.inject(viewHolder)
 
         return viewHolder
     }
 
     // Replaces the contents of a view (invoked by the view holder)
     override fun onBindViewHolder(viewHolder: PlaceSelectionViewHolder, i: Int) {
-        if (i >= this.venues!!.size()) {
+        if (i >= this.venues!!.size) {
             return
         }
 
@@ -50,6 +50,6 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
     }
 
     override fun getItemCount(): Int {
-        return this.venues!!.size()
+        return this.venues!!.size
     }
 }

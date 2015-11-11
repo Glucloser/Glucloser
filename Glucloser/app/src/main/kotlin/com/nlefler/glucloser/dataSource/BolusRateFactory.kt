@@ -75,7 +75,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
     }
 
     private fun bolusRateForId(id: String, create: Boolean): BolusRate? {
-        if (create && id.length() == 0) {
+        if (create && id.length == 0) {
             val rate = realm.createObject<BolusRate>(BolusRate::class.java)
             return rate
         }

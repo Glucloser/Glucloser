@@ -37,7 +37,7 @@ public class FoodListRecyclerAdapter(private var foods: List<Food>) : RecyclerVi
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        if (i >= this.foods.size()) {
+        if (i >= this.foods.size) {
             return
         }
 
@@ -48,6 +48,6 @@ public class FoodListRecyclerAdapter(private var foods: List<Food>) : RecyclerVi
     }
 
     override fun getItemCount(): Int {
-        return this.foods.size()
+        return this.foods.size
     }
 }

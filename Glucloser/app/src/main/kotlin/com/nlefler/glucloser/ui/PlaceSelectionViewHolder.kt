@@ -17,7 +17,7 @@ import javax.inject.Inject
  * Created by nathan on 10/27/15.
  */
 public class PlaceSelectionViewHolder(itemView: View, delegate: PlaceSelectionDelegate?) : RecyclerView.ViewHolder(itemView) {
-    @Inject var placeFactory: PlaceFactory? = null
+    @Inject public var placeFactory: PlaceFactory? = null
 
     internal var venue: NLFoursquareVenue
     internal var placeName: TextView

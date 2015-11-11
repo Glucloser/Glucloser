@@ -62,7 +62,7 @@ public class FoodFactory @Inject constructor(val realm: Realm) {
             return null
         }
         val foodId = parseObject.getString(Food.FoodIdFieldName)
-        if (foodId.length() == 0) {
+        if (foodId.length == 0) {
             Log.e(LOG_TAG, "Can't create Food from Parse object, no id")
         }
         val nameValue = parseObject.getString(Food.FoodNameFieldName)

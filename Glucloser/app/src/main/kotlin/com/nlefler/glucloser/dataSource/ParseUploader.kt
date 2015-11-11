@@ -86,7 +86,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
             }
 
             override fun onError(e: Throwable) {
-                Log.e(LOG_TAG, "Unable to save bolus event to Parse: " + e.getMessage())
+                Log.e(LOG_TAG, "Unable to save bolus event to Parse: " + e.message)
             }
 
             override fun onNext(parseObject: ParseObject) {
@@ -101,7 +101,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
                     }
                     Food.ParseClassName -> {
                         foodParseObjects.add(parseObject)
-                        foodIds.remove(parseObject.get(Food.FoodIdFieldName))
+                        foodIds.remove(parseObject.getString(Food.FoodIdFieldName))
                     }
                 }
             }
@@ -137,7 +137,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
                             placeFactory.parseObjectFromPlace(toUpload, createParseObjectReadyAction(subscriber))
                         }
                         is Meal -> {
-                            if (args.size() < 3) {
+                            if (args.size < 3) {
                                 subscriber.onError(IllegalArgumentException("Invalid specific arguments for Meal"))
                                 return
                             }
@@ -152,7 +152,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
                             bloodSugarFactory.parseObjectFromBloodSugar(toUpload, createParseObjectReadyAction(subscriber))
                         }
                         is Snack -> {
-                            if (args.size() < 2) {
+                            if (args.size < 2) {
                                 subscriber.onError(IllegalArgumentException("Invalid specific arguments for Snack"))
                                 return
                             }

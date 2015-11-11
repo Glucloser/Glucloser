@@ -44,7 +44,7 @@ public class MealFactory @Inject constructor(val realm: Realm,
             Log.e(LOG_TAG, "Unable to fetch Meal, action is null")
             return
         }
-        if (id.length() == 0) {
+        if (id.length == 0) {
             Log.e(LOG_TAG, "Unable to fetch Meal, invalid args")
             action.call(null)
             return
@@ -121,7 +121,7 @@ public class MealFactory @Inject constructor(val realm: Realm,
             return null
         }
         val mealId = parseObject.getString(Meal.MealIdFieldName)
-        if (mealId?.length() == 0) {
+        if (mealId?.length == 0) {
             Log.e(LOG_TAG, "Can't create Meal from Parse object, no id")
         }
         val carbs = parseObject.getInt(Meal.CarbsFieldName)
@@ -139,13 +139,13 @@ public class MealFactory @Inject constructor(val realm: Realm,
         if (insulin >= 0 && meal.insulin != insulin) {
             meal.insulin = insulin
         }
-        if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(meal.beforeSugar, beforeSugar) ?: false) {
+        if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(meal.beforeSugar, beforeSugar)) {
             meal.beforeSugar = beforeSugar
         }
         if (meal.isCorrection != correction) {
             meal.isCorrection = correction
         }
-        if (place != null && placeFactory.arePlacesEqual(place, meal.place) ?: false) {
+        if (place != null && placeFactory.arePlacesEqual(place, meal.place)) {
             meal.place = place
         }
         if (mealDate != null) {
@@ -172,7 +172,7 @@ public class MealFactory @Inject constructor(val realm: Realm,
             Log.e(LOG_TAG, "Unable to create Parse object from Meal, action null")
             return
         }
-        if (meal.id.length() == 0) {
+        if (meal.id.length == 0) {
             Log.e(LOG_TAG, "Unable to create Parse object from Meal, meal null or no id")
             action.call(null, false)
             return
@@ -211,7 +211,7 @@ public class MealFactory @Inject constructor(val realm: Realm,
     }
 
     private fun mealForMealId(id: String, create: Boolean): Meal? {
-        if (create && id.length() == 0) {
+        if (create && id.length == 0) {
             val meal = realm.createObject<Meal>(Meal::class.java)
             meal?.id = UUID.randomUUID().toString()
             return meal

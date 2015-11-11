@@ -28,6 +28,7 @@ public interface DataFactoryComponent {
     public fun inject(client: MealHistoryViewHolder)
     public fun inject(client: PlaceSelectionViewHolder)
 
+    fun startupAction(): StartupAction
     fun bloodSugarFactory(): BloodSugarFactory
     fun bolusEventFactory(): BolusEventFactory
     fun bolusPatternFactory(): BolusPatternFactory
