@@ -1,11 +1,13 @@
 package com.nlefler.glucloser.components.datafactory
 
+import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.actions.StartupAction
 import com.nlefler.glucloser.activities.LogBolusEventActivity
 import com.nlefler.glucloser.dataSource.*
 import com.nlefler.glucloser.ui.MealHistoryViewHolder
 import com.nlefler.glucloser.ui.PlaceSelectionViewHolder
 import dagger.Component
+import io.realm.Realm
 import javax.inject.Singleton
 
 /**
@@ -23,6 +25,7 @@ public interface DataFactoryComponent {
     public fun inject(client: PlaceFactory)
     public fun inject(client: SnackFactory)
     public fun inject(client: LogBolusEventActivity)
+    public fun inject(client: LogBolusEventAction)
     public fun inject(client: StartupAction)
     public fun inject(client: ParseUploader)
     public fun inject(client: MealHistoryViewHolder)
@@ -40,4 +43,7 @@ public interface DataFactoryComponent {
 
     @Singleton
     fun parseUploader(): ParseUploader
+
+    @Singleton
+    fun realm(): Realm
 }

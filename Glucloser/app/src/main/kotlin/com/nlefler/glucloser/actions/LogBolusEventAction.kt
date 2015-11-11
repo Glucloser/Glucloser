@@ -16,14 +16,30 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/24/14.
  */
 public class LogBolusEventAction : Parcelable {
-    @Inject public var bolusPatternFactory: BolusPatternFactory? = null
-    @Inject public var mealFactory: MealFactory? = null
-    @Inject public var bloodSugarFactory: BloodSugarFactory? = null
-    @Inject public var foodFactory: FoodFactory? = null
-    @Inject public var placeFactory: PlaceFactory? = null
-    @Inject public var snackFactory: SnackFactory? = null
-    @Inject public var realm: Realm? = null
-    @Inject public var parseUploader: ParseUploader? = null
+    var bolusPatternFactory: BolusPatternFactory? = null
+        @Inject set
+
+    var mealFactory: MealFactory? = null
+        @Inject set
+
+    var bloodSugarFactory: BloodSugarFactory? = null
+        @Inject set
+
+    var foodFactory: FoodFactory? = null
+        @Inject set
+
+    var placeFactory: PlaceFactory? = null
+        @Inject set
+
+    var snackFactory: SnackFactory? = null
+        @Inject set
+
+    var realm: Realm? = null
+        @Inject set
+
+    var parseUploader: ParseUploader? = null
+        @Inject set
+
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null

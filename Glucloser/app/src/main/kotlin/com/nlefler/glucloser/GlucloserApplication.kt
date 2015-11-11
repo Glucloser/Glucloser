@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Debug
 import android.support.multidex.MultiDex
 import android.util.Log
-import com.nlefler.glucloser.actions.StartupAction
+import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.parse.*
 import io.realm.Realm
 import io.realm.RealmConfiguration
@@ -45,9 +45,9 @@ public class GlucloserApplication : Application() {
 
         Realm.setDefaultConfiguration(realmConfig);
 
-//        val dataFactory = DaggerDataFactoryComponent.create()
-//        var startupAction: dataFactory.startupAction()
-//        startupAction?.run()?.continueWith { startupAction = null }
+        val dataFactory = DaggerDataFactoryComponent.create()
+        var startupAction = dataFactory.startupAction()
+        startupAction.run()
     }
 
     private fun subscribeToPush() {
