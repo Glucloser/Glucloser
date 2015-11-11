@@ -3,6 +3,9 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url 'http://oss.sonatype.org/content/repositories/snapshots'
+        }
         mavenLocal()
     }
     dependencies {
@@ -68,8 +71,8 @@ dependencies {
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
 
-    compile 'com.google.dagger:dagger:2.0.1'
-    kapt 'com.google.dagger:dagger-compiler:2.0.1'
+    compile 'com.google.dagger:dagger:2.1-SNAPSHOT'
+    kapt 'com.google.dagger:dagger-compiler:2.1-SNAPSHOT'
     provided 'org.glassfish:javax.annotation:10.0-b28'
 
     // Google
@@ -123,5 +126,8 @@ dependencies {
 repositories {
     jcenter()
     mavenCentral()
+    maven {
+        url 'http://oss.sonatype.org/content/repositories/snapshots'
+    }
     mavenLocal()
 }

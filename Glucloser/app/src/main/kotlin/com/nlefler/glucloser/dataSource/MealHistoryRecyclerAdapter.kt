@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.nlefler.glucloser.GlucloserApplication
 
 import com.nlefler.glucloser.R
+import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.models.BolusEvent
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.ui.MealHistoryViewHolder
@@ -29,8 +30,8 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
         // Setup view
 
         val viewHolder = MealHistoryViewHolder(view, activity)
-//        val dataFactory = DaggerDataFactoryComponent.create()
-//        dataFactory.inject(viewHolder)
+        val dataFactory = DaggerDataFactoryComponent.create()
+        dataFactory.inject(viewHolder)
 
         return viewHolder
     }

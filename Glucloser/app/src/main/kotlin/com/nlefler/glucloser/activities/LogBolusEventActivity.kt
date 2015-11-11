@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.actions.LogBolusEventAction
+import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.ui.BolusEventDetailsFragment
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
 
-    @Inject public var placeFactory: PlaceFactory? = null
+    public var placeFactory: PlaceFactory? = null
+        @Inject set
 
     private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
@@ -23,9 +25,9 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
 
-//        val dataFactoryProvider = DaggerDataFactoryComponent.create()
-//        dataFactoryProvider.inject(this)
-//        dataFactoryProvider.inject(logBolusEventAction)
+        val dataFactoryProvider = DaggerDataFactoryComponent.create()
+        dataFactoryProvider.inject(this)
+        dataFactoryProvider.inject(logBolusEventAction)
 
         val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras())
         if (bolusEventType == null) {
