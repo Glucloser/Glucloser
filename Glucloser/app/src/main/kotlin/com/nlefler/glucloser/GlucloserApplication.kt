@@ -14,7 +14,6 @@ import io.realm.RealmConfiguration
  * Created by Nathan Lefler on 12/12/14.
  */
 public class GlucloserApplication : Application() {
-
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
 

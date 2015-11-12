@@ -21,7 +21,7 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
 
-//    kotlinOptions.moduleName = "com.nlefler.glucloser"
+    kotlinOptions.moduleName = "com.nlefler.glucloser"
 
     defaultConfig {
         applicationId "com.nlefler.glucloser"
@@ -56,12 +56,18 @@ android {
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // Project
+    compile project(':libNLFoursquare')
+    compile project(':foursquareoauthlibrary')
+
     compile 'com.parse.bolts:bolts-android:1.2.1'
     compile fileTree(dir: 'libs/Parse-1.10.3', include: 'Parse-*.jar')
     compile fileTree(dir: 'libs/Parse-1.10.3', include: 'ParseCrashReporting-*.jar')
 
-    compile 'io.realm:realm-android:0.84.1'
-    kapt 'io.realm:realm-android:0.84.1'
+    compile 'io.realm:realm-android:0.84.2'
+    kapt 'io.realm:realm-android:0.84.2'
 
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.23.0'
@@ -73,43 +79,24 @@ dependencies {
 
     compile 'com.google.dagger:dagger:2.1-SNAPSHOT'
     kapt 'com.google.dagger:dagger-compiler:2.1-SNAPSHOT'
-    provided 'org.glassfish:javax.annotation:10.0-b28'
+    provided 'javax.annotation:jsr250-api:1.0'
 
     // Google
     compile 'com.google.android.gms:play-services-base:8.3.0'
     compile 'com.google.android.gms:play-services-gcm:8.3.0'
     compile 'com.google.android.gms:play-services-location:8.3.0'
-//    compile 'com.google.android.gms:play-services-maps:7.8.0'
-//    compile 'com.google.android.gms:play-services-ads:7.8.0'
-//    compile 'com.google.android.gms:play-services-nearby:7.8.0'
-//    compile 'com.google.android.gms:play-services-panorama:7.8.0'
-//    compile 'com.google.android.gms:play-services-games:7.8.0'
-//    compile 'com.google.android.gms:play-services-safetynet:7.8.0'
-//    compile 'com.google.android.gms:play-services-wallet:7.8.0'
-//    compile 'com.google.android.gms:play-services-wearable:7.8.0'
 
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.android.support:cardview-v7:23.1.0'
     compile 'com.android.support:recyclerview-v7:23.1.0'
-    compile 'com.google.code.gson:gson:2.3.1'
-
-    compile 'com.android.support:support-annotations:23.1.0'
-
-    // Static Libs
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.google.code.gson:gson:2.4'
 
     // Location
      compile 'pl.charmas.android:android-reactive-location:0.8@aar'
 
     // UI
     compile 'com.getbase:floatingactionbutton:1.9.0'
-
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
-    // Project
-    compile project(':libNLFoursquare')
-    compile project(':foursquareoauthlibrary')
 
     // Testing
     androidTestCompile 'com.android.support:support-annotations:23.1.0'

@@ -13,7 +13,6 @@ import javax.inject.Singleton
 /**
  * Created by nathan on 10/20/15.
  */
-@Singleton
 @Component(modules = arrayOf(DataFactoryModule::class))
 public interface DataFactoryComponent {
     public fun inject(client: BloodSugarFactory)

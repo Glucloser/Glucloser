@@ -13,7 +13,7 @@ import javax.inject.Inject
  * Created by nathan on 10/27/15.
  */
 public class MealHistoryViewHolder(itemView: View, activity: Activity) : RecyclerView.ViewHolder(itemView) {
-    var bolusEventFactory: BolusEventFactory? = null
+    lateinit var bolusEventFactory: BolusEventFactory
         @Inject set
 
     var bolusEvent: BolusEvent? = null
