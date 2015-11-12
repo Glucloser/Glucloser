@@ -16,28 +16,28 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/24/14.
  */
 public class LogBolusEventAction : Parcelable {
-    var bolusPatternFactory: BolusPatternFactory? = null
+    lateinit var bolusPatternFactory: BolusPatternFactory
         @Inject set
 
-    var mealFactory: MealFactory? = null
+    lateinit var mealFactory: MealFactory
         @Inject set
 
-    var bloodSugarFactory: BloodSugarFactory? = null
+    lateinit var bloodSugarFactory: BloodSugarFactory
         @Inject set
 
-    var foodFactory: FoodFactory? = null
+    lateinit var foodFactory: FoodFactory
         @Inject set
 
-    var placeFactory: PlaceFactory? = null
+    lateinit var placeFactory: PlaceFactory
         @Inject set
 
-    var snackFactory: SnackFactory? = null
+    lateinit var snackFactory: SnackFactory
         @Inject set
 
-    var realm: Realm? = null
+    lateinit var realm: Realm
         @Inject set
 
-    var parseUploader: ParseUploader? = null
+    lateinit var parseUploader: ParseUploader
         @Inject set
 
 

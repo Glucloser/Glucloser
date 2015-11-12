@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
 
-    public var placeFactory: PlaceFactory? = null
+    lateinit var placeFactory: PlaceFactory
         @Inject set
 
     private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
