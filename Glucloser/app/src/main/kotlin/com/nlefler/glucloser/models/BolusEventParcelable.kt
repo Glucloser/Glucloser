@@ -1,11 +1,12 @@
 package com.nlefler.glucloser.models
 
+import android.os.Parcelable
 import java.util.Date
 
 /**
  * Created by Nathan Lefler on 5/8/15.
  */
-public interface BolusEventParcelable {
+public interface BolusEventParcelable: Parcelable {
     var id: String
     var date: Date
     var bolusPatternParcelable: BolusPatternParcelable?
