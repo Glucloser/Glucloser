@@ -32,7 +32,7 @@ public class MealHistoryViewHolder(itemView: View, activity: Activity) : Recycle
                 if (bolusEvent == null) {
                     return
                 }
-                val bolusEventParcelable = bolusEventFactory?.parcelableFromBolusEvent(bolusEvent!!) ?: return
+                val bolusEventParcelable = bolusEventFactory.parcelableFromBolusEvent(bolusEvent!!) ?: return
 
                 val intent = android.content.Intent(view.getContext(), com.nlefler.glucloser.HistoricalBolusDetailActivity::class.java)
                 intent.putExtra(com.nlefler.glucloser.HistoricalBolusDetailActivity.BolusKey, bolusEventParcelable)
