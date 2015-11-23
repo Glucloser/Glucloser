@@ -30,18 +30,16 @@ public class PlaceSelectionViewHolder(itemView: View, delegate: PlaceSelectionDe
         this.venue = NLFoursquareVenue()
         this.placeName = itemView.findViewById(R.id.place_selection_place_detail_name) as TextView
         this.placeDistance = itemView.findViewById(R.id.place_selection_place_detail_distance) as TextView
-        this.clickListener = object : View.OnClickListener {
-            override fun onClick(v: View) {
-                var placeParcelable = getPlaceParcelable()
-                if (placeParcelable != null) {
-                    delegate?.placeSelected(placeParcelable)
-                }
+        this.clickListener = View.OnClickListener {
+            var placeParcelable = getPlaceParcelable()
+            if (placeParcelable != null) {
+                delegate?.placeSelected(placeParcelable)
             }
         }
         itemView.setOnClickListener(this.clickListener)
     }
 
     private fun getPlaceParcelable(): PlaceParcelable? {
-        return placeFactory?.parcelableFromFoursquareVenue(this.venue)
+        return placeFactory.parcelableFromFoursquareVenue(this.venue)
     }
 }

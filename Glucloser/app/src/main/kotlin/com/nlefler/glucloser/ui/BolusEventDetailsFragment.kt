@@ -59,8 +59,25 @@ public class BolusEventDetailsFragment : Fragment() {
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
-        bolusPatternFactory?.fetchCurrentBolusPattern()?.onSuccess { task ->
-            bolusPattern = task.result
+        val bolusPatternParcelable = getBolusPatternFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
+        if (bolusPatternParcelable != null) {
+            this.bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)
+        }
+        if (this.bolusPattern == null) {
+            bolusPatternFactory?.fetchCurrentBolusPattern()?.onSuccess { task ->
+                bolusPattern = task.result
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+
+        if (this.placeName != null) {
+            outState?.putString(BolusEventDetailPlaceNameBundleKey, this.placeName)
+        }
+        if (this.bolusEventParcelable != null) {
+            outState?.putParcelable(BolusEventDetailBolusEventParcelableBundleKey, this.bolusEventParcelable)
         }
     }
 
@@ -180,12 +197,22 @@ public class BolusEventDetailsFragment : Fragment() {
 
     private fun getPlaceNameFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): String {
         for (bundle in arrayOf<Bundle?>(savedInstanceState, args, extras)) {
-            if (bundle?.getParcelable<Parcelable>(BolusEventDetailPlaceNameBundleKey) ?: null!= null) {
+            if (bundle?.containsKey(BolusEventDetailPlaceNameBundleKey) == true) {
                 return bundle?.getString(BolusEventDetailPlaceNameBundleKey) ?: ""
             }
         }
 
         return ""
+    }
+
+    private fun getBolusPatternFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusPatternParcelable? {
+        for (bundle in arrayOf<Bundle?>(savedInstanceState, args, extras)) {
+            if (bundle?.containsKey(BolusEventDetailBolusPatternParcelableBundleKey) == true) {
+                return bundle?.getParcelable<BolusPatternParcelable>(BolusEventDetailBolusPatternParcelableBundleKey) ?: null
+            }
+        }
+
+        return null
     }
 
     private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusEventParcelable? {
@@ -218,5 +245,6 @@ public class BolusEventDetailsFragment : Fragment() {
 
         public val BolusEventDetailPlaceNameBundleKey: String = "MealDetailPlaceNameBundleKey"
         public val BolusEventDetailBolusEventParcelableBundleKey: String = "MealDetailBolusEventParcelableBundleKey"
+        public val BolusEventDetailBolusPatternParcelableBundleKey: String = "MealDetailBolusPatternParcelableBundleKey"
     }
 }
