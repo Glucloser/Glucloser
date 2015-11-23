@@ -29,10 +29,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
         dataFactoryProvider.inject(this)
         dataFactoryProvider.inject(logBolusEventAction)
 
-        val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras())
-        if (bolusEventType == null) {
-            return
-        }
+        val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras()) ?: return
         setupFragmentForEventType(bolusEventType, savedInstanceState)
     }
 
@@ -68,7 +65,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
                 val intent = getIntent()
                 val extras = intent.getExtras()
                 if (extras != null) {
-                    val placeParcelable = placeFactory?.placeParcelableFromCheckInData(extras)
+                    val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
                     if (placeParcelable != null) {
                         this.placeSelected(placeParcelable)
                     }

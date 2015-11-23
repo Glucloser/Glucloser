@@ -1,6 +1,7 @@
 package com.nlefler.glucloser.actions
 
 import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import java.util.*
 import javax.inject.Inject
@@ -11,13 +12,13 @@ import javax.inject.Inject
 public class StartupAction @Inject constructor(val bolusPatternFactory: BolusPatternFactory) {
 
     public fun run(): Task<Void> {
-        val task = Task.create<Void>()
+        val taskSource = TaskCompletionSource<Void>()
         val tasks = ArrayList<Task<*>>()
 
         tasks.add(bolusPatternFactory.updateCurrentBolusPatternCache())
 
-        Task.whenAll(tasks).continueWith { task.trySetResult(null)  }
+        Task.whenAll(tasks).continueWith { taskSource.trySetResult(null)  }
 
-        return task.getTask() as Task<Void>
+        return taskSource.task
     }
 }

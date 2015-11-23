@@ -61,8 +61,6 @@
             android:theme="@android:style/Theme.Dialog" />
 
         <service android:name="com.parse.PushService" />
-
-        <service android:name="com.parse.PushService" />
         <receiver android:name="com.parse.ParsePushBroadcastReceiver"
             android:exported="false">
             <intent-filter>
