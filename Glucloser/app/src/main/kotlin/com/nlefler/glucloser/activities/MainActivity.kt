@@ -42,10 +42,10 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
     private var navDrawerToggle: ActionBarDrawerToggle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super<AppCompatActivity>.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.container, HistoryListFragment(), HistoryFragmentId).commit()
+            supportFragmentManager.beginTransaction().add(R.id.container, HistoryListFragment(), HistoryFragmentId).commit()
         }
 
         this.navBarItems = arrayOf(getString(R.string.nav_drawer_item_home),
@@ -53,34 +53,34 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 getString(R.string.nav_drawer_item_foursquare_login))
         this.navDrawerLayout = findViewById(R.id.drawer_layout) as DrawerLayout
         this.navDrawerListView = findViewById(R.id.left_drawer) as ListView
-        this.navDrawerListView!!.setAdapter(ArrayAdapter(this, R.layout.drawer_list_item, this.navBarItems))
-        this.navDrawerListView!!.setOnItemClickListener(this)
+        this.navDrawerListView?.adapter = ArrayAdapter(this, R.layout.drawer_list_item, this.navBarItems)
+        this.navDrawerListView?.onItemClickListener = this
 
         this.navDrawerToggle = ActionBarDrawerToggle(this, this.navDrawerLayout, R.string.nav_drawer_open, R.string.nav_drawer_closed)
         this.navDrawerLayout!!.setDrawerListener(this.navDrawerToggle)
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true)
-        getSupportActionBar().setHomeButtonEnabled(true)
+        supportActionBar.setDisplayHomeAsUpEnabled(true)
+        supportActionBar.setHomeButtonEnabled(true)
 
-        ParseAnalytics.trackAppOpenedInBackground(getIntent())
+        ParseAnalytics.trackAppOpenedInBackground(intent)
 
         requestLocationPermission()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
-        super<AppCompatActivity>.onPostCreate(savedInstanceState)
+        super.onPostCreate(savedInstanceState)
         // Sync the toggle state after onRestoreInstanceState has occurred.
-        this.navDrawerToggle!!.syncState()
+        this.navDrawerToggle?.syncState()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
-        super<AppCompatActivity>.onConfigurationChanged(newConfig)
-        this.navDrawerToggle!!.onConfigurationChanged(newConfig)
+        super.onConfigurationChanged(newConfig)
+        this.navDrawerToggle?.onConfigurationChanged(newConfig)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
@@ -186,9 +186,6 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 //        }
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public class HistoryListFragment : Fragment() {
 
         var realm: Realm? = null

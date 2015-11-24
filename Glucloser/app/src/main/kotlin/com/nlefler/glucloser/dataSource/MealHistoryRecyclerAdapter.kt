@@ -50,8 +50,8 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
         else {
             viewHolder.placeName.setText(GlucloserApplication.SharedApplication().getString(R.string.snack))
         }
-        viewHolder.carbsValue.setText("${bolusEvent.carbs}")
-        viewHolder.insulinValue.setText("${bolusEvent.insulin}")
+        viewHolder.carbsValue.text = "${bolusEvent.carbs}"
+        viewHolder.insulinValue.text = "${bolusEvent.insulin}"
     }
 
     override fun getItemCount(): Int {
