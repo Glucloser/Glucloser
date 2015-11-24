@@ -27,7 +27,7 @@ public class GlucloserApplication : Application() {
         _sharedApplication = this
 
         if (!Debug.isDebuggerConnected()) {
-            ParseCrashReporting.enable(this)
+            // Enable crash reporting
         }
 
         Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
