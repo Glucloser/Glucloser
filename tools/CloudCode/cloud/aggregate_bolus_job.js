@@ -8,22 +8,22 @@ exports.RegisterAggregateBolusRates = function() {
 
   var config = aggregateJobHelper.CreateAggregateRateJobConfig();
   config.JobName = 'aggregateBolusRates';
-  config.LogTableName = 'AggregateBolusRatesProcessLog';
-  config.ChangeEventTableName = 'BolusRate';
-  config.PatternChangeEventTableName = 'BolusPattern';
-  config.ChangeEventsAfterFun = bolus.BolusChangeEventsAfter;
-  config.ChangeEventDeserializeFun = bolus.DeserializeBolusChangeEvent;
-  config.ChangeEventLogFormatFun = bolus.LogFormatBolusChangeEvent;
+  config.LogTableName = 'AggregateCurrentCarbRatioProcessLog';
+  config.ChangeEventTableName = 'CurrentCarbRatio';
+  config.PatternChangeEventTableName = 'CurrentCarbRatioPattern';
+  config.ChangeEventsAfterFun = bolus.CurrentCarbRatiosAfter;
+  config.ChangeEventDeserializeFun = bolus.DeserializeCurrentCarbRatio;
+  config.ChangeEventLogFormatFun = bolus.LogFormatCurrentCarbRatio;
   config.ChangeEventSaveFun = function (parseObj, changeObj) {
     parseObj.set('NLID', uuid.v4());
-    parseObj.set('rate', changeObj.Rate);
+    parseObj.set('amount', changeObj.Amount);
     parseObj.set('ordinal', changeObj.ProfileIndex);
     parseObj.set('startTime', changeObj.StartTime);
     parseObj.set('timestamp', changeObj.Timestamp);
   };
-  config.PatternChangeEventsAfterFun = bolus.BolusPatternChangeEventsAfter;
-  config.PatternChangeEventDeserializeFun = bolus.DeserializeBolusPatternChangeEvent;
-  config.PatternChangeEventLogFormatFun = bolus.LogFormatBolusPatternChangeEvent;
+  config.PatternChangeEventsAfterFun = bolus.CurrentCarbRatioPatternsAfter;
+  config.PatternChangeEventDeserializeFun = bolus.DeserializeCurrentCarbRatioPattern;
+  config.PatternChangeEventLogFormatFun = bolus.LogFormatCurrentCarbRatioPattern;
   config.PatternChangeEventSaveFun = function (parseObj, changeObj) {
     parseObj.set('NLID', uuid.v4());
     parseObj.set('rateCount', changeObj.NumRatios);
