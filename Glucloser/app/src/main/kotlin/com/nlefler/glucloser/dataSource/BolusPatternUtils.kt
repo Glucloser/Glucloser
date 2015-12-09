@@ -11,8 +11,8 @@ public class BolusPatternUtils {
     companion object {
         public fun InsulinForCarbsAtCurrentTime(bolusPattern: BolusPattern, carbValue: Int): Float {
             val cal = Calendar.getInstance()
-            val curMilSecs = cal.get(Calendar.HOUR_OF_DAY) * 60 * 60 +
-                            cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND) * 1000
+            val curMilSecs = cal.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000 +
+                            cal.get(Calendar.MINUTE) * 60 * 1000 + cal.get(Calendar.SECOND) * 1000
 
             var sortedRates = bolusPattern.rates.sortedBy { rate -> rate.ordinal }
             var activeRate: BolusRate? = null
@@ -29,10 +29,10 @@ public class BolusPatternUtils {
                 activeRate = sortedRates.last()
             }
 
-            if (activeRate?.rate == null) {
+            if (activeRate?.carbsPerUnit == null) {
                 return 0f
             }
-            return carbValue.toFloat() / activeRate?.rate!!.toFloat()
+            return carbValue.toFloat() / activeRate?.carbsPerUnit!!.toFloat()
         }
     }
 }

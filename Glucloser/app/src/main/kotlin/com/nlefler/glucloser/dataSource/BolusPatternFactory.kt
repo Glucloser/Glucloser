@@ -97,11 +97,12 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
             val parseObj = task.getResult()
 
             val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
-            val rateParseObjPromises = ArrayList<Task<ParseObject>>();
+            val rateParseObjPromises = ArrayList<Task<ParseObject>>()
             for (rateParseObj in rateParseObjs) {
-                rateParseObjPromises.add(rateParseObj.fetchIfNeededInBackground())
+                rateParseObjPromises.add(rateParseObj.fetchIfNeededInBackground<ParseObject>())
             }
-            Task.whenAll(rateParseObjPromises).continueWith({ task ->
+            val allDone = Task.whenAll(rateParseObjPromises)
+            allDone.continueWith({ task ->
                 bolusPatternFromParseObject(parseObj)
             })
         })

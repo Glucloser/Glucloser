@@ -9,7 +9,7 @@ import android.os.Parcelable
 public class BolusRateParcelable(): Parcelable {
     public var id: String? = null
     public var ordinal: Int? = null
-    public var rate: Int? = null
+    public var carbsPerUnit: Int? = null
     public var startTime: Int? = null
 
     private constructor(parcel: Parcel) : this() {
@@ -18,8 +18,8 @@ public class BolusRateParcelable(): Parcelable {
         ordinal = parcel.readInt()
         ordinal = if (ordinal?:-1 > 0) ordinal else null
 
-        rate = parcel.readInt()
-        rate = if (rate?:-1 > 0) rate else null
+        carbsPerUnit = parcel.readInt()
+        carbsPerUnit = if (carbsPerUnit ?:-1 > 0) carbsPerUnit else null
 
         startTime = parcel.readInt()
         startTime = if (startTime?:-1 > 0) startTime else null
@@ -28,7 +28,7 @@ public class BolusRateParcelable(): Parcelable {
     override fun writeToParcel(dest: Parcel?, flags: Int) {
         dest?.writeString(id ?: "")
         dest?.writeInt(ordinal ?: -1)
-        dest?.writeInt(rate ?: -1)
+        dest?.writeInt(carbsPerUnit ?: -1)
         dest?.writeInt(startTime ?: -1)
     }
 
