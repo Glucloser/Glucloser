@@ -12,12 +12,12 @@ import java.util.*
 public open class BolusRate : RealmObject() {
     public open var NLID: String = UUID.randomUUID().toString()
     public open var ordinal: Int? = null
-    public open var rate: Int? = null
+    public open var carbsPerUnit: Int? = null
     public open var startTime: Int? = null
 
     companion object {
         @Ignore
-        val ParseClassName = "BolusRate"
+        val ParseClassName = "CurrentCarbRatio"
 
         @Ignore
         val IdFieldName = "NLID"
@@ -26,7 +26,7 @@ public open class BolusRate : RealmObject() {
         val OridnalFieldName = "ordinal"
 
         @Ignore
-        val RateFieldName = "rate"
+        val CarbsPerUnitFieldName = "amount"
 
         @Ignore
         val StartTimeFieldName = "startTime"

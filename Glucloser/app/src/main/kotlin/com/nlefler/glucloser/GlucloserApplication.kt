@@ -6,7 +6,11 @@ import android.os.Debug
 import android.support.multidex.MultiDex
 import android.util.Log
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.parse.*
+import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
+import com.parse.Parse
+import com.parse.ParseException
+import com.parse.ParseInstallation
+import com.parse.ParsePush
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
@@ -30,19 +34,17 @@ public class GlucloserApplication : Application() {
             // Enable crash reporting
         }
 
+        val realmConfig = RealmConfiguration.Builder(GlucloserApplication.SharedApplication())
+                .name("myrealm.realm")
+                .migration(GlucloserRealmMigration())
+                .schemaVersion(4)
+                .build();
+        Realm.setDefaultConfiguration(realmConfig)
+
         Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
         ParseInstallation.getCurrentInstallation().saveInBackground()
 
         this.subscribeToPush()
-
-        val realmConfig = RealmConfiguration.Builder(this)
-        .name("myrealm.realm")
-//        .encryptionKey(getKey())
-        .schemaVersion(1)
-//        .migration(new MyMigration())
-        .build();
-
-        Realm.setDefaultConfiguration(realmConfig);
 
         val dataFactory = DaggerDataFactoryComponent.create()
         var startupAction = dataFactory.startupAction()

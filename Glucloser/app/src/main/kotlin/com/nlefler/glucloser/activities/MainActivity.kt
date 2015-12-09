@@ -30,6 +30,7 @@ import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.ui.DividerItemDecoration
 import com.parse.ParseAnalytics
 import io.realm.Realm
+import io.realm.Sort
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
@@ -243,8 +244,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, false)
-            val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, false)
+            val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
+            val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {

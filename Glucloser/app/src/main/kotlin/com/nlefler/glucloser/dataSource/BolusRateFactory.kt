@@ -20,7 +20,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
         realm.beginTransaction()
         rate = bolusRateForId("__glucloser_special_empty_bolus_rate", true)
         rate?.ordinal = 0
-        rate?.rate = 0
+        rate?.carbsPerUnit = 0
         rate?.startTime = 0
         realm.commitTransaction()
 
@@ -32,7 +32,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
         realm.beginTransaction()
         rate = bolusRateForId("", true)
         rate?.ordinal = parcelable.ordinal
-        rate?.rate = parcelable.rate
+        rate?.carbsPerUnit = parcelable.carbsPerUnit
         rate?.startTime = parcelable.startTime
         realm.commitTransaction()
 
@@ -42,7 +42,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
     public fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
         val parcel = BolusRateParcelable()
         parcel.ordinal = rate.ordinal
-        parcel.rate = rate.rate
+        parcel.carbsPerUnit = rate.carbsPerUnit
         parcel.startTime = rate.startTime
 
         return parcel
@@ -58,7 +58,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
         realm.beginTransaction()
         rate = bolusRateForId(patternId, true)
         rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
-        rate?.rate = parseObj.getInt(BolusRate.RateFieldName)
+        rate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
         rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
         realm.commitTransaction()
 
@@ -68,7 +68,7 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
     public fun parseObjectFromBolusRate(rate: BolusRate): ParseObject {
         val prs = ParseObject.create(BolusRate.ParseClassName)
         prs.put(BolusRate.OridnalFieldName, rate.ordinal)
-        prs.put(BolusRate.RateFieldName, rate.rate)
+        prs.put(BolusRate.CarbsPerUnitFieldName, rate.carbsPerUnit)
         prs.put(BolusRate.StartTimeFieldName, rate.startTime)
 
         return prs

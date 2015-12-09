@@ -63,7 +63,7 @@ public class BolusEventDetailsFragment : Fragment() {
         if (bolusPatternParcelable != null) {
             this.bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)
         }
-        if (this.bolusPattern == null) {
+        if (bolusPattern == null) {
             bolusPatternFactory?.fetchCurrentBolusPattern()?.onSuccess { task ->
                 bolusPattern = task.result
             }

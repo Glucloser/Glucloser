@@ -18,7 +18,7 @@ public open class BolusPattern : RealmObject() {
 
     companion object {
         @Ignore
-        val ParseClassName = "BolusPattern"
+        val ParseClassName = "CurrentCarbRatioPattern"
 
         @Ignore
         val IdFieldName = "NLID"
