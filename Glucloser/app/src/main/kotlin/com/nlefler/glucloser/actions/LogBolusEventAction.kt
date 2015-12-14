@@ -78,41 +78,48 @@ public class LogBolusEventAction : Parcelable {
             foodList.add(food)
         }
 
-        val bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
+        bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!).continueWith { task ->
+            val bolusPattern = task.result
+            when (this.bolusEventParcelable ?: null) {
+                is MealParcelable -> {
+                    mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable).continueWith { task ->
+                        var place: Place? = null
+                        if (this.placeParcelable != null) {
+                            place = placeFactory.placeFromParcelable(this.placeParcelable!!)
+                        }
+                        val meal = task.result
+                        realm.executeTransaction {
+                            meal.foods = foodList
 
-        when (this.bolusEventParcelable ?: null) {
-            is MealParcelable -> {
-                val meal = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
+                            if (place != null) {
+                                meal.place = place
+                            }
 
-                var place: Place? = null
-                if (this.placeParcelable != null) {
-                    place = placeFactory.placeFromParcelable(this.placeParcelable!!)
+                            meal.beforeSugar = beforeSugar
+                            meal.bolusPattern = bolusPattern
+
+                            parseUploader.uploadBolusEvent(meal)
+                        }
+
+                    }
+
                 }
-                realm.beginTransaction()
-                meal.foods = foodList
+                is SnackParcelable -> {
+                    val snack = snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
+                    realm.beginTransaction()
 
-                if (place != null) {
-                    meal.place = place
+                    snack.foods = foodList
+                    snack.beforeSugar = beforeSugar
+                    snack.bolusPattern = bolusPattern
+
+                    realm.commitTransaction()
+                    parseUploader.uploadBolusEvent(snack)
                 }
-
-                meal.beforeSugar = beforeSugar
-                meal.bolusPattern = bolusPattern
-
-                realm.commitTransaction()
-                parseUploader.uploadBolusEvent(meal)
-            }
-            is SnackParcelable -> {
-                val snack = snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
-                realm.beginTransaction()
-
-                snack.foods = foodList
-                snack.beforeSugar = beforeSugar
-                snack.bolusPattern = bolusPattern
-
-                realm.commitTransaction()
-                parseUploader.uploadBolusEvent(snack)
+                else -> {
+                }
             }
         }
+
     }
 
     /** Parcelable  */

@@ -11,4 +11,9 @@ import org.junit.Before
  */
 public class BolusPatternFactoryTests {
 
+    @Test
+    public fun fetchCurrentBolusPattern() {
+        assertTrue { true }
+    }
+
 }

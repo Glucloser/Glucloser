@@ -13,6 +13,8 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
@@ -48,6 +50,7 @@ public class BolusEventDetailsFragment : Fragment() {
     private var totalInsulin = 0f
 
     private var bolusPattern: BolusPattern? = null
+    private var fetchTask: Task<BolusPattern?>? = null
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
@@ -60,14 +63,25 @@ public class BolusEventDetailsFragment : Fragment() {
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
         val bolusPatternParcelable = getBolusPatternFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
+
+        val patternParcelableTask = TaskCompletionSource<BolusPattern?>()
         if (bolusPatternParcelable != null) {
-            this.bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)
-        }
-        if (bolusPattern == null) {
-            bolusPatternFactory?.fetchCurrentBolusPattern()?.onSuccess { task ->
-                bolusPattern = task.result
+            bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)?.continueWith { task ->
+                this.bolusPattern = task.result
             }
         }
+        else {
+            patternParcelableTask.trySetResult(null)
+        }
+        patternParcelableTask.task.continueWith { task ->
+            if (bolusPattern == null) {
+                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
+                fetchTask?.continueWith { task ->
+                    bolusPattern = task.result
+                }
+            }
+        }
+
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -186,9 +200,10 @@ public class BolusEventDetailsFragment : Fragment() {
             this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(this.bolusPattern!!)
         }
         else {
-            val emptyPattern = bolusPatternFactory?.emptyPattern()
-            if (emptyPattern != null) {
-                this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(emptyPattern)
+             bolusPatternFactory?.emptyPattern()?.continueWith { task ->
+                if (task.result != null) {
+                    this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(task.result)
+                }
             }
         }
 

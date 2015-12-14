@@ -3,6 +3,7 @@ package com.nlefler.glucloser.dataSource
 import android.os.Parcelable
 import bolts.Continuation
 import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.BolusPattern
 import com.nlefler.glucloser.models.BolusPatternParcelable
 import com.nlefler.glucloser.models.BolusRate
@@ -18,38 +19,60 @@ import javax.inject.Inject
  */
 public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolusRateFactory: BolusRateFactory) {
 
-    public fun emptyPattern(): BolusPattern {
-        val rate = bolusRateFactory.emptyRate()
-        realm.beginTransaction()
-        val pattern = bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
-        pattern?.rateCount = 1
-        pattern?.rates?.add(rate)
-        realm.commitTransaction()
+    public fun emptyPattern(): Task<BolusPattern> {
+        val task = TaskCompletionSource<BolusPattern>()
 
-        return pattern!!
-    }
+        bolusRateFactory.emptyRate().continueWith { rateTask ->
+            if (rateTask.isFaulted) {
+                task.trySetError(Exception("Unable to create BolusRate"))
+            }
+            else {
+                realm.executeTransaction { realm ->
+                    val pattern = bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
+                    pattern?.rateCount = 1
+                    pattern?.rates?.add(rateTask.result)
 
-    public fun bolusPatternFromParseObject(parseObj: ParseObject): BolusPattern? {
-        val patternId = parseObj.getString(BolusPattern.IdFieldName) ?: return null
-        var pattern: BolusPattern?
-
-        val rates = ArrayList<BolusRate?>()
-        val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
-        for (rateParseObj in rateParseObjs) {
-            val rate = bolusRateFactory.bolusRateFromParseObject(rateParseObj)
-            if (rate != null) {
-                rates.add(rate)
+                    task.trySetResult(pattern)
+                }
             }
         }
 
-        realm.beginTransaction()
-        pattern = bolusPatternForId(patternId, true)
-        pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
+        return task.task
+    }
 
-        pattern?.rates?.addAll(rates)
-        realm.commitTransaction()
+    public fun bolusPatternFromParseObject(parseObj: ParseObject): Task<BolusPattern?> {
+        val patternId = parseObj.getString(BolusPattern.IdFieldName) ?: return Task.forError(Exception("Invalid Parse Object"))
 
-        return pattern
+        val ratePromises = ArrayList<Task<BolusRate?>>()
+        val rates = ArrayList<BolusRate>()
+
+        val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
+        for (rateParseObj in rateParseObjs) {
+            val ratePromise = TaskCompletionSource<BolusRate?>()
+            ratePromises.add(ratePromise.task)
+            bolusRateFactory.bolusRateFromParseObject(rateParseObj).continueWith({ task ->
+                if (task.isFaulted) {
+                    ratePromise.trySetError(Exception("Unable to create BolusRate"))
+                } else {
+                    val rate = task.result
+                    rates.add(rate!!)
+                    ratePromise.trySetResult(task.result)
+                }
+            })
+        }
+
+        val patternPromise = TaskCompletionSource<BolusPattern?>()
+        Task.whenAll(ratePromises).continueWith {
+            realm.executeTransaction { realm ->
+                val pattern = bolusPatternForId(patternId, true)
+                pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
+                pattern?.rates?.addAll(rates)
+
+                patternPromise.trySetResult(pattern)
+            }
+        }
+
+        return patternPromise.task
     }
 
     public fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
@@ -90,40 +113,75 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
             query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK)
         }
 
-        return query.getFirstInBackground().continueWithTask({ task ->
+        val patternTask = TaskCompletionSource<BolusPattern?>()
+        var patternParseObj: ParseObject? = null
+
+        query.getFirstInBackground().continueWithTask({ task ->
             // Get all rates
             task.getResult().fetchIfNeededInBackground<ParseObject>()
         }).continueWithTask({ task ->
-            val parseObj = task.getResult()
+            val dlTask = TaskCompletionSource<ParseObject?>()
 
-            val rateParseObjs: List<ParseObject> = parseObj.getList(BolusPattern.RatesFieldName)
-            val rateParseObjPromises = ArrayList<Task<ParseObject>>()
-            for (rateParseObj in rateParseObjs) {
-                rateParseObjPromises.add(rateParseObj.fetchIfNeededInBackground<ParseObject>())
+            patternParseObj = task.getResult()
+            if (patternParseObj == null) {
+                dlTask.trySetError(Exception("Unable to fetch current carb ratio pattern"))
             }
-            val allDone = Task.whenAll(rateParseObjPromises)
-            allDone.continueWith({ task ->
-                bolusPatternFromParseObject(parseObj)
-            })
+            else {
+
+                val rateParseObjs: List<ParseObject> = patternParseObj!!.getList(BolusPattern.RatesFieldName)
+                val rateParseObjPromises = ArrayList<Task<ParseObject>>()
+                for (rateParseObj in rateParseObjs) {
+                    rateParseObjPromises.add(rateParseObj.fetchIfNeededInBackground<ParseObject>())
+                }
+                Task.whenAll(rateParseObjPromises).continueWith { task ->
+                    dlTask.trySetResult(patternParseObj)
+                }
+            }
+            dlTask.task
+        }).continueWith({ task ->
+            val parseObj = task.result
+            if (parseObj != null) {
+                bolusPatternFromParseObject(parseObj).continueWith { task ->
+                    if (task.isFaulted) {
+                        patternTask.trySetError(task.error)
+                    }
+                    else {
+                        patternTask.trySetResult(task.result)
+                    }
+                }
+            }
+            else {
+                patternTask.trySetError(Exception("Unable to parse ParseObject into BolusPattern"))
+            }
         })
+        return patternTask.task
     }
 
-    public fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
+    public fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): Task<BolusPattern?> {
+        val patternTask = TaskCompletionSource<BolusPattern?>()
+
         val id = parcelable.id ?: UUID.randomUUID().toString()
         val rates = ArrayList<BolusRate>()
+        val ratePromises = ArrayList<Task<BolusRate>>()
 
         for (rateParcelable in parcelable.rates) {
-            rates.add(bolusRateFactory.bolusRateFromParcelable(rateParcelable))
+            ratePromises.add(bolusRateFactory.bolusRateFromParcelable(rateParcelable).continueWithTask { rateTask ->
+                if (!rateTask.isFaulted) {
+                    rates.add(rateTask.result)
+                }
+                rateTask
+            })
         }
 
-        realm.beginTransaction()
-        val pattern = bolusPatternForId(id, true)
-        pattern!!.rateCount = parcelable.rateCount
-        pattern.rates.addAll(rates)
+        Task.whenAll(ratePromises).continueWith { task ->
+            val pattern = bolusPatternForId(id, true)
+            pattern?.rateCount = parcelable.rateCount
+            pattern?.rates?.addAll(rates)
 
-        realm.commitTransaction()
+            patternTask.trySetResult(pattern)
+        }
 
-        return pattern
+        return patternTask.task
     }
 
     private fun bolusPatternForId(id: String, create: Boolean): BolusPattern? {
