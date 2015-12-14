@@ -11,9 +11,9 @@ import javax.inject.Singleton
 /**
  * Created by nathan on 10/20/15.
  */
-@Module @Singleton
+@Module
 public class DataFactoryModule {
-    @Provides @Singleton public fun realm(): Realm {
+    @Provides public fun realm(): Realm {
         return Realm.getDefaultInstance()
     }
 }

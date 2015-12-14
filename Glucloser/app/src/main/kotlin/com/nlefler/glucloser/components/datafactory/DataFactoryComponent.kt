@@ -44,6 +44,5 @@ public interface DataFactoryComponent {
     @Singleton
     fun parseUploader(): ParseUploader
 
-    @Singleton
     fun realm(): Realm
 }
