@@ -1,6 +1,7 @@
 package com.nlefler.glucloser.components.datafactory
 
 import com.nlefler.glucloser.GlucloserApplication
+import com.nlefler.glucloser.dataSource.RealmManager
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
 import dagger.Module
 import dagger.Provides
@@ -13,7 +14,9 @@ import javax.inject.Singleton
  */
 @Module
 public class DataFactoryModule {
-    @Provides public fun realm(): Realm {
-        return Realm.getDefaultInstance()
+    private val realmFactory = RealmManager()
+
+    @Provides public fun realmFactory(): RealmManager {
+        return realmFactory
     }
 }

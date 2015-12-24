@@ -3,6 +3,9 @@ package com.nlefler.glucloser.actions
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
+import bolts.Continuation
+import bolts.Task
+import bolts.TaskCompletionSource
 
 import com.nlefler.glucloser.dataSource.*
 import com.nlefler.glucloser.models.*
@@ -34,7 +37,7 @@ public class LogBolusEventAction : Parcelable {
     lateinit var snackFactory: SnackFactory
         @Inject set
 
-    lateinit var realm: Realm
+    lateinit var realmManager: RealmManager
         @Inject set
 
     lateinit var parseUploader: ParseUploader
@@ -66,54 +69,97 @@ public class LogBolusEventAction : Parcelable {
             return
         }
 
-        var beforeSugar: BloodSugar? = null
+        var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
         var beforeSugarParcelable = bolusEventParcelable?.bloodSugarParcelable;
         if (beforeSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(beforeSugarParcelable)
+            beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(beforeSugarParcelable)
         }
 
+        val foodTasks = ArrayList<Task<Food?>>()
         val foodList = RealmList<Food>()
         for (foodParcelable in this.foodParcelableList) {
-            val food = foodFactory.foodFromParcelable(foodParcelable)
-            foodList.add(food)
+            foodTasks.add(foodFactory.foodFromParcelable(foodParcelable).continueWithTask(Continuation<Food?, Task<Food?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation task
+                }
+
+                val food = task.result
+                foodList.add(food)
+                return@Continuation Task.forResult(food)
+            }))
         }
 
-        bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!).continueWith { task ->
-            val bolusPattern = task.result
+        var bolusPatternTask: Task<BolusPattern?>? = Task.forResult(null)
+        if (bolusEventParcelable?.bolusPatternParcelable != null) {
+            bolusPatternTask = bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
+        }
+
+        val allTasks = arrayListOf(beforeSugarTask, bolusPatternTask)
+        allTasks.addAll(foodTasks)
+        Task.whenAll(allTasks).continueWith { task ->
+            if (task.isFaulted) {
+                return@continueWith
+            }
+
             when (this.bolusEventParcelable ?: null) {
                 is MealParcelable -> {
-                    mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable).continueWith { task ->
-                        var place: Place? = null
-                        if (this.placeParcelable != null) {
-                            place = placeFactory.placeFromParcelable(this.placeParcelable!!)
-                        }
-                        val meal = task.result
-                        realm.executeTransaction {
-                            meal.foods = foodList
+                    var placeTask: Task<Place?>? = Task.forResult(null)
+                    if (this.placeParcelable != null) {
+                        placeTask = placeFactory.placeFromParcelable(this.placeParcelable!!)
+                    }
 
-                            if (place != null) {
-                                meal.place = place
+                    val mealTask = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
+
+                    Task.whenAll(arrayListOf(mealTask, placeTask)).continueWithTask(Continuation<Void, Task<Meal?>> { task ->
+                        if (task.isFaulted) {
+                            return@Continuation Task.forError<Meal?>(task.error)
+                        }
+
+                        val meal = mealTask.result
+                        val realmTask = TaskCompletionSource<Meal?>()
+                        return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
+                            meal?.foods = foodList
+
+                            if (placeTask?.result != null) {
+                                meal?.place = placeTask?.result
                             }
 
-                            meal.beforeSugar = beforeSugar
-                            meal.bolusPattern = bolusPattern
+                            meal?.beforeSugar = beforeSugarTask?.result
+                            meal?.bolusPattern = bolusPatternTask?.result
 
-                            parseUploader.uploadBolusEvent(meal)
+                            realmTask.trySetResult(meal)
+                        }, realmTask.task)
+
+                    }).continueWith { task ->
+                        if (task.isFaulted || task.result == null || task.result !is Meal) {
+                            return@continueWith
                         }
 
+                        parseUploader.uploadBolusEvent(task.result as Meal)
                     }
 
                 }
                 is SnackParcelable -> {
-                    val snack = snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
-                    realm.beginTransaction()
+                    snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable).continueWithTask(Continuation<Snack?, Task<Snack?>> { task ->
+                        if (task.isFaulted) {
+                            return@Continuation task
+                        }
 
-                    snack.foods = foodList
-                    snack.beforeSugar = beforeSugar
-                    snack.bolusPattern = bolusPattern
+                        val realmTask = TaskCompletionSource<Snack?>()
+                        return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
+                            val snack = task.result
+                            snack?.foods = foodList
+                            snack?.beforeSugar = beforeSugarTask?.result
+                            snack?.bolusPattern = bolusPatternTask?.result
+                            realmTask.trySetResult(snack)
+                        }, realmTask.task)
+                    }).continueWith { task ->
+                        if (task.isFaulted || task.result == null || task.result !is Snack) {
+                            return@continueWith
+                        }
 
-                    realm.commitTransaction()
-                    parseUploader.uploadBolusEvent(snack)
+                        parseUploader.uploadBolusEvent(task.result as Snack)
+                    }
                 }
                 else -> {
                 }

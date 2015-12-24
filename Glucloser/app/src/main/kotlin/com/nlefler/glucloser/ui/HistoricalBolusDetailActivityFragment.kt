@@ -45,9 +45,10 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
         this.placeName = getPlaceNameFromBundle(bundle, arguments, activity.intent.extras)
 
         for (foodPar in this.bolusEventParcelable?.foodParcelables ?: ArrayList()) {
-            val food = foodFactory?.foodFromParcelable(foodPar)
-            if (food != null) {
-                this.foods.add(food)
+            foodFactory?.foodFromParcelable(foodPar)?.continueWith { task ->
+                if (!task.isFaulted && task.result != null) {
+                    this.foods.add(task.result!!)
+                }
             }
         }
     }

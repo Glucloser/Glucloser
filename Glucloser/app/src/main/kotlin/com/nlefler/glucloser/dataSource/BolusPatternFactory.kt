@@ -17,27 +17,25 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/19/15.
  */
-public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolusRateFactory: BolusRateFactory) {
+public class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
 
-    public fun emptyPattern(): Task<BolusPattern> {
-        val task = TaskCompletionSource<BolusPattern>()
-
-        bolusRateFactory.emptyRate().continueWith { rateTask ->
+    public fun emptyPattern(): Task<BolusPattern?> {
+        return bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> { rateTask ->
             if (rateTask.isFaulted) {
-                task.trySetError(Exception("Unable to create BolusRate"))
+                return@Continuation Task.forError(Exception("Unable to create BolusRate"))
             }
             else {
-                realm.executeTransaction { realm ->
-                    val pattern = bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
-                    pattern?.rateCount = 1
-                    pattern?.rates?.add(rateTask.result)
-
-                    task.trySetResult(pattern)
-                }
+                return@Continuation bolusPatternForId("__glucloser_special_empty_bolus_pattern", true).continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>>{ task ->
+                    val realmTask = TaskCompletionSource<BolusPattern?>()
+                    return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
+                        val pattern = task.result
+                        pattern?.rateCount = 1
+                        pattern?.rates?.add(rateTask.result)
+                        realmTask.trySetResult(pattern)
+                    }, realmTask.task)
+                })
             }
-        }
-
-        return task.task
+        })
     }
 
     public fun bolusPatternFromParseObject(parseObj: ParseObject): Task<BolusPattern?> {
@@ -61,18 +59,23 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
             })
         }
 
-        val patternPromise = TaskCompletionSource<BolusPattern?>()
-        Task.whenAll(ratePromises).continueWith {
-            realm.executeTransaction { realm ->
-                val pattern = bolusPatternForId(patternId, true)
-                pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
-                pattern?.rates?.addAll(rates)
 
-                patternPromise.trySetResult(pattern)
-            }
-        }
-
-        return patternPromise.task
+        return Task.whenAll(ratePromises).continueWithTask(Continuation<Void, Task<BolusPattern?>> {
+            val patternPromise = bolusPatternForId(patternId, true)
+            patternPromise.continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>>{ task ->
+                val realmTask = TaskCompletionSource<BolusPattern?>()
+                return@Continuation realmManager.executeTransaction(Realm.Transaction{ realm ->
+                    if (task.isFaulted) {
+                        realmTask.trySetError(task.error)
+                        return@Transaction
+                    }
+                    val pattern = task.result
+                    pattern?.rateCount = parseObj.getInt(BolusPattern.RateCountFieldName)
+                    pattern?.rates?.addAll(rates)
+                    realmTask.trySetResult(pattern)
+                }, realmTask.task)
+            })
+        })
     }
 
     public fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
@@ -114,7 +117,7 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
         }
 
         val patternTask = TaskCompletionSource<BolusPattern?>()
-        var patternParseObj: ParseObject? = null
+        var patternParseObj: ParseObject?
 
         query.getFirstInBackground().continueWithTask({ task ->
             // Get all rates
@@ -162,19 +165,21 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
 
         val id = parcelable.id ?: UUID.randomUUID().toString()
         val rates = ArrayList<BolusRate>()
-        val ratePromises = ArrayList<Task<BolusRate>>()
+        val ratePromises = ArrayList<Task<BolusRate?>>()
 
         for (rateParcelable in parcelable.rates) {
             ratePromises.add(bolusRateFactory.bolusRateFromParcelable(rateParcelable).continueWithTask { rateTask ->
-                if (!rateTask.isFaulted) {
-                    rates.add(rateTask.result)
+                if (!rateTask.isFaulted && rateTask.result != null) {
+                    rates.add(rateTask.result!!)
                 }
                 rateTask
             })
         }
 
-        Task.whenAll(ratePromises).continueWith { task ->
-            val pattern = bolusPatternForId(id, true)
+        Task.whenAll(ratePromises).continueWithTask({ task ->
+            bolusPatternForId(id, true)
+        }).continueWith { task ->
+            val pattern = task.result
             pattern?.rateCount = parcelable.rateCount
             pattern?.rates?.addAll(rates)
 
@@ -184,22 +189,32 @@ public class BolusPatternFactory @Inject constructor(val realm: Realm, val bolus
         return patternTask.task
     }
 
-    private fun bolusPatternForId(id: String, create: Boolean): BolusPattern? {
-        if (create && id.length == 0) {
-            val rate = realm.createObject<BolusPattern>(BolusPattern::class.java)
-            return rate
+    private fun bolusPatternForId(id: String, create: Boolean): Task<BolusPattern?> {
+        val patternTask = TaskCompletionSource<BolusPattern?>()
+        realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && id.length == 0) {
+                val pattern = realm.createObject<BolusPattern>(BolusPattern::class.java)
+                patternTask.trySetResult(pattern)
+                return@Transaction
+            }
+
+            val query = realm.where<BolusPattern>(BolusPattern::class.java)
+
+            query?.equalTo(BolusPattern.IdFieldName, id)
+            var pattern = query?.findFirst()
+
+            if (pattern == null && create) {
+                pattern = realm.createObject<BolusPattern>(BolusPattern::class.java)
+                pattern!!.NLID = id
+            }
+            patternTask.trySetResult(pattern)
+        }, patternTask.task).continueWith { task ->
+            if (task.isFaulted) {
+                return@continueWith  task
+            }
+            patternTask.trySetResult(task.result)
         }
 
-        val query = realm.where<BolusPattern>(BolusPattern::class.java)
-
-        query?.equalTo(BolusPattern.IdFieldName, id)
-        var result: BolusPattern? = query?.findFirst()
-
-        if (result == null && create) {
-            result = realm.createObject<BolusPattern>(BolusPattern::class.java)
-            result!!.NLID = id
-        }
-
-        return result
+        return patternTask.task
     }
 }

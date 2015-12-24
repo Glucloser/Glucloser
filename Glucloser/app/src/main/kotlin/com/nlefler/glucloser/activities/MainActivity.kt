@@ -17,11 +17,14 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import bolts.Task
+import bolts.TaskCompletionSource
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
+import com.nlefler.glucloser.dataSource.RealmManager
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.models.BolusEvent
 import com.nlefler.glucloser.models.BolusEventType
@@ -30,6 +33,8 @@ import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.ui.DividerItemDecoration
 import com.parse.ParseAnalytics
 import io.realm.Realm
+import io.realm.RealmList
+import io.realm.RealmResults
 import io.realm.Sort
 import java.util.ArrayList
 import java.util.Collections
@@ -189,7 +194,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
     public class HistoryListFragment : Fragment() {
 
-        var realm: Realm? = null
+        var realmManager: RealmManager? = null
 
         private var mealHistoryListView: RecyclerView? = null
         private var mealHistoryLayoutManager: RecyclerView.LayoutManager? = null
@@ -199,7 +204,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             super.onCreate(savedInstanceState)
 
             val dataFactoryComponent = DaggerDataFactoryComponent.create()
-            realm = dataFactoryComponent.realm()
+            realmManager = dataFactoryComponent.realmFactory()
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -244,8 +249,20 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
-            val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
+            val sortedResults = ArrayList<BolusEvent>()
+
+            val mealResultsTask = TaskCompletionSource<Unit>()
+            realmManager?.executeTransaction(Realm.Transaction { realm ->
+                val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
+                sortedResults.addAll(mealResults ?: ArrayList())
+                mealResultsTask.trySetResult(null)
+            }, mealResultsTask.task)
+            val snackResultsTask = TaskCompletionSource<Unit>()
+            realmManager?.executeTransaction(Realm.Transaction { realm ->
+                val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
+                sortedResults.addAll(snackResults ?: ArrayList())
+                snackResultsTask.trySetResult(null)
+            }, snackResultsTask.task)
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
@@ -256,12 +273,12 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                     return other == this
                 }
             }
-            val sortedResults = ArrayList<BolusEvent>()
-            sortedResults.addAll(mealResults ?: ArrayList())
-            sortedResults.addAll(snackResults ?: ArrayList())
-            Collections.sort(sortedResults, comparator)
 
-            this.mealHistoryAdapter!!.setEvents(sortedResults)
+            Task.whenAll(arrayListOf(mealResultsTask.task, snackResultsTask.task)).continueWith {
+                Collections.sort(sortedResults, comparator)
+
+                this.mealHistoryAdapter!!.setEvents(sortedResults)
+            }
         }
 
         companion object {

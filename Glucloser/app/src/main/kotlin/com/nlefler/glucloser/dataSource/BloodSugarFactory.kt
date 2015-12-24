@@ -2,6 +2,9 @@ package com.nlefler.glucloser.dataSource
 
 import android.content.Context
 import android.util.Log
+import bolts.Continuation
+import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.BloodSugar
 import com.nlefler.glucloser.models.BloodSugarParcelable
 
@@ -21,15 +24,11 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 1/4/15.
  */
-public class BloodSugarFactory @Inject constructor(val realm: Realm) {
+public class BloodSugarFactory @Inject constructor(val realmManager: RealmManager) {
     private val LOG_TAG = "BloodSugarFactory"
 
-    public fun bloodSugar(): BloodSugar {
-        realm.beginTransaction()
-        val sugar = bloodSugarForBloodSugarId(null, true)!!
-        realm.commitTransaction()
-
-        return sugar
+    public fun bloodSugar(): Task<BloodSugar?> {
+        return bloodSugarForBloodSugarId(null, true)
     }
 
     public fun areBloodSugarsEqual(sugar1: BloodSugar?, sugar2: BloodSugar?): Boolean {
@@ -43,14 +42,19 @@ public class BloodSugarFactory @Inject constructor(val realm: Realm) {
         return valueOk && dateOK
     }
 
-    public fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): BloodSugar {
-        realm.beginTransaction()
-        val sugar = bloodSugarForBloodSugarId(parcelable.id, true)!!
-        sugar.value = parcelable.value
-        sugar.date = parcelable.date
-        realm.commitTransaction()
-
-        return sugar
+    public fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): Task<BloodSugar?> {
+        return bloodSugarForBloodSugarId(parcelable.id, true).continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
+            val sugar = task.result
+            val sugarTask = TaskCompletionSource<BloodSugar?>()
+            realmManager.executeTransaction(Realm.Transaction {
+                sugar?.value = parcelable.value
+                sugar?.date = parcelable.date
+                sugarTask.trySetResult(sugar)
+            }, sugarTask.task)
+        })
     }
 
     public fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
@@ -61,10 +65,10 @@ public class BloodSugarFactory @Inject constructor(val realm: Realm) {
         return parcelable
     }
 
-    internal fun bloodSugarFromParseObject(parseObject: ParseObject?): BloodSugar? {
+    internal fun bloodSugarFromParseObject(parseObject: ParseObject?): Task<BloodSugar?> {
         if (parseObject == null) {
             Log.e(LOG_TAG, "Can't create BloodSugar from Parse object, null")
-            return null
+            return Task.forError(Exception("Can't create BloodSugar from Parse object, null"))
         }
         val sugarId = parseObject.getString(BloodSugar.IdFieldName)
         if (sugarId == null || sugarId.isEmpty()) {
@@ -73,17 +77,23 @@ public class BloodSugarFactory @Inject constructor(val realm: Realm) {
         val sugarValue = parseObject.getInt(BloodSugar.ValueFieldName)
         val sugarDate = parseObject.getDate(BloodSugar.DateFieldName)
 
-        realm.beginTransaction()
-        val sugar = bloodSugarForBloodSugarId(sugarId, true)!!
-        if (sugarValue >= 0 && sugarValue != sugar.value) {
-            sugar.value = sugarValue
-        }
-        if (sugarDate != null) {
-            sugar.date = sugarDate
-        }
-        realm.commitTransaction()
+        return bloodSugarForBloodSugarId(sugarId, true).continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
 
-        return sugar
+            val sugar = task.result!!
+            val realmTask = TaskCompletionSource<BloodSugar?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                if (sugarValue >= 0 && sugarValue != sugar.value) {
+                    sugar.value = sugarValue
+                }
+                if (sugarDate != null) {
+                    sugar.date = sugarDate
+                }
+                realmTask.trySetResult(sugar)
+            }, realmTask.task)
+        })
     }
 
     /**
@@ -122,23 +132,26 @@ public class BloodSugarFactory @Inject constructor(val realm: Realm) {
         })
     }
 
-    private fun bloodSugarForBloodSugarId(id: String?, create: Boolean): BloodSugar? {
-        if (create && (id == null || id.isEmpty())) {
-            val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-            sugar?.id = UUID.randomUUID().toString()
-            return sugar
-        }
+    private fun bloodSugarForBloodSugarId(id: String?, create: Boolean): Task<BloodSugar?> {
+        val task = TaskCompletionSource<BloodSugar?>()
+        return realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && (id == null || id.isEmpty())) {
+                val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
+                sugar?.id = UUID.randomUUID().toString()
+                task.trySetResult(sugar)
+                return@Transaction
+            }
 
-        val query = realm.where<BloodSugar>(BloodSugar::class.java)
+            val query = realm.where<BloodSugar>(BloodSugar::class.java)
 
-        query?.equalTo(BloodSugar.IdFieldName, id)
-        var result: BloodSugar? = query?.findFirst()
+            query?.equalTo(BloodSugar.IdFieldName, id)
+            var sugar = query?.findFirst()
 
-        if (result == null && create) {
-            result = realm.createObject<BloodSugar>(BloodSugar::class.java)
-            result!!.id = id
-        }
-
-        return result
+            if (sugar == null && create) {
+                sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
+                sugar!!.id = id
+            }
+            task.trySetResult(sugar)
+        }, task.task)
     }
 }
