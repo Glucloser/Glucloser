@@ -2,6 +2,9 @@ package com.nlefler.glucloser.dataSource
 
 import android.content.Context
 import android.util.Log
+import bolts.Continuation
+import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.BloodSugar
 import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.models.SnackParcelable
@@ -20,53 +23,35 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 4/25/15.
  */
-public class SnackFactory @Inject constructor(val realm: Realm, val bloodSugarFactory: BloodSugarFactory) {
+public class SnackFactory @Inject constructor(val realmManager: RealmManager, val bloodSugarFactory: BloodSugarFactory) {
     private val LOG_TAG = "SnackFactory"
 
-    public fun snack(): Snack {
-        realm.beginTransaction()
-        val snack = snackForSnackId("", true)!!
-        realm.commitTransaction()
-
-        return snack
+    public fun snack(): Task<Snack?> {
+        return snackForSnackId("", true)
     }
 
-    public fun fetchSnack(id: String, action: Action1<Snack>?) {
-        if (action == null) {
-            Log.e(LOG_TAG, "Unable to fetch Snack, action is null")
-            return
-        }
-        if (id.isEmpty()) {
-            Log.e(LOG_TAG, "Unable to fetch Snack, invalid args")
-            action.call(null)
-            return
-        }
-        realm.beginTransaction()
-        val snack = snackForSnackId(id, false)
-        if (snack != null) {
-            action.call(snack)
-            return
-        }
+    public fun fetchSnack(id: String): Task<Snack?> {
+        return snackForSnackId(id, false).continueWithTask(Continuation<Snack?, Task<Snack?>> { task ->
+            if (task.isCompleted) {
+                return@Continuation task
+            }
 
-        val parseQuery = ParseQuery.getQuery<ParseObject>(Snack.ParseClassName)
-        parseQuery.whereEqualTo(Snack.SnackIdFieldName, id)
-        parseQuery.setLimit(1)
-        parseQuery.firstInBackground.continueWithTask({ task ->
-            if (task.isFaulted) {
-                action.call(null)
-                task
-            }
-            else {
-                task.result.fetchIfNeededInBackground<ParseObject>()
-            }
-        }).continueWith({ task ->
-            if (task.isFaulted) {
-                action.call(null)
-            } else {
-                val snackFromParse = snackFromParseObject(task.result)
-                action.call(snackFromParse)
-            }
+            val parseQuery = ParseQuery.getQuery<ParseObject>(Snack.ParseClassName)
+            parseQuery.whereEqualTo(Snack.SnackIdFieldName, id)
+            parseQuery.setLimit(1)
+            return@Continuation  parseQuery.firstInBackground.continueWithTask(Continuation<ParseObject?, Task<ParseObject?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation task.result?.fetchIfNeededInBackground<ParseObject>()
+            }).continueWithTask(Continuation<ParseObject?, Task<Snack?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError<Snack?>(task.error)
+                }
+                return@Continuation  snackFromParseObject(task.result)
+            })
         })
+
     }
 
     public fun parcelableFromSnack(snack: Snack): SnackParcelable {
@@ -83,62 +68,79 @@ public class SnackFactory @Inject constructor(val realm: Realm, val bloodSugarFa
         return parcelable
     }
 
-    public fun snackFromParcelable(parcelable: SnackParcelable): Snack {
+    public fun snackFromParcelable(parcelable: SnackParcelable): Task<Snack?> {
 
-        var beforeSugar: BloodSugar? = null
+        var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
         if (parcelable.bloodSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
+            beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
         }
 
-        realm.beginTransaction()
-        val snack = snackForSnackId(parcelable.id, true)!!
-        snack.insulin = parcelable.insulin
-        snack.carbs = parcelable.carbs
-        snack.isCorrection = parcelable.isCorrection
-        if (beforeSugar != null) {
-            snack.beforeSugar = beforeSugar
-        }
-        snack.date = parcelable.date
-        realm.commitTransaction()
+        val snackTask = snackForSnackId(parcelable.id, true)
+        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask)).continueWithTask(Continuation<Void, Task<Snack?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
+            }
 
-        return snack
+            val realmTask = TaskCompletionSource<Snack?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                val snack = snackTask.result
+                snack?.insulin = parcelable.insulin
+                snack?.carbs = parcelable.carbs
+                snack?.isCorrection = parcelable.isCorrection
+                snack?.beforeSugar = beforeSugarTask?.result
+                snack?.date = parcelable.date
+                realmTask.trySetResult(snack)
+            }, realmTask.task)
+        })
     }
 
-    protected fun snackFromParseObject(parseObject: ParseObject?): Snack? {
+    protected fun snackFromParseObject(parseObject: ParseObject?): Task<Snack?> {
         if (parseObject == null) {
-            Log.e(LOG_TAG, "Can't create Snack from Parse object, null")
-            return null
+            val errorMessage = "Can't create Snack from Parse object, null"
+            Log.e(LOG_TAG, errorMessage)
+            return Task.forError(Exception(errorMessage))
         }
+
         val snackId = parseObject.getString(Snack.SnackIdFieldName)
         if (snackId == null || snackId.isEmpty()) {
-            Log.e(LOG_TAG, "Can't create Snack from Parse object, no id")
+            val errorMessage = "Can't create Snack from Parse object, no id"
+            Log.e(LOG_TAG, errorMessage)
+            return Task.forError(Exception(errorMessage))
         }
+
+        val beforeSugarTask = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Snack.BeforeSugarFieldName))
+
         val carbs = parseObject.getInt(Snack.CarbsFieldName)
         val insulin = parseObject.getDouble(Snack.InsulinFieldName).toFloat()
         val correction = parseObject.getBoolean(Snack.CorrectionFieldName)
         val snackDate = parseObject.getDate(Snack.SnackDateFieldName)
-        val beforeSugar = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Snack.BeforeSugarFieldName))
 
-        realm.beginTransaction()
-        val snack = snackForSnackId(snackId, true)!!
-        if (carbs >= 0 && carbs != snack.carbs) {
-            snack.carbs = carbs
-        }
-        if (insulin >= 0 && snack.insulin != insulin) {
-            snack.insulin = insulin
-        }
-        if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(snack.beforeSugar, beforeSugar)) {
-            snack.beforeSugar = beforeSugar
-        }
-        if (snack.isCorrection != correction) {
-            snack.isCorrection = correction
-        }
-        if (snackDate != null) {
-            snack.date = snackDate
-        }
-        realm.commitTransaction()
+        val snackTask = snackForSnackId(snackId, true)
+        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask)).continueWithTask(Continuation<Void?, Task<Snack?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
+            }
 
-        return snack
+            val realmTask = TaskCompletionSource<Snack?>()
+            return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
+                val snack = snackTask.result
+                if (carbs >= 0 && carbs != snack?.carbs) {
+                    snack?.carbs = carbs
+                }
+                if (insulin >= 0 && snack?.insulin != insulin) {
+                    snack?.insulin = insulin
+                }
+                if (beforeSugarTask.result != null && bloodSugarFactory.areBloodSugarsEqual(snack?.beforeSugar, beforeSugarTask.result)) {
+                    snack?.beforeSugar = beforeSugarTask.result
+                }
+                if (snack?.isCorrection != correction) {
+                    snack?.isCorrection = correction
+                }
+                if (snackDate != null) {
+                    snack?.date = snackDate
+                }
+            }, realmTask.task)
+        })
     }
 
     /**
@@ -185,23 +187,31 @@ public class SnackFactory @Inject constructor(val realm: Realm, val bloodSugarFa
         })
     }
 
-    private fun snackForSnackId(id: String, create: Boolean): Snack? {
-        if (create && id.isEmpty()) {
-            val snack = realm.createObject<Snack>(Snack::class.java)
-            snack?.id = UUID.randomUUID().toString()
-            return snack
-        }
+    private fun snackForSnackId(id: String, create: Boolean): Task<Snack?> {
+        val realmTask = TaskCompletionSource<Snack?>()
+        return realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && id.isEmpty()) {
+                val snack = realm.createObject<Snack>(Snack::class.java)
+                snack?.id = UUID.randomUUID().toString()
+                realmTask.trySetResult(snack)
+                return@Transaction
+            }
 
-        val query = realm.where<Snack>(Snack::class.java)
+            val query = realm.where<Snack>(Snack::class.java)
 
-        query?.equalTo(Snack.SnackIdFieldName, id)
-        var result: Snack? = query?.findFirst()
+            query?.equalTo(Snack.SnackIdFieldName, id)
+            var result: Snack? = query?.findFirst()
 
-        if (result == null && create) {
-            result = realm.createObject<Snack>(Snack::class.java)
-            result!!.id = id
-        }
-
-        return result
+            if (result == null && create) {
+                result = realm.createObject<Snack>(Snack::class.java)
+                result!!.id = id
+            }
+            else if (result == null) {
+                realmTask.trySetError(Exception("No Snack for id ${id}"))
+            }
+            else {
+                realmTask.trySetResult(result)
+            }
+        }, realmTask.task)
     }
 }

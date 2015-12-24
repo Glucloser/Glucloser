@@ -3,6 +3,9 @@ package com.nlefler.glucloser.dataSource
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import bolts.Continuation
+import bolts.Task
+import bolts.TaskCompletionSource
 
 import com.google.gson.Gson
 import com.nlefler.glucloser.models.CheckInPushedData
@@ -25,35 +28,35 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class PlaceFactory @Inject constructor(val realm: Realm) {
+public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     private val LOG_TAG = "PlaceFactory"
 
-    public fun placeForId(id: String?, action: Action1<Place>?) {
-        if (action == null) {
-            Log.e(LOG_TAG, "Unable to fetch Place for id, action is null")
-            return
-        }
-        if (id == null || id.isEmpty()) {
-            Log.e(LOG_TAG, "Unable to fetch Place for id")
-            action.call(null)
-            return
-        }
-
-        val place = placeForFoursquareId(id, false)
-        if (place != null) {
-            action.call(place)
-            return
-        }
-
-        val parseQuery = ParseQuery.getQuery<ParseObject>(Place.ParseClassName)
-        parseQuery.whereEqualTo(Place.FoursquareIdFieldName, id)
-        parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
-            if (!parseObjects.isEmpty()) {
-                val placeFromParse = placeFromParseObject(parseObjects.get(0))
-                action.call(placeFromParse)
-            } else {
-                action.call(null)
+    public fun placeForId(id: String): Task<Place?> {
+        return placeForFoursquareId(id, false).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
             }
+            val place = task.result
+            if (place != null) {
+                return@Continuation Task.forResult(place)
+            }
+            val parseTask = TaskCompletionSource<Place?>()
+            val parseQuery = ParseQuery.getQuery<ParseObject>(Place.ParseClassName)
+            parseQuery.whereEqualTo(Place.FoursquareIdFieldName, id)
+            parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
+                if (parseObjects.isEmpty()) {
+                    parseTask.trySetError(Exception("No Place ParseObjects for id ${id}"))
+                    return@findInBackground
+                }
+                placeFromParseObject(parseObjects.get(0)).continueWith { task ->
+                    if (task.isFaulted) {
+                        parseTask.trySetError(task.error)
+                        return@continueWith
+                    }
+                    parseTask.trySetResult(task.result)
+                }
+            })
+            return@Continuation parseTask.task
         })
     }
 
@@ -72,23 +75,28 @@ public class PlaceFactory @Inject constructor(val realm: Realm) {
         return parcelable
     }
 
-    public fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Place? {
+    public fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Task<Place?> {
         if (venue == null || !IsVenueValid(venue)) {
-            Log.e(LOG_TAG, "Unable to create Place from 4sq venue")
-            return null
+            val errorMessage = "Unable to create Place from 4sq venue"
+            Log.e(LOG_TAG, errorMessage)
+            return Task.forError(Exception(errorMessage))
         }
 
-        val realm = realm
+        return placeForFoursquareId(venue.id, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
+            val place = task.result
+            val realmTask = TaskCompletionSource<Place?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                place?.name = venue.name
+                place?.foursquareId = venue.id
+                place?.latitude = venue.location.lat
+                place?.longitude = venue.location.lng
+                realmTask.trySetResult(place)
+            }, realmTask.task)
 
-        realm.beginTransaction()
-        val place = placeForFoursquareId(venue.id, true)
-        place!!.name = venue.name
-        place.foursquareId = venue.id
-        place.latitude = venue.location.lat
-        place.longitude = venue.location.lng
-        realm.commitTransaction()
-
-        return place
+        })
     }
 
     public fun parcelableFromPlace(place: Place): PlaceParcelable? {
@@ -101,16 +109,22 @@ public class PlaceFactory @Inject constructor(val realm: Realm) {
         return parcelable
     }
 
-    public fun placeFromParcelable(parcelable: PlaceParcelable): Place {
-        realm.beginTransaction()
-        val place = placeForFoursquareId(parcelable.foursquareId, true)
-        place!!.name = parcelable.name
-        place.foursquareId = parcelable.foursquareId
-        place.latitude = parcelable.latitude
-        place.longitude = parcelable.longitude
-        realm.commitTransaction()
+    public fun placeFromParcelable(parcelable: PlaceParcelable): Task<Place?> {
+        return placeForFoursquareId(parcelable.foursquareId, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
 
-        return place
+            val place = task.result
+            val realmTask = TaskCompletionSource<Place?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                place?.name = parcelable.name
+                place?.foursquareId = parcelable.foursquareId
+                place?.latitude = parcelable.latitude
+                place?.longitude = parcelable.longitude
+                realmTask.trySetResult(place)
+            }, realmTask.task)
+        })
     }
 
     public fun arePlacesEqual(place1: Place?, place2: Place?): Boolean {
@@ -126,34 +140,36 @@ public class PlaceFactory @Inject constructor(val realm: Realm) {
         return idOK && nameOK && latOK && lonOK
     }
 
-    internal fun placeFromParseObject(parseObject: ParseObject?): Place? {
-        if (parseObject == null) {
-            return null
-        }
+    internal fun placeFromParseObject(parseObject: ParseObject): Task<Place?> {
         val foursquareId = parseObject.getString(Place.FoursquareIdFieldName)
         if (foursquareId == null || foursquareId.isEmpty()) {
-            return null
+            return Task.forError(Exception("Invalid Place ParseObject, no Foursquare Id"))
         }
 
         val name = parseObject.getString(Place.NameFieldName)
         val lat = parseObject.getDouble(Place.LatitudeFieldName).toFloat()
         val lon = parseObject.getDouble(Place.LongitudeFieldName).toFloat()
 
-        realm.beginTransaction()
-        val place = placeForFoursquareId(foursquareId, true)!!
-        if (place.foursquareId?.isEmpty() ?: false) {
-            place.foursquareId = foursquareId
-        }
-        place.name = name
-        if (lat != 0f && place.latitude != lat) {
-            place.latitude = lat
-        }
-        if (lon != 0f && place.longitude != lon) {
-            place.longitude = lon
-        }
-        realm.commitTransaction()
-
-        return place
+        return placeForFoursquareId(foursquareId, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
+            val place = task.result
+            val realmTask = TaskCompletionSource<Place?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                if (place?.foursquareId?.isEmpty() ?: false) {
+                    place?.foursquareId = foursquareId
+                }
+                place?.name = name
+                if (lat != 0f && place?.latitude != lat) {
+                    place?.latitude = lat
+                }
+                if (lon != 0f && place?.longitude != lon) {
+                    place?.longitude = lon
+                }
+                realmTask.trySetResult(place)
+            }, realmTask.task)
+        })
     }
 
     /**
@@ -223,22 +239,32 @@ public class PlaceFactory @Inject constructor(val realm: Realm) {
         return placeParcelable
     }
 
-    private fun placeForFoursquareId(id: String?, create: Boolean): Place? {
-        if (create && (id == null || id.isEmpty())) {
-            return realm.createObject<Place>(Place::class.java)
-        }
+    private fun placeForFoursquareId(id: String?, create: Boolean): Task<Place?> {
+        val realmTask = TaskCompletionSource<Place?>()
+        return realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && (id == null || id.isEmpty())) {
+                val place = realm.createObject<Place>(Place::class.java)
+                realmTask.trySetResult(place)
+                return@Transaction
+            }
 
-        val query = realm.where<Place>(Place::class.java)
+            val query = realm.where<Place>(Place::class.java)
 
-        query?.equalTo(Place.FoursquareIdFieldName, id)
-        var result: Place? = query?.findFirst()
+            query?.equalTo(Place.FoursquareIdFieldName, id)
+            var result: Place? = query?.findFirst()
 
-        if (result == null && create) {
-            result = realm.createObject<Place>(Place::class.java)
-            result!!.foursquareId = id
-        }
-
-        return result
+            if (result == null && create) {
+                result = realm.createObject<Place>(Place::class.java)
+                result!!.foursquareId = id
+                realmTask.trySetResult(result)
+            }
+            else if (result == null) {
+                realmTask.trySetError(Exception("No Place for id ${id} and create is false"))
+            }
+            else {
+                realmTask.trySetResult(result)
+            }
+        }, realmTask.task)
     }
 
     private fun IsVenueValid(venue: NLFoursquareVenue?): Boolean {

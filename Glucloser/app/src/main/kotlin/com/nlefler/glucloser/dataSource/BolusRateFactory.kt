@@ -14,37 +14,38 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/1/15.
  */
-public class BolusRateFactory @Inject constructor(val realm: Realm) {
+public class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
 
-    public fun emptyRate(): Task<BolusRate> {
-        val task = TaskCompletionSource<BolusRate>()
-
-        realm.executeTransaction { realm ->
-            val rate = bolusRateForId("__glucloser_special_empty_bolus_rate", true)
-            rate?.ordinal = 0
-            rate?.carbsPerUnit = 0
-            rate?.startTime = 0
-
-            task.trySetResult(rate)
+    public fun emptyRate(): Task<BolusRate?> {
+        return bolusRateForId("__glucloser_special_empty_bolus_rate", true).continueWithTask { task ->
+            if (task.isFaulted) {
+                return@continueWithTask task
+            }
+            val realmTask = TaskCompletionSource<BolusRate?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                val rate = task.result
+                rate?.ordinal = 0
+                rate?.carbsPerUnit = 0
+                rate?.startTime = 0
+                realmTask.trySetResult(rate)
+            }, realmTask.task)
         }
-
-        return task.task
     }
 
-    public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): Task<BolusRate> {
-        val task = TaskCompletionSource<BolusRate>()
-
-        realm.executeTransaction { realm ->
-            val rate = bolusRateForId("", true)
-
-            rate?.ordinal = parcelable.ordinal
-            rate?.carbsPerUnit = parcelable.carbsPerUnit
-            rate?.startTime = parcelable.startTime
-
-            task.trySetResult(rate)
+    public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): Task<BolusRate?> {
+        return bolusRateForId("", true).continueWithTask { task ->
+            if (task.isFaulted) {
+                return@continueWithTask task
+            }
+            val rate = task.result
+            val realmTask = TaskCompletionSource<BolusRate?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                rate?.ordinal = parcelable.ordinal
+                rate?.carbsPerUnit = parcelable.carbsPerUnit
+                rate?.startTime = parcelable.startTime
+                realmTask.trySetResult(rate)
+            }, realmTask.task)
         }
-
-        return task.task
     }
 
     public fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
@@ -62,18 +63,19 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
         }
         val patternId = parseObj.getString(BolusRate.IdFieldName) ?: return Task.forError(Exception("Invalid ParseObject"))
 
-        val task = TaskCompletionSource<BolusRate?>()
-
-        realm.executeTransaction { realm ->
-            val rate = bolusRateForId(patternId, true)
-            rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
-            rate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
-            rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
-
-            task.trySetResult(rate)
+        return bolusRateForId(patternId, true).continueWithTask { task ->
+            if (task.isFaulted) {
+                return@continueWithTask task
+            }
+            val rate = task.result
+            val realmTask = TaskCompletionSource<BolusRate?>()
+            realmManager.executeTransaction(Realm.Transaction { realm ->
+                rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
+                rate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
+                rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
+                realmTask.trySetResult(rate)
+            }, realmTask.task)
         }
-
-        return task.task
     }
 
     public fun parseObjectFromBolusRate(rate: BolusRate): ParseObject {
@@ -85,22 +87,32 @@ public class BolusRateFactory @Inject constructor(val realm: Realm) {
         return prs
     }
 
-    private fun bolusRateForId(id: String, create: Boolean): BolusRate? {
-        if (create && id.length == 0) {
-            val rate = realm.createObject<BolusRate>(BolusRate::class.java)
-            return rate
-        }
+    private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
+        val rateTask = TaskCompletionSource<BolusRate?>()
+        return realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && id.length == 0) {
+                val rate = realm.createObject<BolusRate>(BolusRate::class.java)
+                rateTask.trySetResult(rate)
+                return@Transaction
+            }
 
-        val query = realm.where<BolusRate>(BolusRate::class.java)
+            val query = realm.where<BolusRate>(BolusRate::class.java)
 
-        query?.equalTo(BolusRate.IdFieldName, id)
-        var result: BolusRate? = query?.findFirst()
+            query?.equalTo(BolusRate.IdFieldName, id)
+            var rate = query?.findFirst()
 
-        if (result == null && create) {
-            result = realm.createObject<BolusRate>(BolusRate::class.java)
-            result!!.NLID = id
-        }
-
-        return result
+            if (rate == null && create) {
+                rate = realm.createObject<BolusRate>(BolusRate::class.java)
+                rate!!.NLID = id
+                rateTask.trySetResult(rate)
+            }
+            else if (rate == null) {
+                rateTask.trySetError(Exception("No Rate found for id ${id} and create is false"))
+            }
+            else {
+                rateTask.trySetResult(rate)
+            }
+        }, rateTask.task)
     }
+
 }

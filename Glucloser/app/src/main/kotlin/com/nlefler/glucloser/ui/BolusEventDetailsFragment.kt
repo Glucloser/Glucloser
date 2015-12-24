@@ -161,11 +161,13 @@ public class BolusEventDetailsFragment : Fragment() {
             foodParcelable.setCarbs(0)
         }
 
-        val food = foodFactory?.foodFromParcelable(foodParcelable)
-        if (food != null) {
-            this.foods.add(food)
+        foodFactory?.foodFromParcelable(foodParcelable)?.continueWith { task ->
+            if (!task.isFaulted && task.result != null) {
+                this.foods.add(task.result!!)
+                this.foodListAdapter?.setFoods(this.foods)
+            }
         }
-        this.foodListAdapter?.setFoods(this.foods)
+
         (getActivity() as FoodDetailDelegate).foodDetailUpdated(foodParcelable)
 
         this.addFoodNameField!!.setText("")
@@ -201,8 +203,8 @@ public class BolusEventDetailsFragment : Fragment() {
         }
         else {
              bolusPatternFactory?.emptyPattern()?.continueWith { task ->
-                if (task.result != null) {
-                    this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(task.result)
+                if (!task.isFaulted && task.result != null) {
+                    this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(task.result!!)
                 }
             }
         }

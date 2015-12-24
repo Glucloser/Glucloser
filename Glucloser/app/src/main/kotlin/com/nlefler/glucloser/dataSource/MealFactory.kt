@@ -2,12 +2,10 @@ package com.nlefler.glucloser.dataSource
 
 import android.content.Context
 import android.util.Log
+import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
-import com.nlefler.glucloser.models.BloodSugar
-import com.nlefler.glucloser.models.Meal
-import com.nlefler.glucloser.models.MealParcelable
-import com.nlefler.glucloser.models.Place
+import com.nlefler.glucloser.models.*
 
 import com.parse.FindCallback
 import com.parse.ParseException
@@ -26,48 +24,53 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealFactory @Inject constructor(val realm: Realm,
+public class MealFactory @Inject constructor(val realmManager: RealmManager,
                                              val bolusPatternFactory: BolusPatternFactory,
                                              val bloodSugarFactory: BloodSugarFactory,
                                              val placeFactory: PlaceFactory) {
     private val LOG_TAG = "MealFactory"
 
-    public fun meal(): Meal {
-        realm.beginTransaction()
-        val meal = mealForMealId("", true)!!
-        realm.commitTransaction()
-
-        return meal
-    }
-
-    public fun fetchMeal(id: String): Task<Meal?> {
+    public fun meal(): Task<Meal?> {
         val mealTask = TaskCompletionSource<Meal?>()
-
-        realm.executeTransaction { realm ->
-            val meal = mealForMealId(id, false)
-            if (meal != null) {
-                mealTask.trySetResult(meal)
+        mealForMealId("", true).continueWith { task ->
+            if (task.isFaulted) {
+                mealTask.trySetError(task.error)
+            }
+            else {
+                mealTask.trySetResult(task.result)
             }
         }
 
-        val parseQuery = ParseQuery.getQuery<ParseObject>(Meal.ParseClassName)
-        parseQuery.whereEqualTo(Meal.MealIdFieldName, id)
-        parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException ->
-            if (!parseObjects.isEmpty()) {
-                mealFromParseObject(parseObjects.get(0)).continueWith { task ->
-                    if (task.isFaulted) {
-                        mealTask.trySetError(task.error)
-                    }
-                    else {
-                        mealTask.trySetResult(task.result)
-                    }
-                }
-            } else {
-                mealTask.trySetResult(null)
-            }
-        })
-
         return mealTask.task
+    }
+
+    public fun fetchMeal(id: String): Task<Meal?> {
+        return mealForMealId(id, false).continueWithTask({ task ->
+            if (!task.isFaulted) {
+                return@continueWithTask Task.forResult<Meal?>(task.result)
+            }
+
+            val fetchTask = TaskCompletionSource<Meal?>()
+
+            val parseQuery = ParseQuery.getQuery<ParseObject>(Meal.ParseClassName)
+            parseQuery.whereEqualTo(Meal.MealIdFieldName, id)
+            parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException ->
+                if (!parseObjects.isEmpty()) {
+                    mealFromParseObject(parseObjects.get(0)).continueWith { task ->
+                        if (task.isFaulted) {
+                            fetchTask.trySetError(task.error)
+                        }
+                        else {
+                            fetchTask.trySetResult(task.result)
+                        }
+                    }
+                } else {
+                    fetchTask.trySetResult(null)
+                }
+            })
+
+            return@continueWithTask fetchTask.task
+        })
     }
 
     public fun parcelableFromMeal(meal: Meal): MealParcelable {
@@ -90,77 +93,107 @@ public class MealFactory @Inject constructor(val realm: Realm,
         return parcelable
     }
 
-    public fun mealFromParcelable(parcelable: MealParcelable): Task<Meal> {
-        var place: Place? = null
+    public fun mealFromParcelable(parcelable: MealParcelable): Task<Meal?> {
+        var placeTask: Task<Place?> = Task.forResult(null)
         if (parcelable.placeParcelable != null) {
-            place = placeFactory.placeFromParcelable(parcelable.placeParcelable!!)
+            placeTask = placeFactory.placeFromParcelable(parcelable.placeParcelable!!)
         }
 
-        var beforeSugar: BloodSugar? = null
+        var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
         if (parcelable.bloodSugarParcelable != null) {
-            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
+            beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
         }
 
-        val mealTask = TaskCompletionSource<Meal>()
-        bolusPatternFactory.bolusPatternFromParcelable(parcelable.bolusPatternParcelable!!).continueWith { task ->
-            val meal = mealForMealId(parcelable.id, true)!!
-            meal.insulin = parcelable.insulin
-            meal.carbs = parcelable.carbs
-            meal.place = place
-            meal.beforeSugar = beforeSugar
-            meal.isCorrection = parcelable.isCorrection
-            meal.date = parcelable.date
-            meal.bolusPattern = task.result
-
-            mealTask.trySetResult(meal)
+        var bolusPatternTask: Task<BolusPattern?>? = Task.forResult(null)
+        if (parcelable.bolusPatternParcelable != null) {
+            bolusPatternTask = bolusPatternFactory.bolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
         }
 
-        return mealTask.task
+        val mealTask = mealForMealId(parcelable.id, true)
+
+        val doneTask = TaskCompletionSource<Meal?>()
+        Task.whenAll(arrayListOf(beforeSugarTask, bolusPatternTask, placeTask, mealTask)).continueWith { task ->
+            if (task.isFaulted) {
+                doneTask.trySetError(task.error)
+                return@continueWith
+            }
+
+            val meal = mealTask.result
+
+            meal?.insulin = parcelable.insulin
+            meal?.carbs = parcelable.carbs
+            meal?.place = placeTask.result
+            meal?.beforeSugar = beforeSugarTask?.result
+            meal?.isCorrection = parcelable.isCorrection
+            meal?.date = parcelable.date
+            meal?.bolusPattern = bolusPatternTask?.result
+
+            doneTask.trySetResult(meal)
+        }
+
+        return doneTask.task
     }
 
     protected fun mealFromParseObject(parseObject: ParseObject?): Task<Meal?> {
         if (parseObject == null) {
-            Log.e(LOG_TAG, "Can't create Meal from Parse object, null")
-            return Task.forError(Exception("Can't create Meal from Parse object, null"))
+            val errorMessage = "Can't create Meal from Parse object, null"
+            Log.e(LOG_TAG, errorMessage)
+            return Task.forError(Exception(errorMessage))
         }
+
         val mealId = parseObject.getString(Meal.MealIdFieldName)
         if (mealId?.length == 0) {
-            Log.e(LOG_TAG, "Can't create Meal from Parse object, no id")
+            val errorMessage = "Can't create Meal from Parse object, no id"
+            Log.e(LOG_TAG, errorMessage)
+            return Task.forError(Exception(errorMessage))
         }
-        val carbs = parseObject.getInt(Meal.CarbsFieldName)
-        val insulin = parseObject.getDouble(Meal.InsulinFieldName).toFloat()
-        val correction = parseObject.getBoolean(Meal.CorrectionFieldName)
-        val mealDate = parseObject.getDate(Meal.MealDateFieldName)
-        val place = placeFactory.placeFromParseObject(parseObject.getParseObject(Meal.PlaceFieldName))
-        val beforeSugar = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Meal.BeforeSugarFieldName))
 
-        val mealTask = TaskCompletionSource<Meal?>()
-        bolusPatternFactory.bolusPatternFromParseObject(parseObject.getParseObject(Meal.BolusPatternFieldName)).continueWith { task ->
-            val meal = mealForMealId(mealId, true)!!
-            if (carbs >= 0 && carbs != meal.carbs) {
-                meal.carbs = carbs
+        val beforeSugarTask = bloodSugarFactory.bloodSugarFromParseObject(parseObject.getParseObject(Meal.BeforeSugarFieldName))
+        val bolusPatternTask = bolusPatternFactory.bolusPatternFromParseObject(parseObject.getParseObject(Meal.BolusPatternFieldName))
+        val placeTask = placeFactory.placeFromParseObject(parseObject.getParseObject(Meal.PlaceFieldName))
+        val mealTask = mealForMealId(mealId, true)
+
+        val doneTask = TaskCompletionSource<Meal?>()
+
+        Task.whenAll(arrayListOf(beforeSugarTask, bolusPatternTask, placeTask, mealTask)).continueWith { task ->
+            if (task.isFaulted) {
+                doneTask.trySetError(task.error)
+                return@continueWith
             }
-            if (insulin >= 0 && meal.insulin != insulin) {
-                meal.insulin = insulin
+
+            val meal = mealTask.result
+            val beforeSugar = beforeSugarTask.result
+            val bolusPattern = bolusPatternTask.result
+
+            val carbs = parseObject.getInt(Meal.CarbsFieldName)
+            val insulin = parseObject.getDouble(Meal.InsulinFieldName).toFloat()
+            val correction = parseObject.getBoolean(Meal.CorrectionFieldName)
+            val mealDate = parseObject.getDate(Meal.MealDateFieldName)
+
+            if (carbs >= 0 && carbs != meal?.carbs) {
+                meal?.carbs = carbs
             }
-            if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(meal.beforeSugar, beforeSugar)) {
-                meal.beforeSugar = beforeSugar
+            if (insulin >= 0 && meal?.insulin != insulin) {
+                meal?.insulin = insulin
             }
-            if (meal.isCorrection != correction) {
-                meal.isCorrection = correction
+            if (beforeSugar != null && bloodSugarFactory.areBloodSugarsEqual(meal?.beforeSugar, beforeSugar)) {
+                meal?.beforeSugar = beforeSugar
             }
-            if (place != null && placeFactory.arePlacesEqual(place, meal.place)) {
-                meal.place = place
+            if (meal?.isCorrection != correction) {
+                meal?.isCorrection = correction
+            }
+            if (placeTask.result != null && placeFactory.arePlacesEqual(placeTask.result, meal?.place)) {
+                meal?.place = placeTask.result
             }
             if (mealDate != null) {
-                meal.date = mealDate
+                meal?.date = mealDate
             }
-            meal.bolusPattern = task.result
+            meal?.bolusPattern = bolusPattern
 
-            mealTask.trySetResult(meal)
+            doneTask.trySetResult(meal)
         }
 
-        return mealTask.task
+        return doneTask.task
     }
 
     /**
@@ -216,23 +249,28 @@ public class MealFactory @Inject constructor(val realm: Realm,
         })
     }
 
-    private fun mealForMealId(id: String, create: Boolean): Meal? {
-        if (create && id.length == 0) {
-            val meal = realm.createObject<Meal>(Meal::class.java)
-            meal?.id = UUID.randomUUID().toString()
-            return meal
-        }
+    private fun mealForMealId(id: String, create: Boolean): Task<Meal?> {
+        val mealTask = TaskCompletionSource<Meal?>()
+        var meal: Meal?
 
-        val query = realm.where<Meal>(Meal::class.java)
+        return realmManager.executeTransaction(Realm.Transaction { realm ->
+            if (create && id.length == 0) {
+                meal = realm.createObject<Meal>(Meal::class.java)
+                meal?.id = UUID.randomUUID().toString()
+                return@Transaction
+            }
 
-        query?.equalTo(Meal.MealIdFieldName, id)
-        var result: Meal? = query?.findFirst()
+            val query = realm.where<Meal>(Meal::class.java)
 
-        if (result == null && create) {
-            result = realm.createObject<Meal>(Meal::class.java)
-            result!!.id = id
-        }
+            query?.equalTo(Meal.MealIdFieldName, id)
+            meal = query?.findFirst()
 
-        return result
+            if (meal == null && create) {
+                meal = realm.createObject<Meal>(Meal::class.java)
+                meal!!.id = id
+            }
+
+            mealTask.trySetResult(meal)
+        }, mealTask.task)
     }
 }
