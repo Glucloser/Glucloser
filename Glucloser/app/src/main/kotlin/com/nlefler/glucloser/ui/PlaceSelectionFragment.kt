@@ -27,8 +27,8 @@ import java.util.ArrayList
 import rx.Observer
 import rx.Scheduler
 import rx.Subscription
-import rx.android.observables.AndroidObservable
 import rx.schedulers.Schedulers
+import rx.android.*
 
 /**
  * Created by Nathan Lefler on 12/24/14.
@@ -126,7 +126,8 @@ public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenu
         if (closestPlacesSubscription != null) {
             closestPlacesSubscription!!.unsubscribe()
         }
-        closestPlacesSubscription = AndroidObservable.bindFragment<List<NLFoursquareVenue>>(this, foursquareHelper!!.closestVenues(searchTerm)).subscribeOn(subscriptionScheduler).subscribe(this)
+        closestPlacesSubscription = foursquareHelper!!.closestVenues(searchTerm).subscribeOn(subscriptionScheduler).subscribe(this)
+
     }
 
     companion object {

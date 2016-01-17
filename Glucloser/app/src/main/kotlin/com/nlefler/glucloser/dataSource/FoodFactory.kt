@@ -11,6 +11,7 @@ import com.parse.ParseException
 import com.parse.ParseObject
 import com.parse.ParseQuery
 import io.realm.Realm
+import io.realm.RealmObject
 import rx.functions.Action2
 import java.util.UUID
 import javax.inject.Inject
@@ -27,18 +28,29 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {
-        return foodForFoodId(parcelable.foodId, true).continueWithTask(Continuation<Food?, Task<Food?>> { task ->
+        return foodForFoodId(parcelable.foodId, true)
+                .continueWithTask(Continuation<Food?, Task<Food?>> { task ->
             if (task.isFaulted) {
                 return@Continuation task
             }
 
             val food = task.result
-            val foodTask = TaskCompletionSource<Food?>()
-            return@Continuation realmManager.executeTransaction(Realm.Transaction {
-                food?.name = parcelable.foodName
-                food?.carbs = parcelable.carbs
-                foodTask.trySetResult(food)
-            }, foodTask.task)
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(food)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    food?.name = parcelable.foodName
+                    food?.carbs = parcelable.carbs
+                    return listOf(food)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
+            })
         })
 
     }
@@ -80,15 +92,25 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
             if (task.isFaulted) {
                 return@continueWithTask Task.forError<Food?>(task.error)
             }
-            val foodTask = TaskCompletionSource<Food?>()
             val food = task.result
-            realmManager.executeTransaction(Realm.Transaction {
-                food?.name = nameValue
-                if (carbValue >= 0) {
-                    food?.carbs = carbValue
+            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(food)
                 }
-                foodTask.trySetResult(food)
-            }, foodTask.task)
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    food?.name = nameValue
+                    if (carbValue >= 0) {
+                        food?.carbs = carbValue
+                    }
+                    return listOf(food)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
+            })
         }
     }
 
@@ -123,25 +145,34 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     private fun foodForFoodId(id: String, create: Boolean): Task<Food?> {
-        val task = TaskCompletionSource<Food?>()
-        return realmManager.executeTransaction(Realm.Transaction { realm ->
-            if (create && id.isEmpty()) {
-                val food = realm.createObject<Food>(Food::class.java)
-                task.trySetResult(food)
-                return@Transaction
+        return realmManager.executeTransaction(object: RealmManager.Tx {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
             }
 
-            val query = realm.where<Food>(Food::class.java)
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                if (create && id.isEmpty()) {
+                    val food = realm.createObject<Food>(Food::class.java)
+                    return listOf(food)
+                }
 
-            query?.equalTo(Food.FoodIdFieldName, id)
-            var food = query?.findFirst()
+                val query = realm.where<Food>(Food::class.java)
 
-            if (food == null && create) {
-                food = realm.createObject<Food>(Food::class.java)
-                food!!.foodId = id
+                query?.equalTo(Food.FoodIdFieldName, id)
+                var food = query?.findFirst()
+
+                if (food == null && create) {
+                    food = realm.createObject<Food>(Food::class.java)
+                    food!!.foodId = id
+                }
+
+                return listOf(food)
             }
-
-            task.trySetResult(food)
-        }, task.task)
+        }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
+            }
+            return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
+        })
     }
 }

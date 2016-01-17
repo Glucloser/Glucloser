@@ -23,8 +23,8 @@ public class RealmManager {
         val _task = TaskCompletionSource<List<RealmObject?>>()
         executor.submit({
             realm?.executeTransaction({ realm ->
-                val dependsOn = tx.dependsOn().map { obj -> realm.copyToRealmOrUpdate(obj) }
-                val deadResults = tx.execute(dependsOn, realm).map { obj -> realm.copyFromRealm(obj )}
+                val dependsOn = tx.dependsOn().map { obj -> obj ?: return@map obj; realm.copyToRealmOrUpdate(obj) }
+                val deadResults = tx.execute(dependsOn, realm).map { obj -> obj ?: return@map obj; realm.copyFromRealm(obj )}
                 _task.trySetResult(deadResults)
             })
         })
