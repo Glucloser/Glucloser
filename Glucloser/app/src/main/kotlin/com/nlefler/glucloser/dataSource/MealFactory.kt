@@ -16,6 +16,7 @@ import java.util.Date
 import java.util.UUID
 
 import io.realm.Realm
+import io.realm.RealmObject
 import io.realm.RealmQuery
 import rx.functions.Action1
 import rx.functions.Action2
@@ -250,27 +251,35 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     private fun mealForMealId(id: String, create: Boolean): Task<Meal?> {
-        val mealTask = TaskCompletionSource<Meal?>()
-        var meal: Meal?
-
-        return realmManager.executeTransaction(Realm.Transaction { realm ->
-            if (create && id.length == 0) {
-                meal = realm.createObject<Meal>(Meal::class.java)
-                meal?.id = UUID.randomUUID().toString()
-                return@Transaction
+        return realmManager.executeTransaction(object: RealmManager.Tx {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
             }
 
-            val query = realm.where<Meal>(Meal::class.java)
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                if (create && id.length == 0) {
+                    val meal = realm.createObject<Meal>(Meal::class.java)
+                    meal?.id = UUID.randomUUID().toString()
+                    return listOf(meal)
+                }
 
-            query?.equalTo(Meal.MealIdFieldName, id)
-            meal = query?.findFirst()
+                val query = realm.where<Meal>(Meal::class.java)
 
-            if (meal == null && create) {
-                meal = realm.createObject<Meal>(Meal::class.java)
-                meal!!.id = id
+                query?.equalTo(Meal.MealIdFieldName, id)
+                var meal = query?.findFirst()
+
+                if (meal == null && create) {
+                    meal = realm.createObject<Meal>(Meal::class.java)
+                    meal!!.id = id
+                }
+
+                return listOf(meal)
             }
-
-            mealTask.trySetResult(meal)
-        }, mealTask.task)
+        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
+            }
+            return@Continuation Task.forResult(task.result.firstOrNull() as Meal?)
+        })
     }
 }

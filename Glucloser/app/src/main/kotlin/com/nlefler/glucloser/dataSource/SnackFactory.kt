@@ -16,6 +16,7 @@ import com.parse.ParseQuery
 import java.util.UUID
 
 import io.realm.Realm
+import io.realm.RealmObject
 import rx.functions.Action1
 import rx.functions.Action2
 import javax.inject.Inject
@@ -76,21 +77,34 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
         }
 
         val snackTask = snackForSnackId(parcelable.id, true)
-        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask)).continueWithTask(Continuation<Void, Task<Snack?>> { task ->
+        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask))
+                .continueWithTask(Continuation<Void, Task<Snack?>> { task ->
             if (task.isFaulted) {
                 return@Continuation Task.forError(task.error)
             }
 
-            val realmTask = TaskCompletionSource<Snack?>()
-            realmManager.executeTransaction(Realm.Transaction { realm ->
-                val snack = snackTask.result
-                snack?.insulin = parcelable.insulin
-                snack?.carbs = parcelable.carbs
-                snack?.isCorrection = parcelable.isCorrection
-                snack?.beforeSugar = beforeSugarTask?.result
-                snack?.date = parcelable.date
-                realmTask.trySetResult(snack)
-            }, realmTask.task)
+                    val snack = snackTask.result
+                    val sugar = beforeSugarTask?.result
+
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(sugar, snack)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    snack?.insulin = parcelable.insulin
+                    snack?.carbs = parcelable.carbs
+                    snack?.isCorrection = parcelable.isCorrection
+                    snack?.beforeSugar = sugar
+                    snack?.date = parcelable.date
+                    return listOf(snack, sugar)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Snack?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as Snack?)
+            })
         })
     }
 
@@ -116,30 +130,46 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
         val snackDate = parseObject.getDate(Snack.SnackDateFieldName)
 
         val snackTask = snackForSnackId(snackId, true)
-        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask)).continueWithTask(Continuation<Void?, Task<Snack?>> { task ->
+        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask))
+                .continueWithTask(Continuation<Void?, Task<Snack?>> { task ->
             if (task.isFaulted) {
                 return@Continuation Task.forError(task.error)
             }
 
-            val realmTask = TaskCompletionSource<Snack?>()
-            return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
-                val snack = snackTask.result
-                if (carbs >= 0 && carbs != snack?.carbs) {
-                    snack?.carbs = carbs
+                    val sugar = beforeSugarTask.result
+                    val snack = snackTask.result
+
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(sugar, snack)
                 }
-                if (insulin >= 0 && snack?.insulin != insulin) {
-                    snack?.insulin = insulin
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+
+                    val snack = snackTask.result
+                    if (carbs >= 0 && carbs != snack?.carbs) {
+                        snack?.carbs = carbs
+                    }
+                    if (insulin >= 0 && snack?.insulin != insulin) {
+                        snack?.insulin = insulin
+                    }
+                    if (beforeSugarTask.result != null && bloodSugarFactory.areBloodSugarsEqual(snack?.beforeSugar, sugar)) {
+                        snack?.beforeSugar = sugar
+                    }
+                    if (snack?.isCorrection != correction) {
+                        snack?.isCorrection = correction
+                    }
+                    if (snackDate != null) {
+                        snack?.date = snackDate
+                    }
+                    return listOf(snack, sugar)
                 }
-                if (beforeSugarTask.result != null && bloodSugarFactory.areBloodSugarsEqual(snack?.beforeSugar, beforeSugarTask.result)) {
-                    snack?.beforeSugar = beforeSugarTask.result
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Snack?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
                 }
-                if (snack?.isCorrection != correction) {
-                    snack?.isCorrection = correction
-                }
-                if (snackDate != null) {
-                    snack?.date = snackDate
-                }
-            }, realmTask.task)
+                return@Continuation Task.forResult(task.result.firstOrNull() as Snack?)
+            })
         })
     }
 
@@ -188,30 +218,34 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
     }
 
     private fun snackForSnackId(id: String, create: Boolean): Task<Snack?> {
-        val realmTask = TaskCompletionSource<Snack?>()
-        return realmManager.executeTransaction(Realm.Transaction { realm ->
-            if (create && id.isEmpty()) {
-                val snack = realm.createObject<Snack>(Snack::class.java)
-                snack?.id = UUID.randomUUID().toString()
-                realmTask.trySetResult(snack)
-                return@Transaction
+        return realmManager.executeTransaction(object: RealmManager.Tx {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
             }
 
-            val query = realm.where<Snack>(Snack::class.java)
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                if (create && id.isEmpty()) {
+                    val snack = realm.createObject<Snack>(Snack::class.java)
+                    snack?.id = UUID.randomUUID().toString()
+                    return listOf(snack)
+                }
 
-            query?.equalTo(Snack.SnackIdFieldName, id)
-            var result: Snack? = query?.findFirst()
+                val query = realm.where<Snack>(Snack::class.java)
 
-            if (result == null && create) {
-                result = realm.createObject<Snack>(Snack::class.java)
-                result!!.id = id
+                query?.equalTo(Snack.SnackIdFieldName, id)
+                var snack: Snack? = query?.findFirst()
+
+                if (snack == null && create) {
+                    snack = realm.createObject<Snack>(Snack::class.java)
+                    snack!!.id = id
+                }
+                return listOf(snack)
             }
-            else if (result == null) {
-                realmTask.trySetError(Exception("No Snack for id ${id}"))
+        }).continueWithTask(Continuation<List<RealmObject?>, Task<Snack?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
             }
-            else {
-                realmTask.trySetResult(result)
-            }
-        }, realmTask.task)
+            return@Continuation Task.forResult(task.result.firstOrNull() as Snack?)
+        })
     }
 }

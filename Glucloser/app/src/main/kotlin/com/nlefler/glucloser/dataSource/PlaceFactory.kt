@@ -19,6 +19,7 @@ import com.parse.ParseObject
 import com.parse.ParseQuery
 
 import io.realm.Realm
+import io.realm.RealmObject
 import io.realm.RealmQuery
 import io.realm.RealmResults
 import rx.functions.Action1
@@ -87,14 +88,24 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                 return@Continuation task
             }
             val place = task.result
-            val realmTask = TaskCompletionSource<Place?>()
-            realmManager.executeTransaction(Realm.Transaction { realm ->
-                place?.name = venue.name
-                place?.foursquareId = venue.id
-                place?.latitude = venue.location.lat
-                place?.longitude = venue.location.lng
-                realmTask.trySetResult(place)
-            }, realmTask.task)
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(place)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    place?.name = venue.name
+                    place?.foursquareId = venue.id
+                    place?.latitude = venue.location.lat
+                    place?.longitude = venue.location.lng
+                    return listOf(place)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+            })
 
         })
     }
@@ -110,20 +121,31 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     public fun placeFromParcelable(parcelable: PlaceParcelable): Task<Place?> {
-        return placeForFoursquareId(parcelable.foursquareId, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+        return placeForFoursquareId(parcelable.foursquareId, true)
+                .continueWithTask(Continuation<Place?, Task<Place?>> { task ->
             if (task.isFaulted) {
                 return@Continuation task
             }
 
             val place = task.result
-            val realmTask = TaskCompletionSource<Place?>()
-            realmManager.executeTransaction(Realm.Transaction { realm ->
-                place?.name = parcelable.name
-                place?.foursquareId = parcelable.foursquareId
-                place?.latitude = parcelable.latitude
-                place?.longitude = parcelable.longitude
-                realmTask.trySetResult(place)
-            }, realmTask.task)
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(place)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    place?.name = parcelable.name
+                    place?.foursquareId = parcelable.foursquareId
+                    place?.latitude = parcelable.latitude
+                    place?.longitude = parcelable.longitude
+                    return listOf(place)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+            })
         })
     }
 
@@ -155,20 +177,30 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                 return@Continuation task
             }
             val place = task.result
-            val realmTask = TaskCompletionSource<Place?>()
-            realmManager.executeTransaction(Realm.Transaction { realm ->
-                if (place?.foursquareId?.isEmpty() ?: false) {
-                    place?.foursquareId = foursquareId
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(place)
                 }
-                place?.name = name
-                if (lat != 0f && place?.latitude != lat) {
-                    place?.latitude = lat
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    if (place?.foursquareId?.isEmpty() ?: false) {
+                        place?.foursquareId = foursquareId
+                    }
+                    place?.name = name
+                    if (lat != 0f && place?.latitude != lat) {
+                        place?.latitude = lat
+                    }
+                    if (lon != 0f && place?.longitude != lon) {
+                        place?.longitude = lon
+                    }
+                    return listOf(place)
                 }
-                if (lon != 0f && place?.longitude != lon) {
-                    place?.longitude = lon
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
                 }
-                realmTask.trySetResult(place)
-            }, realmTask.task)
+                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+            })
         })
     }
 
@@ -240,31 +272,35 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     private fun placeForFoursquareId(id: String?, create: Boolean): Task<Place?> {
-        val realmTask = TaskCompletionSource<Place?>()
-        return realmManager.executeTransaction(Realm.Transaction { realm ->
-            if (create && (id == null || id.isEmpty())) {
-                val place = realm.createObject<Place>(Place::class.java)
-                realmTask.trySetResult(place)
-                return@Transaction
+        return realmManager.executeTransaction(object: RealmManager.Tx {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
             }
 
-            val query = realm.where<Place>(Place::class.java)
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                if (create && (id == null || id.isEmpty())) {
+                    val place = realm.createObject<Place>(Place::class.java)
+                    return listOf(place)
+                }
 
-            query?.equalTo(Place.FoursquareIdFieldName, id)
-            var result: Place? = query?.findFirst()
+                val query = realm.where<Place>(Place::class.java)
 
-            if (result == null && create) {
-                result = realm.createObject<Place>(Place::class.java)
-                result!!.foursquareId = id
-                realmTask.trySetResult(result)
+                query?.equalTo(Place.FoursquareIdFieldName, id)
+                var result: Place? = query?.findFirst()
+
+                if (result == null && create) {
+                    result = realm.createObject<Place>(Place::class.java)
+                    result!!.foursquareId = id
+                }
+                return listOf(result)
             }
-            else if (result == null) {
-                realmTask.trySetError(Exception("No Place for id ${id} and create is false"))
+
+        }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
             }
-            else {
-                realmTask.trySetResult(result)
-            }
-        }, realmTask.task)
+            return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+        })
     }
 
     private fun IsVenueValid(venue: NLFoursquareVenue?): Boolean {
