@@ -32,10 +32,7 @@ import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.ui.DividerItemDecoration
 import com.parse.ParseAnalytics
-import io.realm.Realm
-import io.realm.RealmList
-import io.realm.RealmResults
-import io.realm.Sort
+import io.realm.*
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
@@ -251,18 +248,26 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         internal fun updateMealHistory() {
             val sortedResults = ArrayList<BolusEvent>()
 
-            val mealResultsTask = TaskCompletionSource<Unit>()
-            realmManager?.executeTransaction(Realm.Transaction { realm ->
-                val mealResults = realm?.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
-                sortedResults.addAll(mealResults ?: ArrayList())
-                mealResultsTask.trySetResult(null)
-            }, mealResultsTask.task)
-            val snackResultsTask = TaskCompletionSource<Unit>()
-            realmManager?.executeTransaction(Realm.Transaction { realm ->
-                val snackResults = realm?.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
-                sortedResults.addAll(snackResults ?: ArrayList())
-                snackResultsTask.trySetResult(null)
-            }, snackResultsTask.task)
+            val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return emptyList()
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
+                    return mealResults
+                }
+            })
+            val snackResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return emptyList()
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
+                    return snackResults
+                }
+            })
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
@@ -274,7 +279,10 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
             }
 
-            Task.whenAll(arrayListOf(mealResultsTask.task, snackResultsTask.task)).continueWith {
+            Task.whenAll(arrayListOf(mealResultsTask, snackResultsTask)).continueWith {
+                val sortedCollections = ArrayList<BolusEvent>()
+                sortedCollections.addAll(mealResultsTask?.result as List<Meal>)
+                sortedCollections.addAll(snackResultsTask?.result as List<Snack>)
                 Collections.sort(sortedResults, comparator)
 
                 this.mealHistoryAdapter!!.setEvents(sortedResults)

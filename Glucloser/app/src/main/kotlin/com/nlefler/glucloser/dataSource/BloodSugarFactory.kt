@@ -17,6 +17,7 @@ import java.util.Date
 import java.util.UUID
 
 import io.realm.Realm
+import io.realm.RealmObject
 import io.realm.RealmQuery
 import rx.functions.Action2
 import javax.inject.Inject
@@ -43,17 +44,28 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
     }
 
     public fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): Task<BloodSugar?> {
-        return bloodSugarForBloodSugarId(parcelable.id, true).continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
+        return bloodSugarForBloodSugarId(parcelable.id, true)
+                .continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
             if (task.isFaulted) {
                 return@Continuation task
             }
             val sugar = task.result
-            val sugarTask = TaskCompletionSource<BloodSugar?>()
-            realmManager.executeTransaction(Realm.Transaction {
-                sugar?.value = parcelable.value
-                sugar?.date = parcelable.date
-                sugarTask.trySetResult(sugar)
-            }, sugarTask.task)
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(sugar)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    sugar?.value = parcelable.value
+                    sugar?.date = parcelable.date
+                    return listOf(sugar)
+                }
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation Task.forError(task.error)
+                }
+                return@Continuation Task.forResult(task.result.firstOrNull() as BloodSugar?)
+            })
         })
     }
 
@@ -77,22 +89,33 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
         val sugarValue = parseObject.getInt(BloodSugar.ValueFieldName)
         val sugarDate = parseObject.getDate(BloodSugar.DateFieldName)
 
-        return bloodSugarForBloodSugarId(sugarId, true).continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
+        return bloodSugarForBloodSugarId(sugarId, true)
+                .continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
             if (task.isFaulted) {
                 return@Continuation task
             }
 
             val sugar = task.result!!
-            val realmTask = TaskCompletionSource<BloodSugar?>()
-            realmManager.executeTransaction(Realm.Transaction { realm ->
-                if (sugarValue >= 0 && sugarValue != sugar.value) {
-                    sugar.value = sugarValue
+            realmManager.executeTransaction(object: RealmManager.Tx {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(sugar)
                 }
-                if (sugarDate != null) {
-                    sugar.date = sugarDate
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                    if (sugarValue >= 0 && sugarValue != sugar.value) {
+                        sugar.value = sugarValue
+                    }
+                    if (sugarDate != null) {
+                        sugar.date = sugarDate
+                    }
+                    return listOf(sugar)
                 }
-                realmTask.trySetResult(sugar)
-            }, realmTask.task)
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
+                if (task.isFaulted) {
+                    return@Continuation  Task.forError(task.error)
+                }
+                return@Continuation  Task.forResult(task.result.firstOrNull() as BloodSugar?)
+            })
         })
     }
 
@@ -133,25 +156,34 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
     }
 
     private fun bloodSugarForBloodSugarId(id: String?, create: Boolean): Task<BloodSugar?> {
-        val task = TaskCompletionSource<BloodSugar?>()
-        return realmManager.executeTransaction(Realm.Transaction { realm ->
-            if (create && (id == null || id.isEmpty())) {
-                val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-                sugar?.id = UUID.randomUUID().toString()
-                task.trySetResult(sugar)
-                return@Transaction
+        return realmManager.executeTransaction(object: RealmManager.Tx {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
             }
 
-            val query = realm.where<BloodSugar>(BloodSugar::class.java)
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                if (create && (id == null || id.isEmpty())) {
+                    val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
+                    sugar?.id = UUID.randomUUID().toString()
+                    return listOf(sugar)
+                }
 
-            query?.equalTo(BloodSugar.IdFieldName, id)
-            var sugar = query?.findFirst()
+                val query = realm.where<BloodSugar>(BloodSugar::class.java)
 
-            if (sugar == null && create) {
-                sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-                sugar!!.id = id
+                query?.equalTo(BloodSugar.IdFieldName, id)
+                var sugar = query?.findFirst()
+
+                if (sugar == null && create) {
+                    sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
+                    sugar!!.id = id
+                }
+                return listOf(sugar)
             }
-            task.trySetResult(sugar)
-        }, task.task)
+        }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation Task.forError(task.error)
+            }
+            return@Continuation Task.forResult(task.result.firstOrNull() as BloodSugar?)
+        })
     }
 }
