@@ -3,6 +3,7 @@ package com.nlefler.glucloser.dataSource
 import bolts.Task
 import bolts.TaskCompletionSource
 import io.realm.Realm
+import io.realm.RealmObject
 import java.util.concurrent.Executors
 
 /**
@@ -18,11 +19,20 @@ public class RealmManager {
         })
     }
 
-    public fun <T> executeTransaction(tx: Realm.Transaction, task: Task<T>) : Task<T> {
+    public fun executeTransaction(tx: Tx) : Task<List<RealmObject?>> {
+        val _task = TaskCompletionSource<List<RealmObject?>>()
         executor.submit({
-            realm?.executeTransaction(tx)
+            realm?.executeTransaction({ realm ->
+                val dependsOn = tx.dependsOn().map { obj -> realm.copyToRealmOrUpdate(obj) }
+                val deadResults = tx.execute(dependsOn, realm).map { obj -> realm.copyFromRealm(obj )}
+                _task.trySetResult(deadResults)
+            })
         })
-        return task
+        return _task.task
     }
 
+    public interface Tx {
+        fun dependsOn(): List<RealmObject?>
+        fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?>
+    }
 }

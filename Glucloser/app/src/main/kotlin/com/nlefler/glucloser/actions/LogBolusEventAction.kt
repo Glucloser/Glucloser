@@ -12,6 +12,7 @@ import com.nlefler.glucloser.models.*
 
 import io.realm.Realm
 import io.realm.RealmList
+import io.realm.RealmObject
 import java.util.ArrayList
 import javax.inject.Inject
 
@@ -116,19 +117,31 @@ public class LogBolusEventAction : Parcelable {
                         }
 
                         val meal = mealTask.result
-                        val realmTask = TaskCompletionSource<Meal?>()
-                        return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
-                            meal?.foods = foodList
+                        val place = placeTask?.result
 
-                            if (placeTask?.result != null) {
-                                meal?.place = placeTask?.result
+                        return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                            override fun dependsOn(): List<RealmObject?> {
+                                return listOf(meal, place)
                             }
 
-                            meal?.beforeSugar = beforeSugarTask?.result
-                            meal?.bolusPattern = bolusPatternTask?.result
+                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                                meal?.foods = foodList
 
-                            realmTask.trySetResult(meal)
-                        }, realmTask.task)
+                                if (place != null) {
+                                    meal?.place = place
+                                }
+
+                                meal?.beforeSugar = beforeSugarTask?.result
+                                meal?.bolusPattern = bolusPatternTask?.result
+                                return listOf(meal)
+                            }
+
+                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> {task ->
+                            if (task.isFaulted) {
+                                return@Continuation Task.forError(task.error)
+                            }
+                            return@Continuation Task.forResult(task.result.firstOrNull() as Meal?)
+                        })
 
                     }).continueWith { task ->
                         if (task.isFaulted || task.result == null || task.result !is Meal) {
@@ -145,14 +158,24 @@ public class LogBolusEventAction : Parcelable {
                             return@Continuation task
                         }
 
-                        val realmTask = TaskCompletionSource<Snack?>()
-                        return@Continuation realmManager.executeTransaction(Realm.Transaction { realm ->
-                            val snack = task.result
-                            snack?.foods = foodList
-                            snack?.beforeSugar = beforeSugarTask?.result
-                            snack?.bolusPattern = bolusPatternTask?.result
-                            realmTask.trySetResult(snack)
-                        }, realmTask.task)
+                        val snack = task.result
+                        return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                            override fun dependsOn(): List<RealmObject?> {
+                                return listOf(snack)
+                            }
+
+                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                                snack?.foods = foodList
+                                snack?.beforeSugar = beforeSugarTask?.result
+                                snack?.bolusPattern = bolusPatternTask?.result
+                                return listOf(snack)
+                            }
+                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Snack?>> { task ->
+                            if (task.isFaulted) {
+                                return@Continuation Task.forError(task.error)
+                            }
+                            return@Continuation Task.forResult(task.result.firstOrNull() as Snack?)
+                        })
                     }).continueWith { task ->
                         if (task.isFaulted || task.result == null || task.result !is Snack) {
                             return@continueWith
