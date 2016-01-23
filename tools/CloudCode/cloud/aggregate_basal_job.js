@@ -1,5 +1,6 @@
 var basal = require('cloud/basal.js');
 var aggregateJobHelper = require('cloud/aggregate_job_helper.js');
+var uuid = require('cloud/uuid.js');
 var _ = require('underscore');
 
 exports.RegisterAggregateBasalRates = function() {
@@ -14,6 +15,7 @@ exports.RegisterAggregateBasalRates = function() {
   config.ChangeEventDeserializeFun = basal.DeserializeBasalChangeEvent;
   config.ChangeEventLogFormatFun = basal.LogFormatBasalChangeEvent;
   config.ChangeEventSaveFun = function (parseObj, changeObj) {
+    parseObj.set('NLID', uuid.v4());
     parseObj.set('rate', changeObj.Rate);
     parseObj.set('ordinal', changeObj.ProfileIndex);
     parseObj.set('startTime', changeObj.StartTime);
@@ -23,6 +25,7 @@ exports.RegisterAggregateBasalRates = function() {
   config.PatternChangeEventDeserializeFun = basal.DeserializeBasalPatternChangeEvent;
   config.PatternChangeEventLogFormatFun = basal.LogFormatBasalPatternChangeEvent;
   config.PatternChangeEventSaveFun = function (parseObj, changeObj) {
+    parseObj.set('NLID', uuid.v4());
     parseObj.set('rateCount', changeObj.NumProfiles);
     parseObj.set('timestamp', changeObj.Timestamp);
 
