@@ -62,7 +62,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
 
         val foodIds = ArrayList<String>()
         for (food in bolusEvent.foods) {
-            val foodId = food.foodId
+            val foodId = food.primaryId
             foodIds.add(foodId)
             finalObservable = Observable.merge<ParseObject>(finalObservable, getUploadedObjectObservable(foodId, food))
         }
@@ -78,7 +78,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
             val foodParseObjects = ArrayList<ParseObject>()
 
             override fun onCompleted() {
-                val bolusEventId = bolusEvent.id;
+                val bolusEventId = bolusEvent.primaryId;
                 getUploadedObjectObservable(bolusEventId, bolusEvent, beforeSugarParseObject, foodParseObjects, placeParseObject).subscribe({ mealObject: ParseObject ->
                     mealObject.saveInBackground()
                     inProgressUploads.remove(bolusEventId)
@@ -117,7 +117,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
     }
 
     public fun uploadFood(food: Food) {
-        val foodId = food.foodId
+        val foodId = food.primaryId
         this.getUploadedObjectObservable(foodId, food).subscribe({ parseObject: ParseObject ->
             parseObject.saveInBackground()
             inProgressUploads.remove(foodId)

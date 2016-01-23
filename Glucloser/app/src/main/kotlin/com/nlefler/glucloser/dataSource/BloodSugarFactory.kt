@@ -29,7 +29,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
     private val LOG_TAG = "BloodSugarFactory"
 
     public fun bloodSugar(): Task<BloodSugar?> {
-        return bloodSugarForBloodSugarId(null, true)
+        return bloodSugarForBloodSugarId(UUID.randomUUID().toString(), true)
     }
 
     public fun areBloodSugarsEqual(sugar1: BloodSugar?, sugar2: BloodSugar?): Boolean {
@@ -155,7 +155,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
         })
     }
 
-    private fun bloodSugarForBloodSugarId(id: String?, create: Boolean): Task<BloodSugar?> {
+    private fun bloodSugarForBloodSugarId(id: String, create: Boolean): Task<BloodSugar?> {
         return realmManager.executeTransaction(object: RealmManager.Tx {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()

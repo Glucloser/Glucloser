@@ -232,7 +232,7 @@ public class BolusPatternFactory @Inject constructor(val realmManager: RealmMana
 
                 if (pattern == null && create) {
                     pattern = realm.createObject<BolusPattern>(BolusPattern::class.java)
-                    pattern!!.NLID = id
+                    pattern!!.primaryId = id
                 }
                 return listOf(pattern)
             }

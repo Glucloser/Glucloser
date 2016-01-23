@@ -13,12 +13,11 @@ import com.parse.ParseException
 import com.parse.ParseObject
 import com.parse.ParseQuery
 
-import java.util.UUID
-
 import io.realm.Realm
 import io.realm.RealmObject
 import rx.functions.Action1
 import rx.functions.Action2
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -28,7 +27,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
     private val LOG_TAG = "SnackFactory"
 
     public fun snack(): Task<Snack?> {
-        return snackForSnackId("", true)
+        return snackForSnackId(UUID.randomUUID().toString(), true)
     }
 
     public fun fetchSnack(id: String): Task<Snack?> {
@@ -38,7 +37,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             }
 
             val parseQuery = ParseQuery.getQuery<ParseObject>(Snack.ParseClassName)
-            parseQuery.whereEqualTo(Snack.SnackIdFieldName, id)
+            parseQuery.whereEqualTo(Snack.IdFieldName, id)
             parseQuery.setLimit(1)
             return@Continuation  parseQuery.firstInBackground.continueWithTask(Continuation<ParseObject?, Task<ParseObject?>> { task ->
                 if (task.isFaulted) {
@@ -59,7 +58,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
         val parcelable = SnackParcelable()
         parcelable.carbs = snack.carbs
         parcelable.insulin = snack.insulin
-        parcelable.id = snack.id
+        parcelable.id = snack.primaryId
         parcelable.isCorrection = snack.isCorrection
         if (snack.beforeSugar != null) {
             parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(snack.beforeSugar!!)
@@ -115,7 +114,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             return Task.forError(Exception(errorMessage))
         }
 
-        val snackId = parseObject.getString(Snack.SnackIdFieldName)
+        val snackId = parseObject.getString(Snack.IdFieldName)
         if (snackId == null || snackId.isEmpty()) {
             val errorMessage = "Can't create Snack from Parse object, no id"
             Log.e(LOG_TAG, errorMessage)
@@ -187,14 +186,14 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             Log.e(LOG_TAG, "Unable to create Parse object from Snack, action null")
             return
         }
-        if (snack?.id?.isEmpty() ?: true) {
+        if (snack?.primaryId?.isEmpty() ?: true) {
             Log.e(LOG_TAG, "Unable to create Parse object from Snack, Snack null or no id")
             action.call(null, false)
             return
         }
 
         val parseQuery = ParseQuery.getQuery<ParseObject>(Snack.ParseClassName)
-        parseQuery.whereEqualTo(Snack.SnackIdFieldName, snack!!.id)
+        parseQuery.whereEqualTo(Snack.IdFieldName, snack!!.primaryId)
         parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
             val parseObject: ParseObject
             var created = false
@@ -204,7 +203,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             } else {
                 parseObject = parseObjects.get(0)
             }
-            parseObject.put(Snack.SnackIdFieldName, snack.id)
+            parseObject.put(Snack.IdFieldName, snack.primaryId)
             if (beforeSugarObject != null) {
                 parseObject.put(Snack.BeforeSugarFieldName, beforeSugarObject)
             }
@@ -226,18 +225,20 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
                 if (create && id.isEmpty()) {
                     val snack = realm.createObject<Snack>(Snack::class.java)
-                    snack?.id = UUID.randomUUID().toString()
+                    snack?.primaryId = UUID.randomUUID().toString()
+                    snack?.date = Date()
                     return listOf(snack)
                 }
 
                 val query = realm.where<Snack>(Snack::class.java)
 
-                query?.equalTo(Snack.SnackIdFieldName, id)
+                query?.equalTo(Snack.IdFieldName, id)
                 var snack: Snack? = query?.findFirst()
 
                 if (snack == null && create) {
                     snack = realm.createObject<Snack>(Snack::class.java)
-                    snack!!.id = id
+                    snack?.primaryId = id
+                    snack?.date = Date()
                 }
                 return listOf(snack)
             }

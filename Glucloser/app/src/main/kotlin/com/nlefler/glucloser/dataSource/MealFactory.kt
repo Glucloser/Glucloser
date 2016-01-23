@@ -33,7 +33,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
 
     public fun meal(): Task<Meal?> {
         val mealTask = TaskCompletionSource<Meal?>()
-        mealForMealId("", true).continueWith { task ->
+        mealForMealId(UUID.randomUUID().toString(), true).continueWith { task ->
             if (task.isFaulted) {
                 mealTask.trySetError(task.error)
             }
@@ -54,7 +54,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
             val fetchTask = TaskCompletionSource<Meal?>()
 
             val parseQuery = ParseQuery.getQuery<ParseObject>(Meal.ParseClassName)
-            parseQuery.whereEqualTo(Meal.MealIdFieldName, id)
+            parseQuery.whereEqualTo(Meal.IdFieldName, id)
             parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException ->
                 if (!parseObjects.isEmpty()) {
                     mealFromParseObject(parseObjects.get(0)).continueWith { task ->
@@ -81,7 +81,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
         }
         parcelable.carbs = meal.carbs
         parcelable.insulin = meal.insulin
-        parcelable.id = meal.id
+        parcelable.id = meal.primaryId
         parcelable.isCorrection = meal.isCorrection
         if (meal.beforeSugar != null) {
             parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(meal.beforeSugar!!)
@@ -142,7 +142,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
             return Task.forError(Exception(errorMessage))
         }
 
-        val mealId = parseObject.getString(Meal.MealIdFieldName)
+        val mealId = parseObject.getString(Meal.IdFieldName)
         if (mealId?.length == 0) {
             val errorMessage = "Can't create Meal from Parse object, no id"
             Log.e(LOG_TAG, errorMessage)
@@ -212,14 +212,14 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
             Log.e(LOG_TAG, "Unable to create Parse object from Meal, action null")
             return
         }
-        if (meal.id.length == 0) {
+        if (meal.primaryId.length == 0) {
             Log.e(LOG_TAG, "Unable to create Parse object from Meal, meal null or no id")
             action.call(null, false)
             return
         }
 
         val parseQuery = ParseQuery.getQuery<ParseObject>(Meal.ParseClassName)
-        parseQuery.whereEqualTo(Meal.MealIdFieldName, meal.id)
+        parseQuery.whereEqualTo(Meal.IdFieldName, meal.primaryId)
         parseQuery.setLimit(1)
         parseQuery.firstInBackground.continueWithTask({ task ->
             if (task.result == null) {
@@ -231,7 +231,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
             val resultPair = task.result
             val parseObject = resultPair.first
             val created = resultPair.second
-            parseObject.put(Meal.MealIdFieldName, meal.id)
+            parseObject.put(Meal.IdFieldName, meal.primaryId)
             if (placeObject != null) {
                 parseObject.put(Meal.PlaceFieldName, placeObject)
             }
@@ -259,18 +259,18 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
                 if (create && id.length == 0) {
                     val meal = realm.createObject<Meal>(Meal::class.java)
-                    meal?.id = UUID.randomUUID().toString()
+                    meal?.primaryId = UUID.randomUUID().toString()
                     return listOf(meal)
                 }
 
                 val query = realm.where<Meal>(Meal::class.java)
 
-                query?.equalTo(Meal.MealIdFieldName, id)
+                query?.equalTo(Meal.IdFieldName, id)
                 var meal = query?.findFirst()
 
                 if (meal == null && create) {
                     meal = realm.createObject<Meal>(Meal::class.java)
-                    meal!!.id = id
+                    meal!!.primaryId = id
                 }
 
                 return listOf(meal)

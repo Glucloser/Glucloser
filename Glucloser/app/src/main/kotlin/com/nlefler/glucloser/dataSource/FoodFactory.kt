@@ -24,7 +24,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     private val LOG_TAG = "BloodSugarFactory"
 
     public fun food(): Task<Food?> {
-        return foodForFoodId("", true)
+        return foodForFoodId(UUID.randomUUID().toString(), true)
     }
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {
@@ -41,7 +41,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                 }
 
                 override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    food?.name = parcelable.foodName
+                    food?.foodName = parcelable.foodName
                     food?.carbs = parcelable.carbs
                     return listOf(food)
                 }
@@ -49,7 +49,8 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                 if (task.isFaulted) {
                     return@Continuation Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
+                val food = task.result.firstOrNull() as Food?
+                return@Continuation Task.forResult(food)
             })
         })
 
@@ -57,8 +58,8 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun parcelableFromFood(food: Food): FoodParcelable {
         val parcelable = FoodParcelable()
-        parcelable.foodId = food.foodId
-        parcelable.foodName = food.name
+        parcelable.foodId = food.primaryId
+        parcelable.foodName = food.foodName
         parcelable.carbs = food.carbs
         return parcelable
     }
@@ -68,7 +69,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
             return false
         }
 
-        val nameOK = food1.name.equals(food2.name)
+        val nameOK = food1.foodName.equals(food2.foodName)
         val carbsOK = food1.carbs == food2.carbs
 
         return nameOK && carbsOK
@@ -99,7 +100,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                 }
 
                 override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    food?.name = nameValue
+                    food?.foodName = nameValue
                     if (carbValue >= 0) {
                         food?.carbs = carbValue
                     }
@@ -119,14 +120,14 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
             Log.e(LOG_TAG, "Unable to create Parse object from Food, action null")
             return
         }
-        if (food.foodId.isEmpty()) {
+        if (food.primaryId.isEmpty()) {
             Log.e(LOG_TAG, "Unable to create Parse object from Food, blood sugar null or no id")
             action.call(null, false)
             return
         }
 
         val parseQuery = ParseQuery.getQuery<ParseObject>(Food.ParseClassName)
-        parseQuery.whereEqualTo(Food.FoodIdFieldName, food.foodId)
+        parseQuery.whereEqualTo(Food.FoodIdFieldName, food.primaryId)
 
         parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
             val parseObject: ParseObject
@@ -137,8 +138,8 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
             } else {
                 parseObject = parseObjects.get(0)
             }
-            parseObject.put(Food.FoodIdFieldName, food.foodId)
-            parseObject.put(Food.FoodNameFieldName, food.name)
+            parseObject.put(Food.FoodIdFieldName, food.primaryId)
+            parseObject.put(Food.FoodNameFieldName, food.foodName)
             parseObject.put(Food.CarbsFieldName, food.carbs)
             action.call(parseObject, created)
         })
@@ -153,6 +154,9 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
                 if (create && id.isEmpty()) {
                     val food = realm.createObject<Food>(Food::class.java)
+                    food!!.primaryId = UUID.randomUUID().toString()
+                    food.carbs = 0
+                    food.foodName = ""
                     return listOf(food)
                 }
 
@@ -163,7 +167,9 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
                 if (food == null && create) {
                     food = realm.createObject<Food>(Food::class.java)
-                    food!!.foodId = id
+                    food!!.primaryId = id
+                    food.carbs = 0
+                    food.foodName = ""
                 }
 
                 return listOf(food)
