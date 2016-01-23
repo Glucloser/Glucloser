@@ -49,8 +49,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                 if (task.isFaulted) {
                     return@Continuation Task.forError(task.error)
                 }
-                val food = task.result.firstOrNull() as Food?
-                return@Continuation Task.forResult(food)
+                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
             })
         })
 

@@ -1,43 +1,83 @@
 language: android
 sudo: false
+jdk: oraclejdk7
+
+env:
+  global:
+    - ANDROID_BUILD_API_LEVEL=23
+    - ANDROID_BUILD_TOOLS_VERSION=23.0.2
+    - ANDROID_ABI=default/x86
+    - ANDROID_EMULATOR_API_LEVEL=23
+
 android:
   components:
     # Uncomment the lines below if you want to
     # use the latest revision of Android SDK Tools
-    # - platform-tools
-    # - tools
+    - platform-tools
+    - tools
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    # Build tools for Foursquare OAuth
+    - build-tools-23.0.1
 
-    # The BuildTools version used by your project
-    - build-tools-21.1.2
+    # Latest for Glucloser
+    - android-$ANDROID_BUILD_API_LEVEL
+    - android-$ANDROID_EMULATOR_API_LEVEL
 
-    # The SDK version used to compile your project
+    # 22 for NLFoursquare
     - android-22
 
     # Additional components
     - extra-google-google_play_services
     - extra-google-m2repository
     - extra-android-m2repository
-    - addon-google_apis-google-21
+    - addon-google_apis-google-23
     - extra-android-support
 
-    # Specify at least one system image,
-    # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-22
-    - sys-img-x86-android-22
     # Emulator Management: Create, Start and Wait
     # Handle git submodules yourself
+
+    # - addon-google_apis_x86-google-$ANDROID_EMULATOR_API_LEVEL
+
+    # - sys-img-x86-android-$ANDROID_EMULATOR_API_LEVEL
+    - sys-img-armeabi-v7a-android-$ANDROID_EMULATOR_API_LEVEL
+
+licenses:
+    - '.+'
+
+notifications:
+  email: true
+
 git:
-    submodules: false
+    submodules: false # Need to handle this ourselves
+
 # Use sed to replace the SSH URL with the public URL, then initialize submodules
 before_install:
-    - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-    - git submodule update --init --recursive
+  # Try to setup KVM for x86 emulator
+  # - sudo apt-get update -qq
+  # - sudo apt-get install -qq libstdc++6:i386 lib32z1 expect
+  # - sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+
+  # Make some space for the emulator to start
+  # - echo "Remove unused android components to gain disk space and avoid related issues"; export IMGS=${ANDROID_HOME}system-images; rm -R ${IMGS}/android-15; rm -R ${IMGS}/android-16; rm -R ${IMGS}/android-17; rm -R ${IMGS}/android-18; export PFRM=${ANDROID_HOME}platforms; rm -R ${PFRM}/android-15; rm -R ${PFRM}/android-16; rm -R ${PFRM}/android-17; rm -R ${PFRM}/android-18; || true
+
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
+
 before_script:
-      - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-      - emulator -avd test -no-skin -no-audio -no-window &
-      - android-wait-for-emulator
-      - adb shell input keyevent 82 &
+  # for gradle output style
+  - export TERM=dumb
+
+  # environment info
+  - ./Glucloser/gradlew -v
+  - uname -a
+
+  # emulator
+  # - echo no | android create avd --force -n test -t "android-23" --abi "default/armeabi-v7a"
+  # - emulator -avd test -no-skin -no-audio -no-window &
+  # - android-wait-for-emulator
+  # - adb shell input keyevent 82 &
+
+# build
 script:
       - cd Glucloser
-#      - ./gradlew clean build connectedCheck --stacktrace 
-      - ./gradlew clean build --stacktrace 
+      - ./gradlew clean build --stacktrace --info

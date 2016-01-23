@@ -1,6 +1,3 @@
 [submodule "Dependencies/foursquare-android-oauth"]
 	path = Dependencies/foursquare-android-oauth
 	url = git@github.com:foursquare/foursquare-android-oauth.git
-[submodule "Glucloser/nlfoursquare"]
-	path = Glucloser/nlfoursquare
-	url = git@github.com:nlefler/NLFoursquare-Android.git
