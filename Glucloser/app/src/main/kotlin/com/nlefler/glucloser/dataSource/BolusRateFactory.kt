@@ -139,7 +139,7 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
 
                 if (rate == null && create) {
                     rate = realm.createObject<BolusRate>(BolusRate::class.java)
-                    rate!!.NLID = id
+                    rate!!.primaryId = id
                 }
                 return listOf(rate)
             }

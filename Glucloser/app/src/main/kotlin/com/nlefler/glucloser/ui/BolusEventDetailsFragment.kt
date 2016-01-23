@@ -116,6 +116,7 @@ public class BolusEventDetailsFragment : Fragment() {
         this.addFoodCarbField?.setOnEditorActionListener { textView, i, keyEvent ->
             if (i == EditorInfo.IME_ACTION_DONE) {
                 addFoodFromFields()
+                this.addFoodNameField!!.requestFocus()
                 true
             }
             else {
@@ -172,13 +173,14 @@ public class BolusEventDetailsFragment : Fragment() {
 
         this.addFoodNameField!!.setText("")
         this.addFoodCarbField!!.setText("")
-        this.addFoodNameField!!.requestFocus()
     }
 
     internal fun saveEventClicked() {
         if (getActivity() !is BolusEventDetailDelegate || this.bolusEventParcelable == null) {
             return
         }
+
+        addFoodFromFields()
 
         this.bolusEventParcelable!!.date = Date()
 

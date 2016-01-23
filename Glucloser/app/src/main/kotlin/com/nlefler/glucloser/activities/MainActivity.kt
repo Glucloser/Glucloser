@@ -246,8 +246,6 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val sortedResults = ArrayList<BolusEvent>()
-
             val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return emptyList()
@@ -283,9 +281,9 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 val sortedCollections = ArrayList<BolusEvent>()
                 sortedCollections.addAll(mealResultsTask?.result as List<Meal>)
                 sortedCollections.addAll(snackResultsTask?.result as List<Snack>)
-                Collections.sort(sortedResults, comparator)
+                Collections.sort(sortedCollections, comparator)
 
-                this.mealHistoryAdapter!!.setEvents(sortedResults)
+                this.mealHistoryAdapter!!.setEvents(sortedCollections)
             }
         }
 

@@ -43,7 +43,7 @@ public class FoodListRecyclerAdapter(private var foods: List<Food>) : RecyclerVi
 
         val food = this.foods.get(i)
         viewHolder.food = food
-        viewHolder.foodName.setText("${food.name}")
+        viewHolder.foodName.setText("${food.foodName}")
         viewHolder.carbsValue.setText("${food.carbs}")
     }
 

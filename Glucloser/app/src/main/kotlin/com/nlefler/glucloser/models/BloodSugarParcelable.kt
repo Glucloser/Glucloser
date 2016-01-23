@@ -9,7 +9,7 @@ import java.util.Date
  * Created by Nathan Lefler on 1/4/15.
  */
 public class BloodSugarParcelable() : Parcelable {
-    public var id: String? = null
+    public var id: String = ""
     public var value: Int = 0
     public var date: Date? = null
 
