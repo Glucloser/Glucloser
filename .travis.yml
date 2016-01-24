@@ -80,4 +80,4 @@ before_script:
 # build
 script:
       - cd Glucloser
-      - ./gradlew clean build --stacktrace --info
+      - ./gradlew clean build --stacktrace
