@@ -71,7 +71,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
 
     public fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
         val parcelable = BloodSugarParcelable()
-        parcelable.id = sugar.id
+        parcelable.id = sugar.primaryId
         parcelable.value = sugar.value
         parcelable.date = sugar.date
         return parcelable
@@ -130,14 +130,14 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, action null")
             return
         }
-        if (bloodSugar.id?.isEmpty() ?: true) {
+        if (bloodSugar.primaryId?.isEmpty() ?: true) {
             Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, blood sugar null or no id")
             action.call(null, false)
             return
         }
 
         val parseQuery = ParseQuery.getQuery<ParseObject>(BloodSugar.ParseClassName)
-        parseQuery.whereEqualTo(BloodSugar.IdFieldName, bloodSugar.id)
+        parseQuery.whereEqualTo(BloodSugar.IdFieldName, bloodSugar.primaryId)
 
         parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
             val parseObject: ParseObject
@@ -148,7 +148,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             } else {
                 parseObject = parseObjects.get(0)
             }
-            parseObject.put(BloodSugar.IdFieldName, bloodSugar.id)
+            parseObject.put(BloodSugar.IdFieldName, bloodSugar.primaryId)
             parseObject.put(BloodSugar.ValueFieldName, bloodSugar.value)
             parseObject.put(BloodSugar.DateFieldName, bloodSugar.date)
             action.call(parseObject, created)
@@ -164,7 +164,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
                 if (create && (id == null || id.isEmpty())) {
                     val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-                    sugar?.id = UUID.randomUUID().toString()
+                    sugar?.primaryId = UUID.randomUUID().toString()
                     return listOf(sugar)
                 }
 
@@ -175,7 +175,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
 
                 if (sugar == null && create) {
                     sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-                    sugar!!.id = id
+                    sugar!!.primaryId = id
                 }
                 return listOf(sugar)
             }

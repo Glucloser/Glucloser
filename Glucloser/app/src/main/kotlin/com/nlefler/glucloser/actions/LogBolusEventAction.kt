@@ -79,14 +79,14 @@ public class LogBolusEventAction : Parcelable {
         val foodTasks = ArrayList<Task<Food?>>()
         val foodList = RealmList<Food>()
         for (foodParcelable in this.foodParcelableList) {
-            foodTasks.add(foodFactory.foodFromParcelable(foodParcelable).continueWithTask(Continuation<Food?, Task<Food?>> { task ->
+            foodTasks.add(foodFactory.foodFromParcelable(foodParcelable).continueWithTask(Continuation<Food?, Task<Food?>> foodC@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation task
+                    return@foodC task
                 }
 
                 val food = task.result
                 foodList.add(food)
-                return@Continuation Task.forResult(food)
+                return@foodC Task.forResult(food)
             }))
         }
 
@@ -97,9 +97,9 @@ public class LogBolusEventAction : Parcelable {
 
         val allTasks = arrayListOf(beforeSugarTask, bolusPatternTask)
         allTasks.addAll(foodTasks)
-        Task.whenAll(allTasks).continueWith { task ->
+        Task.whenAll(allTasks).continueWith all@ { task ->
             if (task.isFaulted) {
-                return@continueWith
+                return@all
             }
 
             when (this.bolusEventParcelable ?: null) {
@@ -111,15 +111,15 @@ public class LogBolusEventAction : Parcelable {
 
                     val mealTask = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
 
-                    Task.whenAll(arrayListOf(mealTask, placeTask)).continueWithTask(Continuation<Void, Task<Meal?>> { task ->
+                    Task.whenAll(arrayListOf(mealTask, placeTask)).continueWithTask(Continuation<Void, Task<Meal?>> mealAll@ { task ->
                         if (task.isFaulted) {
-                            return@Continuation Task.forError<Meal?>(task.error)
+                            return@mealAll Task.forError<Meal?>(task.error)
                         }
 
                         val meal = mealTask.result
                         val place = placeTask?.result
 
-                        return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                        return@mealAll realmManager.executeTransaction(object: RealmManager.Tx {
                             override fun dependsOn(): List<RealmObject?> {
                                 return listOf(meal, place)
                             }
@@ -136,16 +136,16 @@ public class LogBolusEventAction : Parcelable {
                                 return listOf(meal)
                             }
 
-                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> {task ->
+                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> realm@ {task ->
                             if (task.isFaulted) {
-                                return@Continuation Task.forError(task.error)
+                                return@realm Task.forError(task.error)
                             }
-                            return@Continuation Task.forResult(task.result.firstOrNull() as Meal?)
+                            return@realm Task.forResult(task.result.firstOrNull() as Meal?)
                         })
 
-                    }).continueWith { task ->
+                    }).continueWith mealUpload@ { task ->
                         if (task.isFaulted || task.result == null || task.result !is Meal) {
-                            return@continueWith
+                            return@mealUpload
                         }
 
                         parseUploader.uploadBolusEvent(task.result as Meal)
@@ -153,13 +153,14 @@ public class LogBolusEventAction : Parcelable {
 
                 }
                 is SnackParcelable -> {
-                    snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable).continueWithTask(Continuation<Snack?, Task<Snack?>> { task ->
+                    snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
+                            .continueWithTask(Continuation<Snack?, Task<Snack?>> snackPar@ { task ->
                         if (task.isFaulted) {
-                            return@Continuation task
+                            return@snackPar task
                         }
 
                         val snack = task.result
-                        return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                        return@snackPar realmManager.executeTransaction(object: RealmManager.Tx {
                             override fun dependsOn(): List<RealmObject?> {
                                 return listOf(snack)
                             }

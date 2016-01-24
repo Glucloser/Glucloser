@@ -10,7 +10,7 @@ import java.util.*
  */
 @RealmClass
 public open class BloodSugar(
-        public open var id: String = UUID.randomUUID().toString(),
+        public open var primaryId: String = UUID.randomUUID().toString(),
         public open var value: Int = 0,
         public open var date: Date? = null
     ) : RealmObject() {

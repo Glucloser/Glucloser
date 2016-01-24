@@ -49,7 +49,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
         }
 
         val beforeSugar = bolusEvent.beforeSugar
-        val beforeSugarId: String = beforeSugar?.id ?: ""
+        val beforeSugarId: String = beforeSugar?.primaryId ?: ""
         if (!beforeSugarId.isEmpty()) {
             val bolusObservable = getUploadedObjectObservable(beforeSugarId, beforeSugar!!)
             if (finalObservable != null) {
@@ -109,7 +109,7 @@ public class ParseUploader @Inject constructor(val mealFactory: MealFactory,
     }
 
     public fun uploadBloodSugar(sugar: BloodSugar) {
-        val sugarId = sugar.id!!
+        val sugarId = sugar.primaryId
         this.getUploadedObjectObservable(sugarId, sugar).subscribe({ parseObject: ParseObject ->
             parseObject.saveInBackground()
             inProgressUploads.remove(sugarId)
