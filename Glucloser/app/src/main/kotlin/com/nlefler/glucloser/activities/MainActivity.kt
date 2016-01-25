@@ -18,15 +18,11 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import bolts.Task
-import bolts.TaskCompletionSource
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
-import com.nlefler.glucloser.activities.HistoricalBolusDetailActivity
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.dataSource.BolusEventFactory
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
-import com.nlefler.glucloser.models.MealHistoryRecyclerAdapterDelegate
 import com.nlefler.glucloser.dataSource.RealmManager
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.models.BolusEvent
@@ -215,7 +211,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             this.mealHistoryLayoutManager = LinearLayoutManager(getActivity())
             this.mealHistoryListView!!.setLayoutManager(this.mealHistoryLayoutManager)
 
-            this.mealHistoryAdapter = MealHistoryRecyclerAdapter(getActivity(), ArrayList<Meal>(), this)
+            this.mealHistoryAdapter = MealHistoryRecyclerAdapter(getActivity(), ArrayList<Meal>())
             this.mealHistoryListView!!.setAdapter(this.mealHistoryAdapter)
             this.mealHistoryListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
@@ -249,7 +245,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+            val mealResultsTask = realmManager?.executeTransaction(object : RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return emptyList()
                 }
@@ -259,7 +255,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                     return mealResults
                 }
             })
-            val snackResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+            val snackResultsTask = realmManager?.executeTransaction(object : RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return emptyList()
                 }
@@ -270,7 +266,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
             })
 
-            val comparator = object: Comparator<BolusEvent> {
+            val comparator = object : Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
                     return -1 * a.date.compareTo(b.date)
                 }
@@ -287,15 +283,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 Collections.sort(sortedCollections, comparator)
 
                 this.mealHistoryAdapter!!.setEvents(sortedCollections)
-            val bolusEventParcelable = BolusEventFactory.ParcelableFromBolusEvent(bolusEvent)
-            if (bolusEventParcelable == null) {
-                return
+
             }
-
-            val intent = Intent(getActivity(), javaClass<HistoricalBolusDetailActivity>())
-            intent.putExtra(HistoricalBolusDetailActivity.BolusKey, bolusEventParcelable)
-
-            startActivity(intent)
         }
     }
 
