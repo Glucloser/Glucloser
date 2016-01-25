@@ -83,12 +83,12 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
             return Task.forError(Exception(errorMessage))
         }
 
-        return placeForFoursquareId(venue.id, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+        return placeForFoursquareId(venue.id, true).continueWithTask(Continuation<Place?, Task<Place?>> placeForId@ { task ->
             if (task.isFaulted) {
-                return@Continuation task
+                return@placeForId task
             }
             val place = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@placeForId realmManager.executeTransaction(object: RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(place)
                 }
@@ -100,11 +100,11 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                     place?.longitude = venue.location.lng
                     return listOf(place)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as Place?)
             })
 
         })
@@ -122,13 +122,13 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun placeFromParcelable(parcelable: PlaceParcelable): Task<Place?> {
         return placeForFoursquareId(parcelable.foursquareId, true)
-                .continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+                .continueWithTask(Continuation<Place?, Task<Place?>> placeForId@ { task ->
             if (task.isFaulted) {
-                return@Continuation task
+                return@placeForId task
             }
 
             val place = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@placeForId realmManager.executeTransaction(object: RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(place)
                 }
@@ -140,11 +140,11 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                     place?.longitude = parcelable.longitude
                     return listOf(place)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as Place?)
             })
         })
     }
@@ -172,12 +172,12 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
         val lat = parseObject.getDouble(Place.LatitudeFieldName).toFloat()
         val lon = parseObject.getDouble(Place.LongitudeFieldName).toFloat()
 
-        return placeForFoursquareId(foursquareId, true).continueWithTask(Continuation<Place?, Task<Place?>> { task ->
+        return placeForFoursquareId(foursquareId, true).continueWithTask(Continuation<Place?, Task<Place?>> placeForId@ { task ->
             if (task.isFaulted) {
-                return@Continuation task
+                return@placeForId task
             }
             val place = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@placeForId realmManager.executeTransaction(object: RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(place)
                 }
@@ -195,11 +195,11 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                     }
                     return listOf(place)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Place?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Place?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as Place?)
             })
         })
     }

@@ -20,7 +20,7 @@ class GlucloserRealmMigration : RealmMigration {
             // Renames 'rate' field to 'carbsPerUnit'
             val rateSchema = schema?.get("BolusRate")
             rateSchema?.
-                    addField("carbsPerUnit", Integer::class.java)?.
+                    addField("carbsPerUnit", Int::class.java)?.
                     transform { obj -> obj.set("carbsPerUnit", obj.getInt("rate")) }?.
                     removeField("rate")
             version++

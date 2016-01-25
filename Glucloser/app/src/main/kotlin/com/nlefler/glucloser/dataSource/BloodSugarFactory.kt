@@ -60,11 +60,11 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
                     sugar?.date = parcelable.date
                     return listOf(sugar)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as BloodSugar?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as BloodSugar?)
             })
         })
     }
@@ -110,11 +110,11 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
                     }
                     return listOf(sugar)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation  Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation  Task.forResult(task.result.firstOrNull() as BloodSugar?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as BloodSugar?)
             })
         })
     }
@@ -130,7 +130,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, action null")
             return
         }
-        if (bloodSugar.primaryId?.isEmpty() ?: true) {
+        if (bloodSugar.primaryId.isEmpty()) {
             Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, blood sugar null or no id")
             action.call(null, false)
             return
@@ -162,7 +162,7 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             }
 
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                if (create && (id == null || id.isEmpty())) {
+                if (create && id.isEmpty()) {
                     val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
                     sugar?.primaryId = UUID.randomUUID().toString()
                     return listOf(sugar)
