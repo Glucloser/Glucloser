@@ -21,16 +21,16 @@ import javax.inject.Inject
 public class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
 
     public fun emptyPattern(): Task<BolusPattern?> {
-        return bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> { rateTask ->
+        return bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> emptyRate@ { rateTask ->
             if (rateTask.isFaulted) {
-                return@Continuation Task.forError(Exception("Unable to create BolusRate"))
+                return@emptyRate Task.forError(Exception("Unable to create BolusRate"))
             }
             else {
                 val bolusRate = rateTask.result
-                return@Continuation bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
-                        .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>>{ task ->
+                return@emptyRate bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
+                        .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
                             val bolusPattern = task.result
-                    return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                    return@patternForId realmManager.executeTransaction(object: RealmManager.Tx {
                         override fun dependsOn(): List<RealmObject?> {
                             return listOf(bolusRate, bolusPattern)
                         }
@@ -41,11 +41,11 @@ public class BolusPatternFactory @Inject constructor(val realmManager: RealmMana
                             pattern?.rates?.add(rateTask.result)
                             return listOf(pattern)
                         }
-                    }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusPattern?>> { task ->
+                    }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusPattern?>> realmTransform@ { task ->
                         if (task.isFaulted) {
-                            return@Continuation Task.forError(task.error)
+                            return@realmTransform Task.forError(task.error)
                         }
-                        return@Continuation Task.forResult(task.result.firstOrNull() as BolusPattern?)
+                        return@realmTransform Task.forResult(task.result.firstOrNull() as BolusPattern?)
                     })
                 })
             }
@@ -76,13 +76,13 @@ public class BolusPatternFactory @Inject constructor(val realmManager: RealmMana
 
         return Task.whenAll(ratePromises).continueWithTask(Continuation<Void, Task<BolusPattern?>> {
             bolusPatternForId(patternId, true)
-                    .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>>{ task ->
+                    .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
                         if (task.isFaulted) {
-                            return@Continuation task
+                            return@patternForId task
                         }
 
                         val pattern = task.result
-                return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+                return@patternForId realmManager.executeTransaction(object: RealmManager.Tx {
                     override fun dependsOn(): List<RealmObject?> {
                         return listOf(pattern)
                     }
@@ -92,11 +92,11 @@ public class BolusPatternFactory @Inject constructor(val realmManager: RealmMana
                         pattern?.rates?.addAll(rates)
                         return listOf(pattern)
                     }
-                }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusPattern?>> { task ->
+                }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusPattern?>> realmTransform@ { task ->
                     if (task.isFaulted) {
-                        return@Continuation Task.forError(task.error)
+                        return@realmTransform Task.forError(task.error)
                     }
-                    return@Continuation Task.forResult(task.result.firstOrNull() as BolusPattern?)
+                    return@realmTransform Task.forResult(task.result.firstOrNull() as BolusPattern?)
                 })
             })
         })

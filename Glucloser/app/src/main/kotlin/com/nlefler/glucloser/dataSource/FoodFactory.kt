@@ -29,13 +29,13 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {
         return foodForFoodId(parcelable.foodId, true)
-                .continueWithTask(Continuation<Food?, Task<Food?>> { task ->
+                .continueWithTask(Continuation<Food?, Task<Food?>> foodForId@ { task ->
             if (task.isFaulted) {
-                return@Continuation task
+                return@foodForId task
             }
 
             val food = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@foodForId realmManager.executeTransaction(object: RealmManager.Tx {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(food)
                 }
@@ -45,11 +45,11 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                     food?.carbs = parcelable.carbs
                     return listOf(food)
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
+            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> realmTransform@ { task ->
                 if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
+                    return@realmTransform Task.forError(task.error)
                 }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
+                return@realmTransform Task.forResult(task.result.firstOrNull() as Food?)
             })
         })
 
