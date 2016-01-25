@@ -251,16 +251,17 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     private fun mealForMealId(id: String, create: Boolean): Task<Meal?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx {
+        return realmManager.executeTransaction(object: RealmManager.Tx<Meal?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }
 
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Meal? {
                 if (create && id.length == 0) {
                     val meal = realm.createObject<Meal>(Meal::class.java)
                     meal?.primaryId = UUID.randomUUID().toString()
-                    return listOf(meal)
+                    meal?.date = Date()
+                    return meal
                 }
 
                 val query = realm.where<Meal>(Meal::class.java)
@@ -271,15 +272,11 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
                 if (meal == null && create) {
                     meal = realm.createObject<Meal>(Meal::class.java)
                     meal!!.primaryId = id
+                    meal.date = Date()
                 }
 
-                return listOf(meal)
+                return meal
             }
-        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> { task ->
-            if (task.isFaulted) {
-                return@Continuation Task.forError(task.error)
-            }
-            return@Continuation Task.forResult(task.result.firstOrNull() as Meal?)
         })
     }
 }

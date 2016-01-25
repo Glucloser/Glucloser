@@ -25,22 +25,18 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
                         return@continueWithTask  task
                     }
                     val bolusRate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx {
+            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(bolusRate)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    bolusRate?.ordinal = 0
-                    bolusRate?.carbsPerUnit = 0
-                    bolusRate?.startTime = 0
-                    return listOf(bolusRate)
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
+                    val liveRate = dependsOn.first() as BolusRate?
+                    liveRate?.ordinal = 0
+                    liveRate?.carbsPerUnit = 0
+                    liveRate?.startTime = 0
+                    return liveRate
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusRate?>> { task ->
-                if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
-                }
-                return@Continuation Task.forResult(task.result.firstOrNull() as BolusRate?)
             })
         }
     }
@@ -51,22 +47,18 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
                 return@continueWithTask task
             }
             val rate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx {
+            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(rate)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    rate?.ordinal = parcelable.ordinal
-                    rate?.carbsPerUnit = parcelable.carbsPerUnit
-                    rate?.startTime = parcelable.startTime
-                    return listOf(rate)
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
+                    val liveRate = dependsOn.first() as BolusRate?
+                    liveRate?.ordinal = parcelable.ordinal
+                    liveRate?.carbsPerUnit = parcelable.carbsPerUnit
+                    liveRate?.startTime = parcelable.startTime
+                    return liveRate
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusRate?>> { task ->
-                if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
-                }
-                return@Continuation Task.forResult(task.result.firstOrNull() as BolusRate?)
             })
         }
     }
@@ -91,22 +83,18 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
                 return@continueWithTask task
             }
             val rate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx {
+            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(rate)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    rate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
-                    rate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
-                    rate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
-                    return listOf(rate)
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
+                    val liveRate = dependsOn.first() as BolusRate?
+                    liveRate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
+                    liveRate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
+                    liveRate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
+                    return liveRate
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusRate?>> { task ->
-                if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
-                }
-                return@Continuation Task.forResult(task.result.firstOrNull() as BolusRate?)
             })
         }
     }
@@ -121,15 +109,15 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
     }
 
     private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx {
+        return realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }
 
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
                 if (create && id.length == 0) {
                     val rate = realm.createObject<BolusRate>(BolusRate::class.java)
-                    return listOf(rate)
+                    return rate
                 }
 
                 val query = realm.where<BolusRate>(BolusRate::class.java)
@@ -141,14 +129,8 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
                     rate = realm.createObject<BolusRate>(BolusRate::class.java)
                     rate!!.primaryId = id
                 }
-                return listOf(rate)
+                return rate
             }
-        }).continueWithTask(Continuation<List<RealmObject?>, Task<BolusRate?>> { task ->
-            if (task.isFaulted) {
-                return@Continuation Task.forError(task.error)
-            }
-            return@Continuation Task.forResult(task.result.firstOrNull() as BolusRate?)
-
         })
     }
 
