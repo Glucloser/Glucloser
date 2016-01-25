@@ -119,28 +119,26 @@ public class LogBolusEventAction : Parcelable {
                         val meal = mealTask.result
                         val place = placeTask?.result
 
-                        return@mealAll realmManager.executeTransaction(object: RealmManager.Tx {
+                        return@mealAll realmManager.executeTransaction(object: RealmManager.Tx<Meal?> {
                             override fun dependsOn(): List<RealmObject?> {
                                 return listOf(meal, place)
                             }
 
-                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                                meal?.foods = foodList
+                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Meal? {
+                                val liveMeal = dependsOn.first() as Meal?
+                                val livePlace = dependsOn.last() as Place?
 
-                                if (place != null) {
-                                    meal?.place = place
+                                liveMeal?.foods = foodList
+
+                                if (livePlace != null) {
+                                    liveMeal?.place = livePlace
                                 }
 
-                                meal?.beforeSugar = beforeSugarTask?.result
-                                meal?.bolusPattern = bolusPatternTask?.result
-                                return listOf(meal)
+                                liveMeal?.beforeSugar = beforeSugarTask?.result
+                                liveMeal?.bolusPattern = bolusPatternTask?.result
+                                return liveMeal
                             }
 
-                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Meal?>> realm@ {task ->
-                            if (task.isFaulted) {
-                                return@realm Task.forError(task.error)
-                            }
-                            return@realm Task.forResult(task.result.firstOrNull() as Meal?)
                         })
 
                     }).continueWith mealUpload@ { task ->
@@ -160,22 +158,19 @@ public class LogBolusEventAction : Parcelable {
                         }
 
                         val snack = task.result
-                        return@snackPar realmManager.executeTransaction(object: RealmManager.Tx {
+                        return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
                             override fun dependsOn(): List<RealmObject?> {
                                 return listOf(snack)
                             }
 
-                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                                snack?.foods = foodList
-                                snack?.beforeSugar = beforeSugarTask?.result
-                                snack?.bolusPattern = bolusPatternTask?.result
-                                return listOf(snack)
+                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
+                                val liveSnack = dependsOn.first() as Snack?
+
+                                liveSnack?.foods = foodList
+                                liveSnack?.beforeSugar = beforeSugarTask?.result
+                                liveSnack?.bolusPattern = bolusPatternTask?.result
+                                return liveSnack
                             }
-                        }).continueWithTask(Continuation<List<RealmObject?>, Task<Snack?>> { task ->
-                            if (task.isFaulted) {
-                                return@Continuation Task.forError(task.error)
-                            }
-                            return@Continuation Task.forResult(task.result.firstOrNull() as Snack?)
                         })
                     }).continueWith { task ->
                         if (task.isFaulted || task.result == null || task.result !is Snack) {

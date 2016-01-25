@@ -246,22 +246,22 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+            val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.TxList<Meal> {
                 override fun dependsOn(): List<RealmObject?> {
                     return emptyList()
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Meal> {
                     val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
                     return mealResults
                 }
             })
-            val snackResultsTask = realmManager?.executeTransaction(object: RealmManager.Tx {
+            val snackResultsTask = realmManager?.executeTransaction(object: RealmManager.TxList<Snack> {
                 override fun dependsOn(): List<RealmObject?> {
                     return emptyList()
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Snack> {
                     val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
                     return snackResults
                 }

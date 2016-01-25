@@ -50,21 +50,17 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
                 return@Continuation task
             }
             val sugar = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx<BloodSugar?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(sugar)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    sugar?.value = parcelable.value
-                    sugar?.date = parcelable.date
-                    return listOf(sugar)
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BloodSugar? {
+                    val liveSugar = dependsOn.first() as BloodSugar?
+                    liveSugar?.value = parcelable.value
+                    liveSugar?.date = parcelable.date
+                    return liveSugar
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> realmTransform@ { task ->
-                if (task.isFaulted) {
-                    return@realmTransform Task.forError(task.error)
-                }
-                return@realmTransform Task.forResult(task.result.firstOrNull() as BloodSugar?)
             })
         })
     }
@@ -96,25 +92,22 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
             }
 
             val sugar = task.result!!
-            realmManager.executeTransaction(object: RealmManager.Tx {
+            realmManager.executeTransaction(object: RealmManager.Tx<BloodSugar?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(sugar)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    if (sugarValue >= 0 && sugarValue != sugar.value) {
-                        sugar.value = sugarValue
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BloodSugar? {
+                    val liveSugar = dependsOn.first() as BloodSugar?
+
+                    if (sugarValue >= 0 && sugarValue != liveSugar?.value) {
+                        liveSugar?.value = sugarValue
                     }
                     if (sugarDate != null) {
-                        sugar.date = sugarDate
+                        liveSugar?.date = sugarDate
                     }
-                    return listOf(sugar)
+                    return liveSugar
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> realmTransform@ { task ->
-                if (task.isFaulted) {
-                    return@realmTransform Task.forError(task.error)
-                }
-                return@realmTransform Task.forResult(task.result.firstOrNull() as BloodSugar?)
             })
         })
     }
@@ -156,16 +149,16 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
     }
 
     private fun bloodSugarForBloodSugarId(id: String, create: Boolean): Task<BloodSugar?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx {
+        return realmManager.executeTransaction(object: RealmManager.Tx<BloodSugar?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }
 
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BloodSugar? {
                 if (create && id.isEmpty()) {
                     val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
                     sugar?.primaryId = UUID.randomUUID().toString()
-                    return listOf(sugar)
+                    return sugar
                 }
 
                 val query = realm.where<BloodSugar>(BloodSugar::class.java)
@@ -177,13 +170,8 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
                     sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
                     sugar!!.primaryId = id
                 }
-                return listOf(sugar)
+                return sugar
             }
-        }).continueWithTask(Continuation<List<RealmObject?>, Task<BloodSugar?>> { task ->
-            if (task.isFaulted) {
-                return@Continuation Task.forError(task.error)
-            }
-            return@Continuation Task.forResult(task.result.firstOrNull() as BloodSugar?)
         })
     }
 }
