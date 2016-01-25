@@ -29,27 +29,23 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {
         return foodForFoodId(parcelable.foodId, true)
-                .continueWithTask(Continuation<Food?, Task<Food?>> { task ->
+                .continueWithTask(Continuation<Food?, Task<Food?>> foodForId@ { task ->
             if (task.isFaulted) {
-                return@Continuation task
+                return@foodForId task
             }
 
             val food = task.result
-            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx {
+            return@foodForId realmManager.executeTransaction(object: RealmManager.Tx<Food?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(food)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    food?.foodName = parcelable.foodName
-                    food?.carbs = parcelable.carbs
-                    return listOf(food)
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Food? {
+                    val liveFood = dependsOn.first() as Food?
+                    liveFood?.foodName = parcelable.foodName
+                    liveFood?.carbs = parcelable.carbs
+                    return liveFood
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
-                if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
-                }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
             })
         })
 
@@ -93,23 +89,19 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                 return@continueWithTask Task.forError<Food?>(task.error)
             }
             val food = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx {
+            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<Food?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(food)
                 }
 
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
-                    food?.foodName = nameValue
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Food? {
+                    val liveFood = dependsOn.first() as Food?
+                    liveFood?.foodName = nameValue
                     if (carbValue >= 0) {
-                        food?.carbs = carbValue
+                        liveFood?.carbs = carbValue
                     }
-                    return listOf(food)
+                    return liveFood
                 }
-            }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
-                if (task.isFaulted) {
-                    return@Continuation Task.forError(task.error)
-                }
-                return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
             })
         }
     }
@@ -145,18 +137,18 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     private fun foodForFoodId(id: String, create: Boolean): Task<Food?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx {
+        return realmManager.executeTransaction(object: RealmManager.Tx<Food?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }
 
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<RealmObject?> {
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Food? {
                 if (create && id.isEmpty()) {
                     val food = realm.createObject<Food>(Food::class.java)
                     food!!.primaryId = UUID.randomUUID().toString()
                     food.carbs = 0
                     food.foodName = ""
-                    return listOf(food)
+                    return food
                 }
 
                 val query = realm.where<Food>(Food::class.java)
@@ -171,13 +163,8 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                     food.foodName = ""
                 }
 
-                return listOf(food)
+                return food
             }
-        }).continueWithTask(Continuation<List<RealmObject?>, Task<Food?>> { task ->
-            if (task.isFaulted) {
-                return@Continuation Task.forError(task.error)
-            }
-            return@Continuation Task.forResult(task.result.firstOrNull() as Food?)
         })
     }
 }
