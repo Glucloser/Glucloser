@@ -39,10 +39,6 @@ public class MealHistoryViewHolder(itemView: View, activity: Activity) : Recycle
             val intent = android.content.Intent(view.context, HistoricalBolusDetailActivity::class.java)
             intent.putExtra(HistoricalBolusDetailActivityFragment.HistoricalBolusEventBolusDetailParcelableBundleKey,
                     bolusEventParcelable)
-            if (bolusEventCopy is HasPlace) {
-                intent.putExtra(HistoricalBolusDetailActivityFragment.HistoricalBolusDetailPlaceNameBundleKey,
-                        bolusEventCopy.place?.name ?: "");
-            }
 
             activity.startActivity(intent)
         }

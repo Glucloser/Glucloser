@@ -18,7 +18,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import bolts.Task
-import bolts.TaskCompletionSource
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.R
@@ -267,7 +266,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
             })
 
-            val comparator = object: Comparator<BolusEvent> {
+            val comparator = object : Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
                     return -1 * a.date.compareTo(b.date)
                 }
@@ -285,10 +284,6 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
                 this.mealHistoryAdapter!!.setEvents(sortedCollections)
             }
-        }
-
-        companion object {
-            private val LOG_TAG = "PlaceholderFragment"
         }
     }
 
