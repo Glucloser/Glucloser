@@ -18,7 +18,12 @@ public class RealmManager {
 
     init {
         realmExecutor.submit({
-            realm = Realm.getDefaultInstance()
+            try {
+                realm = Realm.getDefaultInstance()
+            }
+            catch(e: Exception) {
+                Log.e(LOG_TAG, e.message)
+            }
         })
     }
 
