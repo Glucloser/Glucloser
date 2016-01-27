@@ -17,6 +17,7 @@
 
     <uses-permission android:name="com.nlefler.glucloser.permission.C2D_MESSAGE" />
 
+
     <application
         android:name=".GlucloserApplication"
         android:allowBackup="true"
