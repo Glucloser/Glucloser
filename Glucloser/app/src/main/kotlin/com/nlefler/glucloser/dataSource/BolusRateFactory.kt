@@ -2,8 +2,6 @@ package com.nlefler.glucloser.dataSource
 
 import bolts.Continuation
 import com.nlefler.glucloser.models.BolusRate
-import com.parse.ParseObject
-import com.parse.ParseQuery
 
 import bolts.Task
 import bolts.TaskCompletionSource

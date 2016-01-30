@@ -32,7 +32,6 @@ import com.nlefler.glucloser.models.BolusEventType
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.ui.DividerItemDecoration
-import com.parse.ParseAnalytics
 import io.realm.*
 import java.util.ArrayList
 import java.util.Collections
@@ -67,8 +66,6 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
         supportActionBar.setDisplayHomeAsUpEnabled(true)
         supportActionBar.setHomeButtonEnabled(true)
-
-        ParseAnalytics.trackAppOpenedInBackground(intent)
 
         requestLocationPermission()
     }

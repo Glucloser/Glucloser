@@ -7,10 +7,6 @@ import android.support.multidex.MultiDex
 import android.util.Log
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
-import com.parse.Parse
-import com.parse.ParseException
-import com.parse.ParseInstallation
-import com.parse.ParsePush
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
@@ -41,8 +37,6 @@ public class GlucloserApplication : Application() {
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
 
-        Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
-        ParseInstallation.getCurrentInstallation().saveInBackground()
 
         this.subscribeToPush()
 
@@ -52,29 +46,6 @@ public class GlucloserApplication : Application() {
     }
 
     private fun subscribeToPush() {
-        ParsePush.subscribeInBackground("", {e: ParseException? ->
-            if (e == null) {
-                Log.d(LOG_TAG, "successfully subscribed to the broadcast channel.")
-            } else {
-                Log.e(LOG_TAG, "failed to subscribe for push", e)
-            }
-        })
-
-        ParsePush.subscribeInBackground("foursquareCheckin", {e: ParseException? ->
-            if (e == null) {
-                Log.d("com.parse.push", "successfully subscribed to the checkin channel.")
-            } else {
-                Log.e("com.parse.push", "failed to subscribe for push", e)
-            }
-        })
-
-        ParsePush.subscribeInBackground("comcon", {e: ParseException? ->
-            if (e == null) {
-                Log.d("com.parse.push", "successfully subscribed to the comcon channel.")
-            } else {
-                Log.e("com.parse.push", "failed to subscribe for push", e)
-            }
-        })
     }
 
     companion object {

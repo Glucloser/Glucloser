@@ -7,8 +7,6 @@ import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.BolusPattern
 import com.nlefler.glucloser.models.BolusPatternParcelable
 import com.nlefler.glucloser.models.BolusRate
-import com.parse.ParseObject
-import com.parse.ParseQuery
 import io.realm.Realm
 import io.realm.RealmList
 import io.realm.RealmObject

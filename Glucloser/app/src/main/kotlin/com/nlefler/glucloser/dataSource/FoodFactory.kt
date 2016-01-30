@@ -7,9 +7,6 @@ import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.Food
 import com.nlefler.glucloser.models.FoodParcelable
-import com.parse.ParseException
-import com.parse.ParseObject
-import com.parse.ParseQuery
 import io.realm.Realm
 import io.realm.RealmObject
 import rx.functions.Action2

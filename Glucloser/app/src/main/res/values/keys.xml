@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gmaps_api_key">AIzaSyD0b2NirDn5wzBK4rhzaqQnO2IQlv6p968</string>
-    <string name="parse_app_id">83TDdLkjmUFZIHEbaQhUrWGScRkAQ8MMlVmQzxvx</string>
-    <string name="parse_client_key">SBT211JOGkduXC9GKBsCZxzdit85lTnbPzBMMusY</string>
+    <string name="gcm_api_key">AIzaSyCZIT0VHhxD7Z2SW5EuCi0zFXbUmMjIH7s</string>
+    <string name="gcm_sender_id">826660559104</string>
     <string name="foursquare_app_id">3L3YSXW3HXRUNJ2PDDFMEM5SLQKFMZ34AQ22KAWNBBCPWPLG</string>
     <string name="foursquare_app_secret">0M0LXR310TYRSU1RWXGSC4LAH5OLY2GQSML5W4MXKNX0USKE</string>
 </resources>
