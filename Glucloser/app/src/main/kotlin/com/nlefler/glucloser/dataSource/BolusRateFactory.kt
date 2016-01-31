@@ -5,7 +5,10 @@ import com.nlefler.glucloser.models.BolusRate
 
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.models.parcelable.BolusRateParcelable
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 import io.realm.Realm
 import io.realm.RealmObject
 import java.util.*
@@ -70,40 +73,8 @@ public class BolusRateFactory @Inject constructor(val realmManager: RealmManager
         return parcel
     }
 
-    public fun bolusRateFromParseObject(parseObj: ParseObject): Task<BolusRate?> {
-        if (!parseObj.getClassName().equals(BolusRate.ParseClassName)) {
-            return Task.forError(Exception("Invalid ParseObject"));
-        }
-        val patternId = parseObj.getString(BolusRate.IdFieldName) ?: return Task.forError(Exception("Invalid ParseObject"))
-
-        return bolusRateForId(patternId, true).continueWithTask { task ->
-            if (task.isFaulted) {
-                return@continueWithTask task
-            }
-            val rate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return listOf(rate)
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
-                    val liveRate = dependsOn.first() as BolusRate?
-                    liveRate?.ordinal = parseObj.getInt(BolusRate.OridnalFieldName)
-                    liveRate?.carbsPerUnit = parseObj.getInt(BolusRate.CarbsPerUnitFieldName)
-                    liveRate?.startTime = parseObj.getInt(BolusRate.StartTimeFieldName)
-                    return liveRate
-                }
-            })
-        }
-    }
-
-    public fun parseObjectFromBolusRate(rate: BolusRate): ParseObject {
-        val prs = ParseObject.create(BolusRate.ParseClassName)
-        prs.put(BolusRate.OridnalFieldName, rate.ordinal)
-        prs.put(BolusRate.CarbsPerUnitFieldName, rate.carbsPerUnit)
-        prs.put(BolusRate.StartTimeFieldName, rate.startTime)
-
-        return prs
+    public fun jsonAdapter(): JsonAdapter<BolusRate> {
+        return Moshi.Builder().add(BolusRateJsonAdapter(realmManager.defaultRealm())).build().adapter(BolusRate::class.java)
     }
 
     private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
