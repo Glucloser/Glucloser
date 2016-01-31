@@ -14,13 +14,13 @@ import java.util.*
 @RealmClass
 public open class BolusPattern(
         @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var rateCount: Int? = null,
+        public open var rateCount: Int,
         public open var rates: RealmList<BolusRate> = RealmList<BolusRate>()
     ) : RealmObject() {
 
     companion object {
         @Ignore
-        val ParseClassName = "CurrentCarbRatioPattern"
+        val ModelName = "CurrentCarbRatioPattern"
 
         @Ignore
         val IdFieldName = "primaryId"
