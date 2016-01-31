@@ -25,13 +25,13 @@ public open class Meal(
 
     companion object {
         @Ignore
-        public val ParseClassName: String = "Meal"
+        public val ModelName: String = "Meal"
 
         @Ignore
         public val IdFieldName: String = "primaryId"
 
         @Ignore
-        public val MealDateFieldName: String = "date"
+        public val DateFieldName: String = "date"
 
         @Ignore
         public val PlaceFieldName: String = "place"
