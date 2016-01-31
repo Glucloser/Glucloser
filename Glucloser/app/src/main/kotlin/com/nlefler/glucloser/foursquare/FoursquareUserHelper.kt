@@ -8,7 +8,6 @@ import com.nlefler.nlfoursquare.Model.FoursquareResponse.NLFoursquareResponse
 import com.nlefler.nlfoursquare.Model.NLFoursquareClientParameters
 import com.nlefler.nlfoursquare.Model.User.NLFoursquareUserInfoResponse
 import com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo
-import com.parse.ParseInstallation
 
 import retrofit.Callback
 import retrofit.RestAdapter
@@ -36,9 +35,10 @@ public class FoursquareUserHelper {
                     Log.e(LOG_TAG, "Unable to get Foursquare user id")
                     return
                 }
-                val installation = ParseInstallation.getCurrentInstallation()
-                installation.put(PARSE_INSTALLATION_FOURSQUARE_USER_ID_KEY, userId)
-                installation.saveInBackground()
+                // TODO(nl) Save Foursquare user id
+//                val installation = ParseInstallation.getCurrentInstallation()
+//                installation.put(PARSE_INSTALLATION_FOURSQUARE_USER_ID_KEY, userId)
+//                installation.saveInBackground()
             }
 
             override fun failure(error: RetrofitError) {

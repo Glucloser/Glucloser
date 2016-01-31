@@ -12,10 +12,10 @@ import java.util.*
 @RealmClass
 public open class Place(
         @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var name: String,
-        public open var foursquareId: String,
-        public open var latitude: Float = 0.toFloat(),
-        public open var longitude: Float = 0.toFloat()
+        public open var name: String = "",
+        public open var foursquareId: String = UUID.randomUUID().toString(),
+        public open var latitude: Float = 0f,
+        public open var longitude: Float = 0f
     ) : RealmObject() {
 
     companion object {

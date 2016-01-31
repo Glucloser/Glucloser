@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.EditText;
 
 import com.nlefler.glucloser.R;
-import com.parse.ParseUser
 
 /**
  * A placeholder fragment containing a simple view.
@@ -34,7 +33,7 @@ public class LoginActivityFragment : Fragment() {
             val password = passwordField?.getText().toString()
 
             if (username.length > 0 && password.length > 0) {
-                ParseUser.logInInBackground(username, password);
+                // TODO(nl) Users
             }
         }
 

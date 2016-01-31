@@ -42,8 +42,9 @@ public class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    lateinit var parseUploader: ParseUploader
-        @Inject set
+    // TODO(nl) Sync bolus events to server
+//    lateinit var parseUploader: ParseUploader
+//        @Inject set
 
 
     private var placeParcelable: PlaceParcelable? = null
@@ -147,7 +148,7 @@ public class LogBolusEventAction : Parcelable {
                             return@mealUpload
                         }
 
-                        parseUploader.uploadBolusEvent(task.result as Meal)
+//                        parseUploader.uploadBolusEvent(task.result as Meal)
                     }
 
                 }
@@ -178,7 +179,7 @@ public class LogBolusEventAction : Parcelable {
                             return@continueWith
                         }
 
-                        parseUploader.uploadBolusEvent(task.result as Snack)
+//                        parseUploader.uploadBolusEvent(task.result as Snack)
                     }
                 }
                 else -> {

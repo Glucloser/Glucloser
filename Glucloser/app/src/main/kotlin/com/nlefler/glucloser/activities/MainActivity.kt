@@ -252,7 +252,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
 
                 override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Meal> {
-                    val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.MealDateFieldName, Sort.DESCENDING)
+                    val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.DateFieldName, Sort.DESCENDING)
                     return mealResults
                 }
             })
@@ -262,7 +262,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
 
                 override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Snack> {
-                    val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.SnackDateFieldName, Sort.DESCENDING)
+                    val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.DateFieldName, Sort.DESCENDING)
                     return snackResults
                 }
             })

@@ -11,10 +11,10 @@ import java.util.*
  */
 @RealmClass
 public open class BolusRate(
-        @PrimaryKey public open var primaryId: String,
-        public open var ordinal: Int,
-        public open var carbsPerUnit: Int,
-        public open var startTime: Int
+        @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
+        public open var ordinal: Int = 0,
+        public open var carbsPerUnit: Int = 0,
+        public open var startTime: Int = 0
     ) : RealmObject() {
 
     companion object {

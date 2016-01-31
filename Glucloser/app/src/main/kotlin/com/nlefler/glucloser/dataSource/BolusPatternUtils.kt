@@ -17,15 +17,12 @@ public class BolusPatternUtils {
             var sortedRates = bolusPattern.rates.sortedBy { rate -> rate.ordinal }
             var activeRate: BolusRate? = null
             for (rate in sortedRates) {
-                if (rate.startTime == null) {
-                    continue
-                }
-                if (curMilSecs < rate.startTime!!) {
+                if (curMilSecs < rate.startTime) {
                     activeRate = rate
                     break;
                 }
             }
-            if (activeRate == null && sortedRates.last().startTime?.compareTo(curMilSecs) != 1) {
+            if (activeRate == null && sortedRates.last().startTime.compareTo(curMilSecs) != 1) {
                 activeRate = sortedRates.last()
             }
 

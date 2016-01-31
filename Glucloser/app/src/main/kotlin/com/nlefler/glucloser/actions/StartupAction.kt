@@ -15,8 +15,6 @@ public class StartupAction @Inject constructor(val bolusPatternFactory: BolusPat
         val taskSource = TaskCompletionSource<Void>()
         val tasks = ArrayList<Task<*>>()
 
-        tasks.add(bolusPatternFactory.updateCurrentBolusPatternCache())
-
         Task.whenAll(tasks).continueWith { taskSource.trySetResult(null)  }
 
         return taskSource.task

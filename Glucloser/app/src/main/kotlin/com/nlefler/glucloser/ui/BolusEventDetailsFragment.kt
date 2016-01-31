@@ -77,14 +77,15 @@ public class BolusEventDetailsFragment : Fragment() {
         else {
             patternParcelableTask.trySetResult(null)
         }
-        patternParcelableTask.task.continueWith { task ->
-            if (bolusPattern == null) {
-                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
-                fetchTask?.continueWith { task ->
-                    bolusPattern = task.result
-                }
-            }
-        }
+        // TODO(nl) Fetch current bolus pattern from db
+//        patternParcelableTask.task.continueWith { task ->
+//            if (bolusPattern == null) {
+//                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
+//                fetchTask?.continueWith { task ->
+//                    bolusPattern = task.result
+//                }
+//            }
+//        }
 
     }
 

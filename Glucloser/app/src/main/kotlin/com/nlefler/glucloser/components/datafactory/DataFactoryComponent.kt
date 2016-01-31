@@ -27,7 +27,8 @@ public interface DataFactoryComponent {
     public fun inject(client: LogBolusEventActivity)
     public fun inject(client: LogBolusEventAction)
     public fun inject(client: StartupAction)
-    public fun inject(client: ParseUploader)
+    // TODO(nl) Server data sync client
+//    public fun inject(client: ParseUploader)
     public fun inject(client: MealHistoryViewHolder)
     public fun inject(client: PlaceSelectionViewHolder)
 
@@ -41,8 +42,8 @@ public interface DataFactoryComponent {
     fun placeFactory(): PlaceFactory
     fun snackFactory(): SnackFactory
 
-    @Singleton
-    fun parseUploader(): ParseUploader
+//    @Singleton
+//    fun parseUploader(): ParseUploader
 
     fun realmFactory(): RealmManager
 }

@@ -29,11 +29,11 @@ public class PlaceJsonAdapter(val realm: Realm) {
     }
 
     @ToJson fun toJson(place: Place): PlaceJson {
-        val place = PlaceJson(primaryId = place.primaryId,
+        val json = PlaceJson(primaryId = place.primaryId,
                 foursquareId = place.foursquareId,
                 name = place.name,
                 latitude = place.latitude,
                 longitude = place.longitude)
-        return place
+        return json
     }
 }

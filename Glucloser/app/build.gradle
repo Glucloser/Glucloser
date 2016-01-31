@@ -68,8 +68,8 @@ dependencies {
 
     compile 'com.parse.bolts:bolts-android:1.3.0'
 
-    compile 'io.realm:realm-android:0.87.2'
-    kapt 'io.realm:realm-android:0.87.2'
+    compile 'io.realm:realm-android:0.87.4'
+    kapt 'io.realm:realm-android:0.87.4'
 
     compile 'io.reactivex:rxjava:1.1.0'
     compile 'io.reactivex:rxandroid:1.1.0'

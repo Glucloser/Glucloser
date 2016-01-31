@@ -10,9 +10,9 @@ import java.util.*
  */
 @RealmClass
 public open class BloodSugar(
-        public open var primaryId: String,
-        public open var value: Int,
-        public open var date: Date
+        public open var primaryId: String = UUID.randomUUID().toString(),
+        public open var value: Int = 0,
+        public open var date: Date = Date()
     ) : RealmObject() {
 
     companion object {
