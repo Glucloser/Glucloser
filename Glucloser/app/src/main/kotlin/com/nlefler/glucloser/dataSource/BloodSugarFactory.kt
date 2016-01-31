@@ -5,8 +5,11 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.dataSource.jsonAdapter.BloodSugarJsonAdapter
 import com.nlefler.glucloser.models.BloodSugar
 import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 
 import java.util.Date
 import java.util.UUID
@@ -68,73 +71,8 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
         return parcelable
     }
 
-    internal fun bloodSugarFromParseObject(parseObject: ParseObject?): Task<BloodSugar?> {
-        if (parseObject == null) {
-            Log.e(LOG_TAG, "Can't create BloodSugar from Parse object, null")
-            return Task.forError(Exception("Can't create BloodSugar from Parse object, null"))
-        }
-        val sugarId = parseObject.getString(BloodSugar.IdFieldName)
-        if (sugarId == null || sugarId.isEmpty()) {
-            Log.e(LOG_TAG, "Can't create BloodSugar from Parse object, no id")
-        }
-        val sugarValue = parseObject.getInt(BloodSugar.ValueFieldName)
-        val sugarDate = parseObject.getDate(BloodSugar.DateFieldName)
-
-        return bloodSugarForBloodSugarId(sugarId, true)
-                .continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
-            if (task.isFaulted) {
-                return@Continuation task
-            }
-
-            val sugar = task.result!!
-            realmManager.executeTransaction(object: RealmManager.Tx<BloodSugar?> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return listOf(sugar)
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BloodSugar? {
-                    val liveSugar = dependsOn.first() as BloodSugar?
-
-                    if (sugarValue >= 0 && sugarValue != liveSugar?.value) {
-                        liveSugar?.value = sugarValue
-                    }
-                    if (sugarDate != null) {
-                        liveSugar?.date = sugarDate
-                    }
-                    return liveSugar
-                }
-            })
-        })
-    }
-
-    internal fun parseObjectFromBloodSugar(bloodSugar: BloodSugar, action: Action2<ParseObject?, Boolean>?) {
-        if (action == null) {
-            Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, action null")
-            return
-        }
-        if (bloodSugar.primaryId.isEmpty()) {
-            Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, blood sugar null or no id")
-            action.call(null, false)
-            return
-        }
-
-        val parseQuery = ParseQuery.getQuery<ParseObject>(BloodSugar.ParseClassName)
-        parseQuery.whereEqualTo(BloodSugar.IdFieldName, bloodSugar.primaryId)
-
-        parseQuery.findInBackground({parseObjects: List<ParseObject>, e: ParseException? ->
-            val parseObject: ParseObject
-            var created = false
-            if (parseObjects.isEmpty()) {
-                parseObject = ParseObject(BloodSugar.ParseClassName)
-                created = true
-            } else {
-                parseObject = parseObjects.get(0)
-            }
-            parseObject.put(BloodSugar.IdFieldName, bloodSugar.primaryId)
-            parseObject.put(BloodSugar.ValueFieldName, bloodSugar.value)
-            parseObject.put(BloodSugar.DateFieldName, bloodSugar.date)
-            action.call(parseObject, created)
-        })
+    public fun jsonAdapter(): JsonAdapter<BloodSugar> {
+        return Moshi.Builder().add(BloodSugarJsonAdapter(realmManager.defaultRealm())).build().adapter(BloodSugar::class.java)
     }
 
     private fun bloodSugarForBloodSugarId(id: String, create: Boolean): Task<BloodSugar?> {
