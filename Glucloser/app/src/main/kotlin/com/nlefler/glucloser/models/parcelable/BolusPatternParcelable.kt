@@ -1,7 +1,8 @@
-package com.nlefler.glucloser.models
+package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.nlefler.glucloser.models.parcelable.BolusRateParcelable
 import java.util.*
 
 /**
@@ -35,7 +36,7 @@ public class BolusPatternParcelable(): Parcelable {
             }
 
             override fun newArray(size: Int): Array<BolusPatternParcelable> {
-                return Array(size, {i -> BolusPatternParcelable()})
+                return Array(size, {i -> BolusPatternParcelable() })
             }
         }
     }

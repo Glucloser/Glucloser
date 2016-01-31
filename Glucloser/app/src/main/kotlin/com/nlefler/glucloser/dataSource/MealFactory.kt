@@ -6,6 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.MealParcelable
 
 import java.util.Date
 import java.util.UUID

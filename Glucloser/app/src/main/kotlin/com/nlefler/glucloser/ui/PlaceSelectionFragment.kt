@@ -18,7 +18,7 @@ import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.PlaceSelectionRecyclerAdapter
 import com.nlefler.glucloser.foursquare.FoursquarePlaceHelper
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 

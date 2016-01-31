@@ -22,6 +22,10 @@ import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
+import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
+import com.nlefler.glucloser.models.parcelable.BolusPatternParcelable
+import com.nlefler.glucloser.models.parcelable.FoodParcelable
 import java.util.*
 
 /**

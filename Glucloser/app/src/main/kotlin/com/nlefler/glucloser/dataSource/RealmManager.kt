@@ -27,6 +27,10 @@ public class RealmManager {
         })
     }
 
+    public fun defaultRealm(): Realm {
+        return Realm.getDefaultInstance()
+    }
+
     public fun <T: RealmObject?> executeTransaction(tx: Tx<T>) : Task<T> {
         val _task = TaskCompletionSource<T>()
         realmExecutor.submit({

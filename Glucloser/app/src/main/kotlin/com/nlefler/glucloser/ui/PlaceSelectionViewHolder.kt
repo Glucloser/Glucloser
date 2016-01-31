@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.TextView
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.PlaceFactory
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 import javax.inject.Inject

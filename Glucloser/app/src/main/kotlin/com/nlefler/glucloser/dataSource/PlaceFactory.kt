@@ -10,7 +10,7 @@ import bolts.TaskCompletionSource
 import com.google.gson.Gson
 import com.nlefler.glucloser.models.CheckInPushedData
 import com.nlefler.glucloser.models.Place
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 import com.parse.FindCallback
 import com.parse.GetCallback

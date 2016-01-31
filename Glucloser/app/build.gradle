@@ -92,7 +92,8 @@ dependencies {
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.android.support:cardview-v7:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.google.code.gson:gson:2.4'
+
+    compile 'com.squareup.moshi:moshi:1.1.0'
 
     // Location
      compile 'pl.charmas.android:android-reactive-location:0.8@aar'

@@ -6,7 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.BloodSugar
-import com.nlefler.glucloser.models.BloodSugarParcelable
+import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
 
 import java.util.Date
 import java.util.UUID
@@ -107,12 +107,6 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
         })
     }
 
-    /**
-     * Fetches or creates a ParseObject representing the provided BloodSugar
-     * @param bloodSugar
-     * *
-     * @param action Returns the ParseObject, and true if the object was created and should be saved.
-     */
     internal fun parseObjectFromBloodSugar(bloodSugar: BloodSugar, action: Action2<ParseObject?, Boolean>?) {
         if (action == null) {
             Log.e(LOG_TAG, "Unable to create Parse object from BloodSugar, action null")

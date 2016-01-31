@@ -9,7 +9,7 @@ import android.widget.TextView
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.ui.PlaceSelectionViewHolder
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue

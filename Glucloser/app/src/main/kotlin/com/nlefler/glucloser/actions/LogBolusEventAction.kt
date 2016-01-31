@@ -9,6 +9,7 @@ import bolts.TaskCompletionSource
 
 import com.nlefler.glucloser.dataSource.*
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.*
 
 import io.realm.Realm
 import io.realm.RealmList

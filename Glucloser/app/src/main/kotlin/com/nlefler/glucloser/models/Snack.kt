@@ -24,13 +24,13 @@ public open class Snack(
 
     companion object {
         @Ignore
-        public var ParseClassName: String = "Snack"
+        public var ModelName: String = "Snack"
 
         @Ignore
         public var IdFieldName: String = "primaryId"
 
         @Ignore
-        public var SnackDateFieldName: String = "date"
+        public var DateFieldName: String = "date"
 
         @Ignore
         public var CarbsFieldName: String = "carbs"

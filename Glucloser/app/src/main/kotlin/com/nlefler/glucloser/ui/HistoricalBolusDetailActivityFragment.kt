@@ -14,7 +14,7 @@ import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
-import com.nlefler.glucloser.models.BolusEventParcelable
+import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.models.Food
 import java.util.*
 

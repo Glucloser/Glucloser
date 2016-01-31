@@ -10,6 +10,7 @@ import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.*
 import com.nlefler.glucloser.ui.BolusEventDetailsFragment
 import com.nlefler.glucloser.ui.PlaceSelectionFragment
 import javax.inject.Inject

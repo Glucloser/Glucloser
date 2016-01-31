@@ -1,4 +1,4 @@
-package com.nlefler.glucloser.models
+package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -42,7 +42,7 @@ public class BloodSugarParcelable() : Parcelable {
             }
 
             override fun newArray(size: Int): Array<BloodSugarParcelable> {
-                return Array(size, {i -> BloodSugarParcelable()})
+                return Array(size, {i -> BloodSugarParcelable() })
             }
         }
     }

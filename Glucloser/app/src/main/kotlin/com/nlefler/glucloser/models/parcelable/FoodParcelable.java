@@ -1,4 +1,4 @@
-package com.nlefler.glucloser.models;
+package com.nlefler.glucloser.models.parcelable;
 
 import android.os.Parcel;
 import android.os.Parcelable;

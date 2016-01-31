@@ -5,7 +5,7 @@ import com.nlefler.glucloser.models.BolusRate
 
 import bolts.Task
 import bolts.TaskCompletionSource
-import com.nlefler.glucloser.models.BolusRateParcelable
+import com.nlefler.glucloser.models.parcelable.BolusRateParcelable
 import io.realm.Realm
 import io.realm.RealmObject
 import java.util.*

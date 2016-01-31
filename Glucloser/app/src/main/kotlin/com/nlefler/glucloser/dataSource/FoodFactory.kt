@@ -6,7 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.models.Food
-import com.nlefler.glucloser.models.FoodParcelable
+import com.nlefler.glucloser.models.parcelable.FoodParcelable
 import io.realm.Realm
 import io.realm.RealmObject
 import rx.functions.Action2

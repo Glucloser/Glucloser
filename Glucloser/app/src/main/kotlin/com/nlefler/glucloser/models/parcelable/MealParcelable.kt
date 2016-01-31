@@ -1,13 +1,19 @@
-package com.nlefler.glucloser.models
+package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.nlefler.glucloser.models.BloodSugar
+import com.nlefler.glucloser.models.BolusPattern
+import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
+import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
+import com.nlefler.glucloser.models.parcelable.BolusPatternParcelable
 import java.util.*
 
 /**
- * Created by Nathan Lefler on 5/8/15.
+ * Created by Nathan Lefler on 12/24/14.
  */
-public class SnackParcelable() : Parcelable, BolusEventParcelable {
+public class MealParcelable() : Parcelable, BolusEventParcelable {
+    public var placeParcelable: PlaceParcelable? = null
 
     override var id: String = UUID.randomUUID().toString()
     override var date: Date = Date()
@@ -21,15 +27,16 @@ public class SnackParcelable() : Parcelable, BolusEventParcelable {
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {
         id = parcel.readString()
+        placeParcelable = parcel.readParcelable<PlaceParcelable>(PlaceParcelable::class.java.classLoader)
         carbs = parcel.readInt()
         insulin = parcel.readFloat()
         isCorrection = parcel.readInt() != 0
         bloodSugarParcelable = parcel.readParcelable<BloodSugarParcelable>(BloodSugar::class.java.classLoader)
         val time = parcel.readLong()
         if (time > 0) {
-            date = Date()
+            date = Date(time)
         }
-        bolusPatternParcelable = parcel.readParcelable<BolusPatternParcelable>(BolusPatternParcelable::class.java.classLoader)
+        bolusPatternParcelable = parcel.readParcelable<BolusPatternParcelable>(BolusPattern::class.java.classLoader)
         parcel.readList(this.foodParcelables, FoodParcelable::class.java.classLoader)
     }
 
@@ -39,24 +46,24 @@ public class SnackParcelable() : Parcelable, BolusEventParcelable {
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(id)
+        dest.writeParcelable(placeParcelable, flags)
         dest.writeInt(carbs)
         dest.writeFloat(insulin)
         dest.writeInt(if (isCorrection) 1 else 0)
         dest.writeParcelable(bloodSugarParcelable, flags)
         dest.writeLong(date.time)
-        dest.writeParcelable(bolusPatternParcelable, 0)
         dest.writeTypedList(this.foodParcelables)
     }
 
     companion object {
 
-        public val CREATOR: Parcelable.Creator<SnackParcelable> = object : Parcelable.Creator<SnackParcelable> {
-            override fun createFromParcel(parcel: Parcel): SnackParcelable {
-                return SnackParcelable(parcel)
+        public val CREATOR: Parcelable.Creator<MealParcelable> = object : Parcelable.Creator<MealParcelable> {
+            override fun createFromParcel(parcel: Parcel): MealParcelable {
+                return MealParcelable(parcel)
             }
 
-            override fun newArray(size: Int): Array<SnackParcelable> {
-                return Array(size, {i -> SnackParcelable()})
+            override fun newArray(size: Int): Array<MealParcelable> {
+                return Array(size, {i -> MealParcelable() })
             }
         }
     }

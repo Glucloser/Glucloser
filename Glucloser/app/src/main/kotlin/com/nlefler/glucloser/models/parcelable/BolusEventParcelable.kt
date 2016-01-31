@@ -1,6 +1,7 @@
-package com.nlefler.glucloser.models
+package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcelable
+import com.nlefler.glucloser.models.parcelable.FoodParcelable
 import java.util.Date
 
 /**

@@ -1,4 +1,4 @@
-package com.nlefler.glucloser.models
+package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -38,7 +38,7 @@ public class PlaceParcelable() : Parcelable {
             }
 
             override fun newArray(size: Int): Array<PlaceParcelable> {
-                return Array(size, {i -> PlaceParcelable()})
+                return Array(size, {i -> PlaceParcelable() })
             }
         }
     }
