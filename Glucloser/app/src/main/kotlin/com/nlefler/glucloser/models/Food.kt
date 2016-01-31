@@ -18,15 +18,15 @@ public open class Food(
 
     companion object {
         @Ignore
-        public val ParseClassName: String = "Food"
+        public val ModelName: String = "Food"
 
         @Ignore
-        public val FoodIdFieldName: String = "primaryId"
+        public val IdFieldName: String = "primaryId"
 
         @Ignore
         public val CarbsFieldName: String = "carbs"
 
         @Ignore
-        public val FoodNameFieldName: String = "name"
+        public val NameFieldName: String = "name"
     }
 }
