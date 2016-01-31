@@ -12,15 +12,15 @@ import java.util.*
 @RealmClass
 public open class Place(
         @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var name: String = "",
-        public open var foursquareId: String? = null,
+        public open var name: String,
+        public open var foursquareId: String,
         public open var latitude: Float = 0.toFloat(),
         public open var longitude: Float = 0.toFloat()
     ) : RealmObject() {
 
     companion object {
         @Ignore
-        public val ParseClassName: String = "Place"
+        public val ModelName: String = "Place"
 
         @Ignore
         public val IdFieldName: String = "primaryId"

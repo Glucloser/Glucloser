@@ -2,13 +2,14 @@ package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
 public class PlaceParcelable() : Parcelable {
-    public var name: String? = null
-    public var foursquareId: String? = null
+    public var name: String = ""
+    public var foursquareId: String = UUID.randomUUID().toString()
     public var latitude: Float = 0.toFloat()
     public var longitude: Float = 0.toFloat()
 
