@@ -1,15 +1,23 @@
 package com.nlefler.glucloser.dataSource
 
+import android.content.Context
+import android.util.Log
+import bolts.Continuation
 import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.dataSource.jsonAdapter.BloodSugarJsonAdapter
 import com.nlefler.glucloser.models.BloodSugar
+import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 
+import java.util.Date
 import java.util.UUID
 
 import io.realm.Realm
 import io.realm.RealmObject
+import io.realm.RealmQuery
+import rx.functions.Action2
 import javax.inject.Inject
 
 /**
@@ -31,6 +39,36 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
         val dateOK = sugar1.date == sugar2.date
 
         return valueOk && dateOK
+    }
+
+    public fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): Task<BloodSugar?> {
+        return bloodSugarForBloodSugarId(parcelable.id, true)
+                .continueWithTask(Continuation<BloodSugar?, Task<BloodSugar?>> { task ->
+            if (task.isFaulted) {
+                return@Continuation task
+            }
+            val sugar = task.result
+            return@Continuation realmManager.executeTransaction(object: RealmManager.Tx<BloodSugar?> {
+                override fun dependsOn(): List<RealmObject?> {
+                    return listOf(sugar)
+                }
+
+                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BloodSugar? {
+                    val liveSugar = dependsOn.first() as BloodSugar?
+                    liveSugar?.value = parcelable.value
+                    liveSugar?.date = parcelable.date
+                    return liveSugar
+                }
+            })
+        })
+    }
+
+    public fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
+        val parcelable = BloodSugarParcelable()
+        parcelable.id = sugar.primaryId
+        parcelable.value = sugar.value
+        parcelable.date = sugar.date
+        return parcelable
     }
 
     public fun jsonAdapter(): JsonAdapter<BloodSugar> {
