@@ -1,9 +1,11 @@
 package com.nlefler.glucloser.components.datafactory
 
+import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.actions.StartupAction
 import com.nlefler.glucloser.activities.LogBolusEventActivity
 import com.nlefler.glucloser.dataSource.*
+import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.ui.MealHistoryViewHolder
 import com.nlefler.glucloser.ui.PlaceSelectionViewHolder
 import dagger.Component
@@ -27,8 +29,6 @@ public interface DataFactoryComponent {
     public fun inject(client: LogBolusEventActivity)
     public fun inject(client: LogBolusEventAction)
     public fun inject(client: StartupAction)
-    // TODO(nl) Server data sync client
-//    public fun inject(client: ParseUploader)
     public fun inject(client: MealHistoryViewHolder)
     public fun inject(client: PlaceSelectionViewHolder)
 
@@ -42,8 +42,8 @@ public interface DataFactoryComponent {
     fun placeFactory(): PlaceFactory
     fun snackFactory(): SnackFactory
 
-//    @Singleton
-//    fun parseUploader(): ParseUploader
-
     fun realmFactory(): RealmManager
+
+    @Singleton
+    fun serverSync(): DDPxSync
 }

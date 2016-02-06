@@ -24,7 +24,7 @@ public open class Snack(
 
     companion object {
         @Ignore
-        public var ModelName: String = "Snack"
+        public var ModelName: String = "snacks"
 
         @Ignore
         public var IdFieldName: String = "primaryId"

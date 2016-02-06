@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ddpx_server">http://cairo-playground.meteor.com/websocket</string>
+</resources>

@@ -17,7 +17,7 @@ public open class BloodSugar(
 
     companion object {
         @Ignore
-        public val ModelName: String = "BloodSugar"
+        public val ModelName: String = "bloodSugars"
 
         @Ignore
         public val IdFieldName: String = "primaryId"

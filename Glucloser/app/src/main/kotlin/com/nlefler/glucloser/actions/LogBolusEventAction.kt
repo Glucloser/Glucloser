@@ -8,6 +8,7 @@ import bolts.Task
 import bolts.TaskCompletionSource
 
 import com.nlefler.glucloser.dataSource.*
+import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.models.parcelable.*
 
@@ -42,10 +43,8 @@ public class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    // TODO(nl) Sync bolus events to server
-//    lateinit var parseUploader: ParseUploader
-//        @Inject set
-
+    lateinit var serverSync: DDPxSync
+        @Inject set
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -179,7 +178,9 @@ public class LogBolusEventAction : Parcelable {
                             return@continueWith
                         }
 
-//                        parseUploader.uploadBolusEvent(task.result as Snack)
+                        val jsonAdapter = snackFactory.jsonAdapter()
+                        val json = jsonAdapter.toJson(task.result as Snack)
+                        serverSync.saveModel(Snack.ModelName, json)
                     }
                 }
                 else -> {

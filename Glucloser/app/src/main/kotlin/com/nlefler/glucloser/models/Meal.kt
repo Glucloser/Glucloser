@@ -25,7 +25,7 @@ public open class Meal(
 
     companion object {
         @Ignore
-        public val ModelName: String = "Meal"
+        public val ModelName: String = "meals"
 
         @Ignore
         public val IdFieldName: String = "primaryId"

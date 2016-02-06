@@ -64,8 +64,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         this.navDrawerToggle = ActionBarDrawerToggle(this, this.navDrawerLayout, R.string.nav_drawer_open, R.string.nav_drawer_closed)
         this.navDrawerLayout!!.setDrawerListener(this.navDrawerToggle)
 
-        supportActionBar.setDisplayHomeAsUpEnabled(true)
-        supportActionBar.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
 
         requestLocationPermission()
     }

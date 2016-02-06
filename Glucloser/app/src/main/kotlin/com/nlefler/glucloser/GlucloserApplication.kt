@@ -5,8 +5,10 @@ import android.content.Context
 import android.os.Debug
 import android.support.multidex.MultiDex
 import android.util.Log
+import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
+import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
@@ -14,6 +16,8 @@ import io.realm.RealmConfiguration
  * Created by Nathan Lefler on 12/12/14.
  */
 public class GlucloserApplication : Application() {
+    var ddpxSync: DDPxSync? = null
+
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
 
@@ -38,11 +42,16 @@ public class GlucloserApplication : Application() {
         Realm.setDefaultConfiguration(realmConfig)
 
 
+
         this.subscribeToPush()
 
         val dataFactory = DaggerDataFactoryComponent.create()
         var startupAction = dataFactory.startupAction()
         startupAction.run()
+
+        val ddpx = DDPx(getString(R.string.ddpx_server))
+        val placeFactory = dataFactory.placeFactory()
+        ddpxSync = DDPxSync(ddpx, placeFactory)
     }
 
     private fun subscribeToPush() {

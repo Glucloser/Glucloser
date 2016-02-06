@@ -20,7 +20,7 @@ public open class Place(
 
     companion object {
         @Ignore
-        public val ModelName: String = "Place"
+        public val ModelName: String = "places"
 
         @Ignore
         public val IdFieldName: String = "primaryId"
