@@ -17,19 +17,14 @@ import javax.inject.Singleton
  * Created by nathan on 10/20/15.
  */
 @Module
-public class DataFactoryModule(val placeFactory: PlaceFactory) {
-    private lateinit var ddpxSync: DDPxSync
+public class DataFactoryModule() {
+    private var ddpxSync: DDPxSync? = null
 
-    init {
-        val ddpx = DDPx(GlucloserApplication.SharedApplication().getString(R.string.ddpx_server))
-        ddpxSync = DDPxSync(ddpx, placeFactory)
-    }
-
-    @Provides public fun realmFactory(): RealmManager {
+    @Provides fun realmFactory(): RealmManager {
         return RealmManager()
     }
 
-    @Singleton @Provides public fun serverSync(): DDPxSync {
-        return ddpxSync
+    @Singleton @Provides fun ddpx(): DDPx {
+        return GlucloserApplication.SharedApplication().ddpx
     }
 }

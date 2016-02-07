@@ -2,6 +2,7 @@ package com.nlefler.glucloser.models
 
 import io.realm.RealmObject
 import io.realm.annotations.Ignore
+import io.realm.annotations.PrimaryKey
 import io.realm.annotations.RealmClass
 import java.util.*
 
@@ -10,22 +11,16 @@ import java.util.*
  */
 @RealmClass
 public open class BloodSugar(
-        public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var value: Int = 0,
-        public open var date: Date = Date()
+        @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
+        open var value: Int = 0,
+        open var date: Date = Date()
     ) : RealmObject() {
 
     companion object {
         @Ignore
-        public val ModelName: String = "bloodSugars"
+        val ModelName: String = "bloodSugars"
 
         @Ignore
-        public val IdFieldName: String = "primaryId"
-
-        @Ignore
-        public val ValueFieldName: String = "value"
-
-        @Ignore
-        public val DateFieldName: String = "date"
+        val IdFieldName: String = "primaryId"
     }
 }

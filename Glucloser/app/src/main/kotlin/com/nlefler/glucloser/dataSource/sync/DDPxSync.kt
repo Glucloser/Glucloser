@@ -5,11 +5,14 @@ import bolts.Task
 import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.Place
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Created by nathan on 1/31/16.
  */
-public class DDPxSync(val ddpx: DDPx, val placeFactory: PlaceFactory) {
+@Singleton
+class DDPxSync @Inject constructor(val ddpx: DDPx, val placeFactory: PlaceFactory) {
 
     init {
         ddpx.connect().continueWith { task ->

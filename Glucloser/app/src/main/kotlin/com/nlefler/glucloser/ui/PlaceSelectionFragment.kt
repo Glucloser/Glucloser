@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
+import com.nlefler.glucloser.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.dataSource.PlaceSelectionRecyclerAdapter
 import com.nlefler.glucloser.foursquare.FoursquarePlaceHelper
 import com.nlefler.glucloser.models.parcelable.PlaceParcelable
@@ -49,7 +50,9 @@ public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenu
 
         this.setHasOptionsMenu(true)
 
-        val dataFactory = DaggerDataFactoryComponent.create()
+        val dataFactory = DaggerDataFactoryComponent.builder()
+                .dataFactoryModule(DataFactoryModule())
+                .build()
         dataFactory.inject(logMealAction)
 
         foursquareHelper = FoursquarePlaceHelper(getActivity())

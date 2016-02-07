@@ -7,6 +7,7 @@ import android.support.multidex.MultiDex
 import android.util.Log
 import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
+import com.nlefler.glucloser.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import io.realm.Realm
@@ -16,13 +17,17 @@ import io.realm.RealmConfiguration
  * Created by Nathan Lefler on 12/12/14.
  */
 public class GlucloserApplication : Application() {
-    var ddpxSync: DDPxSync? = null
+    lateinit var ddpx: DDPx
+
+    private var ddpxSync: DDPxSync? = null
 
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
 
         MultiDex.install(this)
 
+        _sharedApplication = this
+        ddpx = DDPx(GlucloserApplication.SharedApplication().getString(R.string.ddpx_server))
     }
 
     override fun onCreate() {
@@ -45,7 +50,9 @@ public class GlucloserApplication : Application() {
 
         this.subscribeToPush()
 
-        val dataFactory = DaggerDataFactoryComponent.create()
+        val dataFactory = DaggerDataFactoryComponent.builder()
+                .dataFactoryModule(DataFactoryModule())
+                .build()
         var startupAction = dataFactory.startupAction()
         startupAction.run()
 

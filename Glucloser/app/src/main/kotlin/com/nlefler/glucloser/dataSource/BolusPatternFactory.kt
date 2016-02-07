@@ -19,34 +19,43 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/19/15.
  */
-public class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
+class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
 
-    public fun emptyPattern(): Task<BolusPattern?> {
-        return bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> emptyRate@ { rateTask ->
-            if (rateTask.isFaulted) {
-                return@emptyRate Task.forError(Exception("Unable to create BolusRate"))
+    fun emptyPattern(): Task<BolusPattern?> {
+        return bolusPatternForId("__glucloser_special_empty_bolus_pattern", false).continueWithTask { task ->
+            if (task.isFaulted) {
+                return@continueWithTask task
             }
-            else {
-                val bolusRate = rateTask.result
-                return@emptyRate bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
-                        .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
-                            val bolusPattern = task.result
-                    return@patternForId realmManager.executeTransaction(object: RealmManager.Tx<BolusPattern?> {
-                        override fun dependsOn(): List<RealmObject?> {
-                            return listOf(bolusRate, bolusPattern)
-                        }
+            val pattern = task.result
+            if (pattern != null) {
+                return@continueWithTask Task.forResult(pattern)
+            }
 
-                        override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusPattern? {
-                            val liveRate = dependsOn.first() as BolusRate?
-                            val livePattern = dependsOn.last() as BolusPattern?
-                            livePattern?.rateCount = 1
-                            livePattern?.rates?.add(liveRate)
-                            return livePattern
-                        }
-                    })
-                })
-            }
-        })
+            return@continueWithTask bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> emptyRate@ { rateTask ->
+                if (rateTask.isFaulted) {
+                    return@emptyRate Task.forError(Exception("Unable to create BolusRate"))
+                } else {
+                    val bolusRate = rateTask.result
+                    return@emptyRate bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
+                            .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
+                                val bolusPattern = task.result
+                                return@patternForId realmManager.executeTransaction(object : RealmManager.Tx<BolusPattern?> {
+                                    override fun dependsOn(): List<RealmObject?> {
+                                        return listOf(bolusRate, bolusPattern)
+                                    }
+
+                                    override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusPattern? {
+                                        val liveRate = dependsOn.first() as BolusRate?
+                                        val livePattern = dependsOn.last() as BolusPattern?
+                                        livePattern?.rateCount = 1
+                                        livePattern?.rates?.add(liveRate)
+                                        return livePattern
+                                    }
+                                })
+                            })
+                }
+            })
+        }
     }
 
     public fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {

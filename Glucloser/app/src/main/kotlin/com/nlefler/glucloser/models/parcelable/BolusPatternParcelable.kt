@@ -9,9 +9,9 @@ import java.util.*
  * Created by nathan on 9/20/15.
  */
 public class BolusPatternParcelable(): Parcelable {
-    public var id: String? = null
-    public var rateCount: Int? = null
-    public var rates: MutableList<BolusRateParcelable> = ArrayList<BolusRateParcelable>()
+    public var id: String = UUID.randomUUID().toString()
+    public var rateCount: Int = 0
+    public var rates: MutableList<BolusRateParcelable> = ArrayList()
 
     private constructor(parcel: Parcel) : this() {
         id = parcel.readString()
@@ -20,8 +20,8 @@ public class BolusPatternParcelable(): Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
-        dest?.writeString(id ?: "")
-        dest?.writeInt(rateCount ?: 0)
+        dest?.writeString(id)
+        dest?.writeInt(rateCount)
         dest?.writeTypedList<BolusRateParcelable>(rates)
     }
 

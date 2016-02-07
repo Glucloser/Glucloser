@@ -20,6 +20,7 @@ import com.nlefler.glucloser.R
 import com.nlefler.nlfoursquare.Model.NLFoursquareClientParameters
 
 import java.io.IOException
+import java.nio.charset.Charset
 
 /**
  * Created by Nathan Lefler on 12/28/14.
@@ -106,7 +107,7 @@ public class FoursquareAuthManager private constructor() {
             val encryptedToken = Base64.decode(encryptedBase64Token, Base64.DEFAULT)
 
             if (encryptedToken.size > 0) {
-                return String(this.crypto.decrypt(encryptedToken, entity), "UTF-8")
+                return this.crypto.decrypt(encryptedToken, entity).toString(Charset.forName("UTF-8"))
             } else {
                 return ""
             }

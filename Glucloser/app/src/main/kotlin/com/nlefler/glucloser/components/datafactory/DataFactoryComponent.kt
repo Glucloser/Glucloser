@@ -17,20 +17,21 @@ import javax.inject.Singleton
  */
 @Singleton
 @Component(modules = arrayOf(DataFactoryModule::class))
-public interface DataFactoryComponent {
-    public fun inject(client: BloodSugarFactory)
-    public fun inject(client: BolusEventFactory)
-    public fun inject(client: BolusPatternFactory)
-    public fun inject(client: BolusRateFactory)
-    public fun inject(client: FoodFactory)
-    public fun inject(client: MealFactory)
-    public fun inject(client: PlaceFactory)
-    public fun inject(client: SnackFactory)
-    public fun inject(client: LogBolusEventActivity)
-    public fun inject(client: LogBolusEventAction)
-    public fun inject(client: StartupAction)
-    public fun inject(client: MealHistoryViewHolder)
-    public fun inject(client: PlaceSelectionViewHolder)
+interface DataFactoryComponent {
+    fun inject(client: BloodSugarFactory)
+    fun inject(client: BolusEventFactory)
+    fun inject(client: BolusPatternFactory)
+    fun inject(client: BolusRateFactory)
+    fun inject(client: FoodFactory)
+    fun inject(client: MealFactory)
+    fun inject(client: PlaceFactory)
+    fun inject(client: SnackFactory)
+    fun inject(client: LogBolusEventActivity)
+    fun inject(client: LogBolusEventAction)
+    fun inject(client: StartupAction)
+    fun inject(client: MealHistoryViewHolder)
+    fun inject(client: PlaceSelectionViewHolder)
+    fun inject(client: DDPxSync)
 
     fun startupAction(): StartupAction
     fun bloodSugarFactory(): BloodSugarFactory
@@ -46,4 +47,7 @@ public interface DataFactoryComponent {
 
     @Singleton
     fun serverSync(): DDPxSync
+
+    @Singleton
+    fun ddpx(): DDPx
 }

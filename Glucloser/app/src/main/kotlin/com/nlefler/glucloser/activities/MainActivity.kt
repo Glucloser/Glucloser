@@ -24,6 +24,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
+import com.nlefler.glucloser.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
 import com.nlefler.glucloser.dataSource.RealmManager
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
@@ -200,8 +201,10 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            val dataFactoryComponent = DaggerDataFactoryComponent.create()
-            realmManager = dataFactoryComponent.realmFactory()
+            val dataFactory = DaggerDataFactoryComponent.builder()
+                    .dataFactoryModule(DataFactoryModule())
+                    .build()
+            realmManager = dataFactory.realmFactory()
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {

@@ -2,16 +2,15 @@ package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
-
-import java.util.Date
+import java.util.*
 
 /**
  * Created by Nathan Lefler on 1/4/15.
  */
 public class BloodSugarParcelable() : Parcelable {
-    public var id: String = ""
-    public var value: Int = 0
-    public var date: Date? = null
+    var id: String = UUID.randomUUID().toString()
+    var value: Int = 0
+    var date: Date = Date()
 
     /** Parcelable  */
     protected constructor(parcel: Parcel) : this() {
@@ -30,9 +29,7 @@ public class BloodSugarParcelable() : Parcelable {
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(id)
         dest.writeInt(value)
-        if (date != null) {
-            dest.writeLong(date!!.time)
-        }
+        dest.writeLong(date.time)
     }
 
     companion object {

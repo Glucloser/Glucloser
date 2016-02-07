@@ -11,22 +11,16 @@ import java.util.*
  */
 @RealmClass
 public open class Food(
-        @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var carbs: Int = 0,
-        public open var foodName: String = ""
+        @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
+        open var carbs: Int = 0,
+        open var foodName: String = ""
     ) : RealmObject() {
 
     companion object {
         @Ignore
-        public val ModelName: String = "foods"
+        val ModelName: String = "foods"
 
         @Ignore
-        public val IdFieldName: String = "primaryId"
-
-        @Ignore
-        public val CarbsFieldName: String = "carbs"
-
-        @Ignore
-        public val NameFieldName: String = "name"
+        val IdFieldName: String = "primaryId"
     }
 }

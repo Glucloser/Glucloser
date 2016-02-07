@@ -2,34 +2,35 @@ package com.nlefler.glucloser.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
 
 /**
  * Created by nathan on 9/20/15.
  */
 public class BolusRateParcelable(): Parcelable {
-    public var id: String? = null
-    public var ordinal: Int? = null
-    public var carbsPerUnit: Int? = null
-    public var startTime: Int? = null
+    var id: String = UUID.randomUUID().toString()
+    var ordinal: Int = 0
+    var carbsPerUnit: Int = 0
+    var startTime: Int = 0
 
     private constructor(parcel: Parcel) : this() {
         id = parcel.readString()
 
         ordinal = parcel.readInt()
-        ordinal = if (ordinal?:-1 > 0) ordinal else null
+        ordinal = ordinal
 
         carbsPerUnit = parcel.readInt()
-        carbsPerUnit = if (carbsPerUnit ?:-1 > 0) carbsPerUnit else null
+        carbsPerUnit = ordinal
 
         startTime = parcel.readInt()
-        startTime = if (startTime?:-1 > 0) startTime else null
+        startTime = ordinal
     }
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
-        dest?.writeString(id ?: "")
-        dest?.writeInt(ordinal ?: -1)
-        dest?.writeInt(carbsPerUnit ?: -1)
-        dest?.writeInt(startTime ?: -1)
+        dest?.writeString(id)
+        dest?.writeInt(ordinal)
+        dest?.writeInt(carbsPerUnit)
+        dest?.writeInt(startTime)
     }
 
     override fun describeContents(): Int {

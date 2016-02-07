@@ -154,14 +154,23 @@ public class LogBolusEventAction : Parcelable {
                 is SnackParcelable -> {
                     snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
                             .continueWithTask(Continuation<Snack?, Task<Snack?>> snackPar@ { task ->
-                        if (task.isFaulted) {
-                            return@snackPar task
-                        }
 
-                        val snack = task.result
+                                if (task.isFaulted) {
+                                    return@snackPar task
+                                }
+
+                                val snack = task.result
+                                val beforeSugar = beforeSugarTask?.result
+                                val bolusPattern = bolusPatternTask?.result
+
+                                if (snack == null || beforeSugar == null || bolusPattern == null) {
+                                    Log.e(LOG_TAG, "Snack: $snack Before Sugar: $beforeSugar Bolus Pattern: $bolusPattern")
+                                    return@snackPar Task.forError(Exception("Dependencies null"))
+                                }
+
                         return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
                             override fun dependsOn(): List<RealmObject?> {
-                                return listOf(snack)
+                                return listOf(snack, beforeSugar, bolusPattern) + foodList
                             }
 
                             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
