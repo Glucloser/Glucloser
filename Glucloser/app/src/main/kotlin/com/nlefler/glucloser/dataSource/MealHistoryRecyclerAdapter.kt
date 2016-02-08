@@ -51,11 +51,14 @@ class MealHistoryRecyclerAdapter(private var activity: Activity,
             viewHolder.placeName.setText(bolusEvent.place?.name ?: "")
         }
         else {
-            val firstFood = bolusEvent.foods.firstOrNull()
-            var name = firstFood?.foodName
-            if (name?.length == 0) {
-                name = GlucloserApplication.SharedApplication().getString(R.string.snack)
+            var name = GlucloserApplication.SharedApplication().getString(R.string.snack)
+            if (bolusEvent.foods.size == 1) {
+                val firstFoodName = bolusEvent.foods.firstOrNull()?.foodName ?: ""
+                if (firstFoodName.length > 0) {
+                    name = firstFoodName
+                }
             }
+
             viewHolder.placeName.text = name
         }
         viewHolder.carbsValue.text = "${bolusEvent.carbs}"
