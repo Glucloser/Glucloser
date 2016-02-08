@@ -16,10 +16,10 @@ import com.nlefler.glucloser.ui.MealHistoryViewHolder
 /**
  * Created by Nathan Lefler on 12/25/14.
  */
-public class MealHistoryRecyclerAdapter(private var activity: Activity,
+class MealHistoryRecyclerAdapter(private var activity: Activity,
                                         private var bolusEvents: List<BolusEvent>?) :
         RecyclerView.Adapter<MealHistoryViewHolder>() {
-    public fun setEvents(events: List<BolusEvent>) {
+    fun setEvents(events: List<BolusEvent>) {
         this.bolusEvents = events
         notifyDataSetChanged()
     }
@@ -51,7 +51,12 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
             viewHolder.placeName.setText(bolusEvent.place?.name ?: "")
         }
         else {
-            viewHolder.placeName.setText(GlucloserApplication.SharedApplication().getString(R.string.snack))
+            val firstFood = bolusEvent.foods.firstOrNull()
+            var name = firstFood?.foodName
+            if (name?.length == 0) {
+                name = GlucloserApplication.SharedApplication().getString(R.string.snack)
+            }
+            viewHolder.placeName.text = name
         }
         viewHolder.carbsValue.text = "${bolusEvent.carbs}"
         viewHolder.insulinValue.text = "${bolusEvent.insulin}"

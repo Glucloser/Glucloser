@@ -4,7 +4,7 @@ import android.util.Log
 import bolts.Task
 import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.dataSource.PlaceFactory
-import com.nlefler.glucloser.models.Place
+import com.nlefler.glucloser.models.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +24,7 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val placeFactory: PlaceFactor
         }
     }
 
-    public fun saveModel(collection: String, json: String): Task<Unit> {
+    fun saveModel(collection: String, json: String): Task<Unit> {
         return ddpx.method("addModel", arrayOf(collection, json), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
@@ -35,16 +35,19 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val placeFactory: PlaceFactor
     }
 
     private fun setupSubs() {
-        ddpx.sub(Place.ModelName, null).subscribe { change ->
-            Log.v(LOG_TAG, "${change.collection} - ${change.type.name} - ${change.id}")
+        listOf(Place.ModelName, BloodSugar.ModelName, BolusPattern.ModelName,
+                BolusRate.ModelName, Food.ModelName, Meal.ModelName, Snack.ModelName).forEach { modelName ->
+            ddpx.sub(modelName, null).subscribe { change ->
+                Log.v(LOG_TAG, "${change.collection} - ${change.type.name} - ${change.id}")
 
-            // DDP returns modified fields only
-            // So in event of 'added' or 'changed':
-            // Find object for id
-            // If there is none, create it and set fields (should have all fields in this case)
-            // Else set fields from change event and save
+                // DDP returns modified fields only
+                // So in event of 'added' or 'changed':
+                // Find object for id
+                // If there is none, create it and set fields (should have all fields in this case)
+                // Else set fields from change event and save
+                // TODO(nl) Handle change events from server
+            }
         }
-        // TODO(nl) Subscribe to other collections
     }
 
     companion object {

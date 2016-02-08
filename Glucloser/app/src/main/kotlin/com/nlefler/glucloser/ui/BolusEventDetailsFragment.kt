@@ -55,7 +55,6 @@ public class BolusEventDetailsFragment : Fragment() {
     private var totalInsulin = 0f
 
     private var bolusPattern: BolusPattern? = null
-    private var fetchTask: Task<BolusPattern?>? = null
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
@@ -80,15 +79,18 @@ public class BolusEventDetailsFragment : Fragment() {
         else {
             patternParcelableTask.trySetResult(null)
         }
-        // TODO(nl) Fetch current bolus pattern from db
-//        patternParcelableTask.task.continueWith { task ->
-//            if (bolusPattern == null) {
+        patternParcelableTask.task.continueWith { task ->
+            if (bolusPattern == null) {
+                // TODO(nl) Fetch current bolus pattern from db
+                bolusPatternFactory?.emptyPattern()?.continueWith { task ->
+                    bolusPattern = task.result
+                }
 //                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
 //                fetchTask?.continueWith { task ->
 //                    bolusPattern = task.result
 //                }
-//            }
-//        }
+            }
+        }
 
     }
 

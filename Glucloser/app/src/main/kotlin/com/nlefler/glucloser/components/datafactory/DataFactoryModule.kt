@@ -18,7 +18,6 @@ import javax.inject.Singleton
  */
 @Module
 public class DataFactoryModule() {
-    private var ddpxSync: DDPxSync? = null
 
     @Provides fun realmFactory(): RealmManager {
         return RealmManager()
@@ -27,4 +26,5 @@ public class DataFactoryModule() {
     @Singleton @Provides fun ddpx(): DDPx {
         return GlucloserApplication.SharedApplication().ddpx
     }
+
 }

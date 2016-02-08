@@ -20,7 +20,7 @@ open class BolusPattern(
 
     companion object {
         @Ignore
-        val ModelName = "CurrentCarbRatioPattern"
+        val ModelName = "bolusPatterns"
 
         @Ignore
         val IdFieldName = "primaryId"

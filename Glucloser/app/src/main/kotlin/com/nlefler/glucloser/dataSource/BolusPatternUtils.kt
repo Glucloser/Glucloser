@@ -26,7 +26,7 @@ public class BolusPatternUtils {
                 activeRate = sortedRates.last()
             }
 
-            if (activeRate?.carbsPerUnit == null) {
+            if (activeRate?.carbsPerUnit == 0) {
                 return 0f
             }
             return carbValue.toFloat() / activeRate?.carbsPerUnit!!.toFloat()

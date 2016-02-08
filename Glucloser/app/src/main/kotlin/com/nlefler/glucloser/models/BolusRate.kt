@@ -19,7 +19,7 @@ public open class BolusRate(
 
     companion object {
         @Ignore
-        val ModelName = "CurrentCarbRatio"
+        val ModelName = "bolusRates"
 
         @Ignore
         val IdFieldName = "primaryId"
