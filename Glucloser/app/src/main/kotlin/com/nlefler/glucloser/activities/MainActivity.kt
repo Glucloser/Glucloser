@@ -249,26 +249,9 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         internal fun updateMealHistory() {
-            val mealResultsTask = realmManager?.executeTransaction(object: RealmManager.TxList<Meal> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return emptyList()
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Meal> {
-                    val mealResults = realm.allObjectsSorted(Meal::class.java, Meal.DateFieldName, Sort.DESCENDING)
-                    return mealResults
-                }
-            })
-            val snackResultsTask = realmManager?.executeTransaction(object: RealmManager.TxList<Snack> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return emptyList()
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Snack> {
-                    val snackResults = realm.allObjectsSorted(Snack::class.java, Snack.DateFieldName, Sort.DESCENDING)
-                    return snackResults
-                }
-            })
+            val realm = realmManager?.defaultRealm()
+            val mealQuery = realm?.allObjectsSorted(Meal::class.java, Meal.DateFieldName, Sort.DESCENDING)
+            val snackQuery = realm?.allObjectsSorted(Snack::class.java, Snack.DateFieldName, Sort.DESCENDING)
 
             val comparator = object: Comparator<BolusEvent> {
                 override fun compare(a: BolusEvent, b: BolusEvent): Int {
@@ -280,14 +263,26 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 }
             }
 
-            Task.whenAll(arrayListOf(mealResultsTask, snackResultsTask)).continueWith {
-                val sortedCollections = ArrayList<BolusEvent>()
-                sortedCollections.addAll(mealResultsTask?.result as List<Meal>)
-                sortedCollections.addAll(snackResultsTask?.result as List<Snack>)
-                Collections.sort(sortedCollections, comparator)
+            val mealResults = ArrayList<Meal>()
+            val snackResults = ArrayList<Snack>()
+            val updateDisplayedList = fun (): Unit {
+                val sortedResults: List<BolusEvent> = mealResults + snackResults
+                Collections.sort(sortedResults, comparator)
 
-                this.mealHistoryAdapter!!.setEvents(sortedCollections)
+                this.mealHistoryAdapter!!.setEvents(sortedResults)
             }
+
+            mealQuery?.asObservable()?.subscribe { meals ->
+                mealResults.clear()
+                mealResults.addAll(meals)
+                updateDisplayedList()
+            }
+            snackQuery?.asObservable()?.subscribe { snacks ->
+                snackResults.clear()
+                snackResults.addAll(snacks)
+                updateDisplayedList()
+            }
+
         }
 
         companion object {

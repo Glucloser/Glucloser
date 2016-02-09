@@ -176,6 +176,7 @@ public class BolusEventDetailsFragment : Fragment() {
             if (!task.isFaulted && task.result != null) {
                 this.foods.add(task.result!!)
                 this.foodListAdapter?.setFoods(this.foods)
+                this.foodListAdapter?.notifyDataSetChanged()
             }
         }
 
