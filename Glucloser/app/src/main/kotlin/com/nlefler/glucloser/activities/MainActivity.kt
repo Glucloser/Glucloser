@@ -53,10 +53,11 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         }
 
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+        val versionCode = packageManager.getPackageInfo(packageName, 0).versionCode
         this.navBarItems = arrayOf(getString(R.string.nav_drawer_item_home),
                 getString(R.string.nav_drawer_item_glucloser_login),
                 getString(R.string.nav_drawer_item_foursquare_login),
-                "v$versionName")
+                "v$versionName.$versionCode")
         this.navDrawerLayout = findViewById(R.id.drawer_layout) as DrawerLayout
         this.navDrawerListView = findViewById(R.id.left_drawer) as ListView
         this.navDrawerListView?.adapter = ArrayAdapter(this, R.layout.drawer_list_item, this.navBarItems)
