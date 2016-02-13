@@ -2,8 +2,11 @@ package com.nlefler.glucloser.dataSource
 
 import bolts.Continuation
 import bolts.Task
+import com.nlefler.glucloser.dataSource.jsonAdapter.EJsonAdapter
+import com.nlefler.glucloser.dataSource.jsonAdapter.RealmListAdapter
 import com.nlefler.glucloser.dataSource.jsonAdapter.SnackJsonAdapter
 import com.nlefler.glucloser.models.BloodSugar
+import com.nlefler.glucloser.models.Food
 import com.nlefler.glucloser.models.Snack
 import com.nlefler.glucloser.models.parcelable.SnackParcelable
 
@@ -43,8 +46,13 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
         return parcelable
     }
 
-    public fun jsonAdapter(): JsonAdapter<Snack> {
-        return Moshi.Builder().add(SnackJsonAdapter(realmManager.defaultRealm())).build().adapter(Snack::class.java)
+    fun jsonAdapter(): JsonAdapter<Snack> {
+        return Moshi.Builder()
+                .add(SnackJsonAdapter(realmManager.defaultRealm()))
+                .add(EJsonAdapter())
+                .add(RealmListAdapter<Food>(realmManager))
+                .build()
+                .adapter(Snack::class.java)
     }
 
     public fun snackFromParcelable(parcelable: SnackParcelable): Task<Snack?> {

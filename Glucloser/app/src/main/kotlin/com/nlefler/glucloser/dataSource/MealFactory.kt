@@ -5,6 +5,7 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.dataSource.jsonAdapter.MealJsonAdapter
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.models.parcelable.MealParcelable
@@ -69,7 +70,11 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     public fun jsonAdapter(): JsonAdapter<Meal> {
-        return Moshi.Builder().add(MealJsonAdapter(realmManager.defaultRealm())).build().adapter(Meal::class.java)
+        return Moshi.Builder()
+                .add(MealJsonAdapter(realmManager.defaultRealm()))
+                .add(EJsonAdapter())
+                .build()
+                .adapter(Meal::class.java)
     }
 
     public fun mealFromParcelable(parcelable: MealParcelable): Task<Meal?> {

@@ -5,8 +5,12 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.dataSource.jsonAdapter.EJsonAdapter
+import com.nlefler.glucloser.dataSource.jsonAdapter.FoodJsonAdapter
 import com.nlefler.glucloser.models.Food
 import com.nlefler.glucloser.models.parcelable.FoodParcelable
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 import io.realm.Realm
 import io.realm.RealmObject
 import rx.functions.Action2
@@ -22,6 +26,14 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun food(): Task<Food?> {
         return foodForFoodId(UUID.randomUUID().toString(), true)
+    }
+
+    public fun jsonAdapter(): JsonAdapter<Food> {
+        return Moshi.Builder()
+                .add(FoodJsonAdapter(realmManager.defaultRealm()))
+                .add(EJsonAdapter())
+                .build()
+                .adapter(Food::class.java)
     }
 
     public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {

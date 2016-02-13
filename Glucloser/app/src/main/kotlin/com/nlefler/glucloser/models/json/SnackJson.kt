@@ -8,14 +8,14 @@ import java.util.*
 /**
  * Created by nathan on 1/31/16.
  */
-public data class SnackJson(
+data class SnackJson(
         val primaryId: String,
         val date: Date,
-        val bolusPattern: BolusPattern?,
+        val bolusPattern: BolusPatternJson?,
         val carbs: Int,
         val insulin: Float,
-        val beforeSugar: BloodSugar?,
+        val beforeSugar: BloodSugarJson?,
         val isCorrection: Boolean,
-        val foods: List<Food>
+        val foods: List<FoodJson>
     ) {
 }

@@ -275,12 +275,14 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 
             mealQuery?.asObservable()?.subscribe { meals ->
                 mealResults.clear()
-                mealResults.addAll(meals)
+                val deadMeals = realmManager?.defaultRealm()?.copyFromRealm(meals) ?: emptyList()
+                mealResults.addAll(deadMeals)
                 updateDisplayedList()
             }
             snackQuery?.asObservable()?.subscribe { snacks ->
                 snackResults.clear()
-                snackResults.addAll(snacks)
+                val deadSnacks = realmManager?.defaultRealm()?.copyFromRealm(snacks) ?: emptyList()
+                snackResults.addAll(deadSnacks)
                 updateDisplayedList()
             }
 

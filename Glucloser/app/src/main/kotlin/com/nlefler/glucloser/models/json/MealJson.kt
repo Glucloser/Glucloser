@@ -12,12 +12,12 @@ import java.util.*
 public data class MealJson(
         val primaryId: String,
         val date: Date,
-        val bolusPattern: BolusPattern?,
+        val bolusPattern: BolusPatternJson?,
         val carbs: Int,
         val insulin: Float,
-        val beforeSugar: BloodSugar?,
+        val beforeSugar: BloodSugarJson?,
         val isCorrection: Boolean,
-        val foods: List<Food>,
-        val place: Place?
+        val foods: List<FoodJson>,
+        val place: PlaceJson?
 ) {
 }

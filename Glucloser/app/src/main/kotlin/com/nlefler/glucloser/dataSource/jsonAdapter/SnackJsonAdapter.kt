@@ -12,9 +12,9 @@ import io.realm.Realm
  * Created by nathan on 1/31/16.
  */
 public class SnackJsonAdapter(val realm: Realm) {
-    companion object {
-        private val LOG_TAG = "SnackJsonAdapter"
-    }
+    val bolusPatternAdapter = BolusPatternJsonAdapter(realm)
+    val sugarAdapter = BloodSugarJsonAdapter(realm)
+    val foodAdapter = FoodJsonAdapter(realm)
 
     @FromJson fun fromJson(json: SnackJson): Snack {
         val snack = realm.createObject(Snack::class.java)
@@ -22,11 +22,12 @@ public class SnackJsonAdapter(val realm: Realm) {
         realm.executeTransaction {
             snack.primaryId = json.primaryId
 
-            snack.beforeSugar = json.beforeSugar
+            snack.beforeSugar = if (json.beforeSugar != null) sugarAdapter.fromJson(json.beforeSugar) else null
             snack.carbs = json.carbs
             snack.insulin = json.insulin
             snack.isCorrection = json.isCorrection
             snack.date = json.date
+            snack.foods.addAll(json.foods.map { foodJson -> foodAdapter.fromJson(foodJson) })
         }
 
         return snack
@@ -35,12 +36,12 @@ public class SnackJsonAdapter(val realm: Realm) {
     @ToJson fun toJson(snack: Snack): SnackJson {
         val json = SnackJson(primaryId = snack.primaryId,
                 date = snack.date,
-                bolusPattern = snack.bolusPattern,
+                bolusPattern = if (snack.bolusPattern != null) bolusPatternAdapter.toJson(snack.bolusPattern!!) else null,
                 carbs = snack.carbs,
                 insulin = snack.insulin,
-                beforeSugar = snack.beforeSugar,
+                beforeSugar = if (snack.beforeSugar != null) sugarAdapter.toJson(snack.beforeSugar!!) else null,
                 isCorrection = snack.isCorrection,
-                foods = snack.foods.toList()
+                foods = snack.foods.map { food -> foodAdapter.toJson(food) }
                 )
         return json
     }

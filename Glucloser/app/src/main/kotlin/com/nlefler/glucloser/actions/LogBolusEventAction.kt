@@ -159,7 +159,7 @@ class LogBolusEventAction : Parcelable {
                             return@mealUpload
                         }
 
-//                        parseUploader.uploadBolusEvent(task.result as Meal)
+                        //                        parseUploader.uploadBolusEvent(task.result as Meal)
                     }
 
                 }
@@ -178,31 +178,37 @@ class LogBolusEventAction : Parcelable {
                                     return@snackPar Task.forError(Exception("Dependencies null"))
                                 }
 
-                        return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
-                            override fun dependsOn(): List<RealmObject?> {
-                                return listOf(snack, beforeSugar, bolusPattern) + foodList
-                            }
+                                return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
+                                    override fun dependsOn(): List<RealmObject?> {
+                                        return listOf(snack, beforeSugar, bolusPattern) + foodList
+                                    }
 
-                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
-                                val liveSnack = dependsOn.first() as Snack?
-                                val liveSugar = dependsOn[1] as BloodSugar?
-                                val liveBolusPattern = dependsOn[2] as BolusPattern?
-                                val liveFoods = dependsOn.slice(IntRange(3, dependsOn.count() - 1)) as List<Food>
+                                    override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
+                                        val liveSnack = dependsOn.first() as Snack?
+                                        val liveSugar = dependsOn[1] as BloodSugar?
+                                        val liveBolusPattern = dependsOn[2] as BolusPattern?
+                                        val liveFoods = dependsOn.slice(IntRange(3, dependsOn.count() - 1)) as List<Food>
 
-                                liveSnack?.foods?.addAll(liveFoods)
-                                liveSnack?.beforeSugar = liveSugar
-                                liveSnack?.bolusPattern = liveBolusPattern
-                                return liveSnack
-                            }
-                        })
-                    }).continueWith { task ->
-                        if (task.isFaulted || task.result == null || task.result !is Snack) {
+                                        liveSnack?.foods?.addAll(liveFoods)
+                                        liveSnack?.beforeSugar = liveSugar
+                                        liveSnack?.bolusPattern = liveBolusPattern
+                                        return liveSnack
+                                    }
+                                })
+                            }).continueWith { task ->
+                        if (task.isFaulted || task.result == null || task.result !is Snack?) {
                             return@continueWith
                         }
 
                         val jsonAdapter = snackFactory.jsonAdapter()
-                        val json = jsonAdapter.toJson(task.result as Snack)
-                        serverSync.saveModel(Snack.ModelName, json)
+                        try {
+                            val snack = task.result
+                            val json = jsonAdapter.toJson(snack)
+                            serverSync.saveModel(Snack.ModelName, json)
+                        }
+                        catch (e: Exception) {
+                            (fun (): Unit {})()
+                        }
                     }
                 }
                 else -> {

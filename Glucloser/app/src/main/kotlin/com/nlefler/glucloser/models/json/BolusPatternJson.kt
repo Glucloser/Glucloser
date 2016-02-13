@@ -8,7 +8,7 @@ import com.nlefler.glucloser.models.BolusRate
 public data class BolusPatternJson(
         val primaryId: String,
         val rateCount: Int,
-        val rates: List<BolusRate>
+        val rates: List<BolusRateJson>
 ) {
 
 }

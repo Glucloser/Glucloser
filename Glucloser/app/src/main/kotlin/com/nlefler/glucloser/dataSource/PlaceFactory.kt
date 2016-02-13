@@ -6,6 +6,7 @@ import bolts.Continuation
 import bolts.Task
 
 import com.google.gson.Gson
+import com.nlefler.glucloser.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.dataSource.jsonAdapter.PlaceJsonAdapter
 import com.nlefler.glucloser.models.CheckInPushedData
 import com.nlefler.glucloser.models.Place
@@ -45,7 +46,10 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     public fun jsonAdapter(): JsonAdapter<Place> {
-        return Moshi.Builder().add(PlaceJsonAdapter(realmManager.defaultRealm())).build().adapter(Place::class.java)
+        return Moshi.Builder()
+                .add(PlaceJsonAdapter(realmManager.defaultRealm()))
+                .add(EJsonAdapter())
+                .build().adapter(Place::class.java)
     }
 
     public fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Task<Place?> {
