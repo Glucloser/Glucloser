@@ -15,7 +15,7 @@ public class BloodSugarJsonAdapter(val realm: Realm) {
 
         realm.executeTransaction {
             sugar.primaryId = json.primaryId
-            sugar.date = json.date
+            sugar.recordedDate = json.date
             sugar.value = json.value
         }
 
@@ -25,7 +25,7 @@ public class BloodSugarJsonAdapter(val realm: Realm) {
     @ToJson fun toJson(sugar: BloodSugar): BloodSugarJson {
         val json = BloodSugarJson(
                 primaryId = sugar.primaryId,
-                date = sugar.date,
+                date = sugar.recordedDate,
                 value = sugar.value
         )
         return json

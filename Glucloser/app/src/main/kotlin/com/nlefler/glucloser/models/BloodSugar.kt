@@ -10,10 +10,10 @@ import java.util.*
  * Created by Nathan Lefler on 1/4/15.
  */
 @RealmClass
-public open class BloodSugar(
+open class BloodSugar(
         @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
         open var value: Int = 0,
-        open var date: Date = Date()
+        open var recordedDate: Date = Date()
     ) : RealmObject() {
 
     companion object {
