@@ -15,6 +15,10 @@ public class BolusPatternUtils {
                             cal.get(Calendar.MINUTE) * 60 * 1000 + cal.get(Calendar.SECOND) * 1000
 
             var sortedRates = bolusPattern.rates.sortedBy { rate -> rate.ordinal }
+            if (sortedRates.isEmpty()) {
+                return 0f
+            }
+
             var activeRate: BolusRate? = null
             for (rate in sortedRates) {
                 if (curMilSecs < rate.startTime) {

@@ -98,15 +98,18 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
                 val query = realm.where<BloodSugar>(BloodSugar::class.java)
 
                 query?.equalTo(BloodSugar.IdFieldName, id)
-                var sugar: BloodSugar? = query?.findFirst()
-
-                if (sugar == null && create) {
-                    sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
-                    sugar?.primaryId = id
-                    sugar?.recordedDate = Date()
-                    sugar?.value = 0
+                val foundSugar: BloodSugar? = query?.findFirst()
+                if (foundSugar != null) {
+                    return foundSugar;
                 }
-                return sugar
+                else if (create) {
+                    val sugar = realm.createObject<BloodSugar>(BloodSugar::class.java)
+                    sugar.primaryId = id
+                    sugar.recordedDate = Date()
+                    sugar.value = 0
+                    return sugar
+                }
+                return null
             }
         })
     }

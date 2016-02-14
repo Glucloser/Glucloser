@@ -8,12 +8,12 @@ import java.util.*
  * Created by nathan on 2/8/16.
  */
 class EJsonAdapter() {
-    @FromJson fun fromJson(json: Map<String, String>): Date {
-        val time = json["\$date"]?.toLong() ?: 0
+    @FromJson fun fromJson(json: Map<String, Long>): Date {
+        val time = json["\$date"] ?: 0
         return Date(time)
     }
 
-    @ToJson fun toJson(date: Date): Map<String, String> {
-        return mapOf(Pair("\$date", date.time.toString()))
+    @ToJson fun toJson(date: Date): Map<String, Long> {
+        return mapOf(Pair("\$date", date.time))
     }
 }

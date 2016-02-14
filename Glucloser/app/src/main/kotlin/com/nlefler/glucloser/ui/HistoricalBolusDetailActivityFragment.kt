@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.components.datafactory.DataFactoryModule
@@ -39,9 +40,7 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactory = DaggerDataFactoryComponent.builder()
-                .dataFactoryModule(DataFactoryModule())
-                .build()
+        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
         foodFactory = dataFactory.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)

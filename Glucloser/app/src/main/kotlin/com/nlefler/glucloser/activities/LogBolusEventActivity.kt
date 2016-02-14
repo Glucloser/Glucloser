@@ -5,6 +5,7 @@ import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.actions.LogBolusEventAction
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
@@ -27,9 +28,7 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
 
-        val dataFactory = DaggerDataFactoryComponent.builder()
-                .dataFactoryModule(DataFactoryModule())
-                .build()
+        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
         dataFactory.inject(this)
         dataFactory.inject(logBolusEventAction)
 

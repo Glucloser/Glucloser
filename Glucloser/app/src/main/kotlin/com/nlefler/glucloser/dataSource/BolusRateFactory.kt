@@ -74,13 +74,15 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
                 val query = realm.where<BolusRate>(BolusRate::class.java)
 
                 query?.equalTo(BolusRate.IdFieldName, id)
-                var rate = query?.findFirst()
-
-                if (rate == null && create) {
-                    rate = realm.createObject<BolusRate>(BolusRate::class.java)
+                val foundRate = query?.findFirst()
+                if (foundRate != null) {
+                    return foundRate
+                }
+                else if (create) {
+                    val rate = realm.createObject<BolusRate>(BolusRate::class.java)
                     rate!!.primaryId = id
                 }
-                return rate
+                return null
             }
         })
     }

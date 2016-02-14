@@ -19,6 +19,10 @@ import io.realm.RealmConfiguration
 public class GlucloserApplication : Application() {
     lateinit var ddpx: DDPx
 
+    val dataFactory = DaggerDataFactoryComponent.builder()
+            .dataFactoryModule(DataFactoryModule())
+            .build()
+
     private var ddpxSync: DDPxSync? = null
 
     override fun attachBaseContext(context: Context) {
@@ -50,9 +54,6 @@ public class GlucloserApplication : Application() {
 
         this.subscribeToPush()
 
-        val dataFactory = DaggerDataFactoryComponent.builder()
-                .dataFactoryModule(DataFactoryModule())
-                .build()
         var startupAction = dataFactory.startupAction()
         startupAction.run()
 

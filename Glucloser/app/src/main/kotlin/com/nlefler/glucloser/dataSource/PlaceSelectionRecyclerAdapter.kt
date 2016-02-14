@@ -32,9 +32,7 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
         val view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.place_selection_list_item, viewGroup, false)
 
         val viewHolder = PlaceSelectionViewHolder(view, delegate)
-        val dataFactory = DaggerDataFactoryComponent.builder()
-                .dataFactoryModule(DataFactoryModule())
-                .build()
+        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
         dataFactory.inject(viewHolder)
 
         return viewHolder

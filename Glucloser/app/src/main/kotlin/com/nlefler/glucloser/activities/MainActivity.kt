@@ -22,6 +22,7 @@ import bolts.Task
 import bolts.TaskCompletionSource
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.components.datafactory.DataFactoryModule
@@ -202,9 +203,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            val dataFactory = DaggerDataFactoryComponent.builder()
-                    .dataFactoryModule(DataFactoryModule())
-                    .build()
+            val dataFactory = GlucloserApplication.SharedApplication().dataFactory
             realmManager = dataFactory.realmFactory()
         }
 

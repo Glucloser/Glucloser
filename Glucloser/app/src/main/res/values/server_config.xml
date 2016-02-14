@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ddpx_server">http://cairo-playground.meteor.com/websocket</string>
+    <string name="ddpx_server">http://glucloser.com:3000/websocket</string>
 </resources>

@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.TextView
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.components.datafactory.DataFactoryModule
@@ -59,9 +60,7 @@ public class BolusEventDetailsFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactory = DaggerDataFactoryComponent.builder()
-                .dataFactoryModule(DataFactoryModule())
-                .build()
+        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
         bolusPatternFactory = dataFactory.bolusPatternFactory()
         foodFactory = dataFactory.foodFactory()
 
