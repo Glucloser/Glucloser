@@ -5,6 +5,7 @@ import bolts.Task
 import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -18,19 +18,20 @@ import com.squareup.moshi.Moshi
 
 import io.realm.Realm
 import io.realm.RealmObject
+import java.util.*
 import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
+class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     private val LOG_TAG = "PlaceFactory"
 
-    public fun placeForId(id: String): Task<Place?> {
+    fun placeForId(id: String): Task<Place?> {
         return placeForFoursquareId(id, false)
     }
 
-    public fun parcelableFromFoursquareVenue(venue: NLFoursquareVenue?): PlaceParcelable? {
+    fun parcelableFromFoursquareVenue(venue: NLFoursquareVenue?): PlaceParcelable? {
         if (venue == null || !IsVenueValid(venue)) {
             Log.e(LOG_TAG, "Unable to create Place from 4sq venue")
             return null
@@ -45,14 +46,14 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
         return parcelable
     }
 
-    public fun jsonAdapter(): JsonAdapter<Place> {
+    fun jsonAdapter(): JsonAdapter<Place> {
         return Moshi.Builder()
                 .add(PlaceJsonAdapter(realmManager.defaultRealm()))
                 .add(EJsonAdapter())
                 .build().adapter(Place::class.java)
     }
 
-    public fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Task<Place?> {
+    fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Task<Place?> {
         if (venue == null || !IsVenueValid(venue)) {
             val errorMessage = "Unable to create Place from 4sq venue"
             Log.e(LOG_TAG, errorMessage)
@@ -82,7 +83,7 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
         })
     }
 
-    public fun parcelableFromPlace(place: Place): PlaceParcelable? {
+    fun parcelableFromPlace(place: Place): PlaceParcelable? {
         val parcelable = PlaceParcelable()
         parcelable.name = place.name
         parcelable.foursquareId = place.foursquareId
@@ -92,7 +93,7 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
         return parcelable
     }
 
-    public fun placeFromParcelable(parcelable: PlaceParcelable): Task<Place?> {
+    fun placeFromParcelable(parcelable: PlaceParcelable): Task<Place?> {
         return placeForFoursquareId(parcelable.foursquareId, true)
                 .continueWithTask(Continuation<Place?, Task<Place?>> placeForId@ { task ->
             if (task.isFaulted) {
@@ -117,7 +118,7 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
         })
     }
 
-    public fun arePlacesEqual(place1: Place?, place2: Place?): Boolean {
+    fun arePlacesEqual(place1: Place?, place2: Place?): Boolean {
         if (place1 == null || place2 == null) {
             return false
         }
@@ -160,6 +161,14 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     private fun placeForFoursquareId(id: String, create: Boolean): Task<Place?> {
+        val setDefaultValues = fun(place: Place) {
+            place.primaryId = UUID.randomUUID().toString()
+            place.foursquareId = UUID.randomUUID().toString()
+            place.latitude = 0f
+            place.longitude = 0f
+            place.name = ""
+        }
+
         return realmManager.executeTransaction(object: RealmManager.Tx<Place?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
@@ -168,19 +177,24 @@ public class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Place? {
                 if (create && id.isEmpty()) {
                     val place = realm.createObject<Place>(Place::class.java)
+                    setDefaultValues(place)
                     return place
                 }
 
                 val query = realm.where<Place>(Place::class.java)
 
                 query?.equalTo(Place.FoursquareIdFieldName, id)
-                var result: Place? = query?.findFirst()
-
-                if (result == null && create) {
-                    result = realm.createObject<Place>(Place::class.java)
-                    result!!.foursquareId = id
+                val foundPlace: Place? = query?.findFirst()
+                if (foundPlace != null) {
+                    return foundPlace
                 }
-                return result
+
+                if (create) {
+                    val place= realm.createObject<Place>(Place::class.java)
+                    setDefaultValues(place)
+                    return place
+                }
+                return null
             }
 
         })

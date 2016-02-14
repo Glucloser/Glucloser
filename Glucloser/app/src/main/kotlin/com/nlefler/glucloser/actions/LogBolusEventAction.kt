@@ -135,7 +135,7 @@ class LogBolusEventAction : Parcelable {
 
                             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Meal? {
                                 val liveMeal = dependsOn.first() as Meal?
-                                val livePlace = dependsOn.last() as Place?
+                                val livePlace = dependsOn[1] as Place?
                                 val liveSugar = dependsOn[2] as BloodSugar?
                                 val liveBolusPattern = dependsOn[3] as BolusPattern?
                                 val liveFoods = dependsOn.slice(IntRange(4, dependsOn.size - 1)) as List<Food?>
@@ -158,8 +158,15 @@ class LogBolusEventAction : Parcelable {
                         if (task.isFaulted || task.result == null || task.result !is Meal) {
                             return@mealUpload
                         }
-
-                        //                        parseUploader.uploadBolusEvent(task.result as Meal)
+                        val jsonAdapter = mealFactory.jsonAdapter()
+                        try {
+                            val meal = task.result
+                            val json = jsonAdapter.toJson(meal)
+                            serverSync.saveModel(Meal.ModelName, json)
+                        }
+                        catch (e: Exception) {
+                            (fun (): Unit {})()
+                        }
                     }
 
                 }
