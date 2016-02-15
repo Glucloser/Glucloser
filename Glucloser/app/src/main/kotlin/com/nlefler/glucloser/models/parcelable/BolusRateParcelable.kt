@@ -38,7 +38,7 @@ public class BolusRateParcelable(): Parcelable {
     }
 
     companion object {
-        public val CREATOR = object: Parcelable.Creator<BolusRateParcelable> {
+        @JvmField val CREATOR = object: Parcelable.Creator<BolusRateParcelable> {
             override fun createFromParcel(parcel: Parcel): BolusRateParcelable {
                 return BolusRateParcelable(parcel)
             }

@@ -22,7 +22,7 @@ public class MealParcelable() : Parcelable, BolusEventParcelable {
     override var insulin: Float = 0f
     override var bloodSugarParcelable: BloodSugarParcelable? = null
     override var isCorrection: Boolean = false
-    override var foodParcelables: List<FoodParcelable> = ArrayList<FoodParcelable>()
+    override var foodParcelables: MutableList<FoodParcelable> = ArrayList<FoodParcelable>()
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {
@@ -36,8 +36,8 @@ public class MealParcelable() : Parcelable, BolusEventParcelable {
         if (time > 0) {
             date = Date(time)
         }
-        bolusPatternParcelable = parcel.readParcelable<BolusPatternParcelable>(BolusPattern::class.java.classLoader)
-        parcel.readList(this.foodParcelables, FoodParcelable::class.java.classLoader)
+        bolusPatternParcelable = parcel.readParcelable<BolusPatternParcelable>(BolusPatternParcelable::class.java.classLoader)
+        parcel.readTypedList(this.foodParcelables, FoodParcelable.CREATOR)
     }
 
     override fun describeContents(): Int {
@@ -52,12 +52,13 @@ public class MealParcelable() : Parcelable, BolusEventParcelable {
         dest.writeInt(if (isCorrection) 1 else 0)
         dest.writeParcelable(bloodSugarParcelable, flags)
         dest.writeLong(date.time)
+        dest.writeParcelable(bolusPatternParcelable, flags)
         dest.writeTypedList(this.foodParcelables)
     }
 
     companion object {
 
-        public val CREATOR: Parcelable.Creator<MealParcelable> = object : Parcelable.Creator<MealParcelable> {
+        @JvmField val CREATOR: Parcelable.Creator<MealParcelable> = object : Parcelable.Creator<MealParcelable> {
             override fun createFromParcel(parcel: Parcel): MealParcelable {
                 return MealParcelable(parcel)
             }

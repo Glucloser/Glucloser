@@ -15,5 +15,5 @@ public interface BolusEventParcelable: Parcelable {
     var insulin: Float
     var bloodSugarParcelable: BloodSugarParcelable?
     var isCorrection: Boolean
-    var foodParcelables: List<FoodParcelable>
+    var foodParcelables: MutableList<FoodParcelable>
 }

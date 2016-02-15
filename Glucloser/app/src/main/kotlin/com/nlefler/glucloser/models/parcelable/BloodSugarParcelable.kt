@@ -33,7 +33,7 @@ public class BloodSugarParcelable() : Parcelable {
     }
 
     companion object {
-        public val CREATOR: Parcelable.Creator<BloodSugarParcelable> = object : Parcelable.Creator<BloodSugarParcelable> {
+        @JvmField val CREATOR: Parcelable.Creator<BloodSugarParcelable> = object : Parcelable.Creator<BloodSugarParcelable> {
             override fun createFromParcel(`in`: Parcel): BloodSugarParcelable {
                 return BloodSugarParcelable(`in`)
             }

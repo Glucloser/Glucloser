@@ -28,7 +28,8 @@ import javax.inject.Inject
 public class MealFactory @Inject constructor(val realmManager: RealmManager,
                                              val bolusPatternFactory: BolusPatternFactory,
                                              val bloodSugarFactory: BloodSugarFactory,
-                                             val placeFactory: PlaceFactory) {
+                                             val placeFactory: PlaceFactory,
+                                             val foodFactory: FoodFactory) {
     private val LOG_TAG = "MealFactory"
 
     public fun meal(): Task<Meal?> {
@@ -64,6 +65,9 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
         parcelable.date = meal.date
         if (meal.bolusPattern != null) {
             parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(meal.bolusPattern!!)
+        }
+        meal.foods.forEach { food ->
+            parcelable.foodParcelables.add(foodFactory.parcelableFromFood(food))
         }
 
         return parcelable

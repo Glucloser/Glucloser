@@ -30,7 +30,7 @@ public class BolusPatternParcelable(): Parcelable {
     }
 
     companion object {
-        public val CREATOR = object: Parcelable.Creator<BolusPatternParcelable> {
+        @JvmField val CREATOR = object: Parcelable.Creator<BolusPatternParcelable> {
             override fun createFromParcel(parcelIn: Parcel): BolusPatternParcelable {
                 return BolusPatternParcelable(parcelIn)
             }

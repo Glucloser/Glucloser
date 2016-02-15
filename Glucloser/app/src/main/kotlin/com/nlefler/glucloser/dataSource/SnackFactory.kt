@@ -19,7 +19,10 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 4/25/15.
  */
-public class SnackFactory @Inject constructor(val realmManager: RealmManager, val bloodSugarFactory: BloodSugarFactory) {
+public class SnackFactory @Inject constructor(val realmManager: RealmManager,
+                                              val bloodSugarFactory: BloodSugarFactory,
+                                              val bolusPatternFactory: BolusPatternFactory,
+                                              val foodFactory: FoodFactory) {
     private val LOG_TAG = "SnackFactory"
 
     public fun snack(): Task<Snack?> {
@@ -40,6 +43,12 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
             parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(snack.beforeSugar!!)
         }
         parcelable.date = snack.date
+        if (snack.bolusPattern != null) {
+            parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(snack.bolusPattern!!)
+        }
+        snack.foods.forEach {food ->
+            parcelable.foodParcelables.add(foodFactory.parcelableFromFood(food))
+        }
 
         return parcelable
     }

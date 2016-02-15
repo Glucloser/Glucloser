@@ -20,7 +20,7 @@ import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.models.Food
 import java.util.*
 
-public class HistoricalBolusDetailActivityFragment : Fragment() {
+class HistoricalBolusDetailActivityFragment : Fragment() {
     var foodFactory: FoodFactory? = null
 
     private var placeName: String? = null
@@ -50,6 +50,8 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
             foodFactory?.foodFromParcelable(foodPar)?.continueWith { task ->
                 if (!task.isFaulted && task.result != null) {
                     this.foods.add(task.result!!)
+                    this.foodListAdapter?.setFoods(this.foods)
+                    this.foodListAdapter?.notifyDataSetChanged()
                 }
             }
         }
@@ -87,6 +89,9 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
 
         this.foodListAdapter = FoodListRecyclerAdapter(this.foods)
         this.foodListView?.adapter = this.foodListAdapter
+        this.foodListAdapter?.setFoods(this.foods)
+        this.foodListAdapter?.notifyDataSetChanged()
+
     }
 
     private fun getPlaceNameFromBundle(vararg bundles: Bundle?): String {

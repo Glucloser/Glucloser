@@ -33,7 +33,7 @@ public class PlaceParcelable() : Parcelable {
     }
 
     companion object {
-        public val CREATOR: Parcelable.Creator<PlaceParcelable> = object : Parcelable.Creator<PlaceParcelable> {
+        @JvmField val CREATOR: Parcelable.Creator<PlaceParcelable> = object : Parcelable.Creator<PlaceParcelable> {
             override fun createFromParcel(parcel: Parcel): PlaceParcelable {
                 return PlaceParcelable(parcel)
             }
