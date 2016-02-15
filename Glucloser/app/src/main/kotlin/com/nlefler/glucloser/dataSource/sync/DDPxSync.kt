@@ -3,7 +3,9 @@ package com.nlefler.glucloser.dataSource.sync
 import android.util.Log
 import bolts.Task
 import com.nlefler.ddpx.DDPx
+import com.nlefler.glucloser.dataSource.MealFactory
 import com.nlefler.glucloser.dataSource.PlaceFactory
+import com.nlefler.glucloser.dataSource.SnackFactory
 import com.nlefler.glucloser.models.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -13,7 +15,8 @@ import javax.inject.Singleton
  * Created by nathan on 1/31/16.
  */
 @Singleton
-class DDPxSync @Inject constructor(val ddpx: DDPx, val placeFactory: PlaceFactory) {
+class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactory,
+                                   val mealFactory: MealFactory, val placeFactory: PlaceFactory) {
 
     init {
         ddpx.connect().continueWith { task ->
@@ -25,8 +28,32 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val placeFactory: PlaceFactor
         }
     }
 
-    fun saveModel(collection: String, json: String): Task<Unit> {
-        return ddpx.method("addModel", arrayOf(collection, json), null).continueWithTask { task ->
+    fun saveModel(model: Syncable): Task<Unit> {
+        var methodName = "noop";
+        var json = ""
+        try {
+            when (model) {
+                is Snack -> {
+                    methodName = "addSnack"
+                    json = snackFactory.jsonAdapter().toJson(model)
+                }
+                is Meal -> {
+                    methodName = "addMeal"
+                    json = mealFactory.jsonAdapter().toJson(model)
+                }
+                is Place -> {
+                    methodName = "addPlace"
+                    json = placeFactory.jsonAdapter().toJson(model)
+                }
+                else -> Unit
+            }
+        }
+        catch (e: Exception) {
+            Log.e(LOG_TAG, e.message)
+            return Task.forError(e)
+        }
+
+        return ddpx.method(methodName, arrayOf(json), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
                 return@continueWithTask Task.forError<Unit>(error)

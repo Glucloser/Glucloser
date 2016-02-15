@@ -58,8 +58,10 @@ public class GlucloserApplication : Application() {
         startupAction.run()
 
         val ddpx = DDPx(getString(R.string.ddpx_server))
+        val snackFactory = dataFactory.snackFactory()
+        val mealFactory = dataFactory.mealFactory()
         val placeFactory = dataFactory.placeFactory()
-        ddpxSync = DDPxSync(ddpx, placeFactory)
+        ddpxSync = DDPxSync(ddpx, snackFactory, mealFactory, placeFactory)
     }
 
     private fun subscribeToPush() {

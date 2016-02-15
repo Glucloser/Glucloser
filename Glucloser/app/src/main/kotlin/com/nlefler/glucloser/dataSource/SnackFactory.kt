@@ -105,7 +105,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager, va
 
                 val query = realm.where<Snack>(Snack::class.java)
 
-                query?.equalTo(Snack.IdFieldName, id)
+                query?.equalTo(Snack.PrimaryKeyName, id)
                 var snack: Snack? = query?.findFirst()
 
                 if (snack == null && create) {

@@ -155,18 +155,15 @@ class LogBolusEventAction : Parcelable {
                         })
 
                     }).continueWith mealUpload@ { task ->
-                        if (task.isFaulted || task.result == null || task.result !is Meal) {
+                        val meal = task.result
+                        if (task.isFaulted || meal == null) {
                             return@mealUpload
                         }
-                        val jsonAdapter = mealFactory.jsonAdapter()
-                        try {
-                            val meal = task.result
-                            val json = jsonAdapter.toJson(meal)
-                            serverSync.saveModel(Meal.ModelName, json)
+                        val place = meal.place
+                        if (place != null) {
+                            serverSync.saveModel(place)
                         }
-                        catch (e: Exception) {
-                            (fun (): Unit {})()
-                        }
+                        serverSync.saveModel(meal)
                     }
 
                 }
@@ -203,19 +200,12 @@ class LogBolusEventAction : Parcelable {
                                     }
                                 })
                             }).continueWith { task ->
-                        if (task.isFaulted || task.result == null || task.result !is Snack?) {
+                        val snack = task.result
+                        if (task.isFaulted || snack == null) {
                             return@continueWith
                         }
 
-                        val jsonAdapter = snackFactory.jsonAdapter()
-                        try {
-                            val snack = task.result
-                            val json = jsonAdapter.toJson(snack)
-                            serverSync.saveModel(Snack.ModelName, json)
-                        }
-                        catch (e: Exception) {
-                            (fun (): Unit {})()
-                        }
+                        serverSync.saveModel(snack)
                     }
                 }
                 else -> {

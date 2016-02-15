@@ -1,9 +1,6 @@
 package com.nlefler.glucloser.dataSource.jsonAdapter
 
-import com.nlefler.glucloser.models.BloodSugar
-import com.nlefler.glucloser.models.BolusPattern
-import com.nlefler.glucloser.models.Food
-import com.nlefler.glucloser.models.Meal
+import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.models.json.MealJson
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
@@ -22,6 +19,11 @@ public class MealJsonAdapter(val realm: Realm) {
     @FromJson fun fromJson(json: MealJson): Meal {
         val meal = realm.createObject(Meal::class.java)
 
+        var place: Place? = null
+        if (json.placeId != null) {
+            val query = realm.where<Place>(Place::class.java).equalTo(Place.PrimaryKeyName, json.placeId)
+            place = query.findFirst()
+        }
         realm.executeTransaction {
             meal.primaryId = json.primaryId
             meal.date = json.date
@@ -33,7 +35,7 @@ public class MealJsonAdapter(val realm: Realm) {
             json.foods.forEach { foodJson ->
                 meal.foods.add(foodAdapter.fromJson(foodJson))
             }
-            meal.place = if (json.place != null) placeAdapter.fromJson(json.place) else null
+            meal.place = place
         }
 
         return meal
@@ -49,7 +51,7 @@ public class MealJsonAdapter(val realm: Realm) {
                 beforeSugar = if (meal.beforeSugar != null) sugarAdapter.toJson(meal.beforeSugar!!) else null,
                 isCorrection = meal.isCorrection,
                 foods = meal.foods.map { food -> foodAdapter.toJson(food) },
-                place = if (meal.place != null) placeAdapter.toJson(meal.place!!) else null
+                placeId = if (meal.place != null) meal.place?.primaryId else null
         )
         return json
     }

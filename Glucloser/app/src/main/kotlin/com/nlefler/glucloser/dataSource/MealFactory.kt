@@ -134,7 +134,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
 
                 val query = realm.where<Meal>(Meal::class.java)
 
-                query?.equalTo(Meal.IdFieldName, id)
+                query?.equalTo(Meal.PrimaryKeyName, id)
                 var meal = query?.findFirst()
 
                 if (meal == null && create) {

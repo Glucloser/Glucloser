@@ -18,6 +18,6 @@ public data class MealJson(
         val beforeSugar: BloodSugarJson?,
         val isCorrection: Boolean,
         val foods: List<FoodJson>,
-        val place: PlaceJson?
+        val placeId: String?
 ) {
 }

@@ -16,14 +16,14 @@ public open class Place(
         public open var foursquareId: String = UUID.randomUUID().toString(),
         public open var latitude: Float = 0f,
         public open var longitude: Float = 0f
-    ) : RealmObject() {
+    ) : RealmObject(), Syncable {
 
     companion object {
         @Ignore
-        public val ModelName: String = "places"
+        val ModelName: String = "places"
 
         @Ignore
-        public val IdFieldName: String = "primaryId"
+        val PrimaryKeyName: String = "primaryId"
 
         @Ignore
         public val NameFieldName: String = "name"

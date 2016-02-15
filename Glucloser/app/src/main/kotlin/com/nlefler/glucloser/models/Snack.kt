@@ -20,31 +20,16 @@ public open class Snack(
         override var beforeSugar: BloodSugar? = null,
         override var isCorrection: Boolean = false,
         override var foods: RealmList<Food> = RealmList()
-    ) : RealmObject(), BolusEvent {
+    ) : RealmObject(), BolusEvent, Syncable {
 
     companion object {
         @Ignore
-        public var ModelName: String = "snacks"
+        val ModelName = "snacks"
 
         @Ignore
-        public var IdFieldName: String = "primaryId"
+        val PrimaryKeyName = "primaryId"
 
         @Ignore
-        public var DateFieldName: String = "date"
-
-        @Ignore
-        public var CarbsFieldName: String = "carbs"
-
-        @Ignore
-        public var InsulinFieldName: String = "insulin"
-
-        @Ignore
-        public var BeforeSugarFieldName: String = "beforeSugar"
-
-        @Ignore
-        public var CorrectionFieldName: String = "correction"
-
-        @Ignore
-        public var FoodListFieldName: String = "foods"
+        val DateFieldName = "date"
     }
 }
