@@ -79,7 +79,7 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
     public fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): Task<BolusPattern?> {
         val patternTask = TaskCompletionSource<BolusPattern?>()
 
-        val id = parcelable.id ?: UUID.randomUUID().toString()
+        val id = parcelable.id
         val rates = ArrayList<BolusRate>()
         val ratePromises = ArrayList<Task<BolusRate?>>()
 

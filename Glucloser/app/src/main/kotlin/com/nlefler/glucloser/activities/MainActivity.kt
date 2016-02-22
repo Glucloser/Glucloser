@@ -24,8 +24,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.components.datafactory.DataFactoryModule
+import com.nlefler.glucloser.dataSource.BolusEventFactory
 import com.nlefler.glucloser.dataSource.MealHistoryRecyclerAdapter
 import com.nlefler.glucloser.dataSource.RealmManager
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
@@ -38,8 +37,13 @@ import io.realm.*
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
+import javax.inject.Inject
 
-public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
+class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
+    lateinit var foursquareAuthManager: FoursquareAuthManager
+    @Inject set
+    lateinit var bolusEventFactory: BolusEventFactory
+    @Inject set
 
     private var navBarItems: Array<String>? = null
     private var navDrawerLayout: DrawerLayout? = null
@@ -49,8 +53,12 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        dataFactory?.inject(this)
+
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().add(R.id.container, HistoryListFragment(), HistoryFragmentId).commit()
+            supportFragmentManager.beginTransaction().add(R.id.container, HistoryListFragment(bolusEventFactory), HistoryFragmentId).commit()
         }
 
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName
@@ -118,7 +126,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
                 startActivity(intent)
             }
             2 -> {
-                FoursquareAuthManager.SharedManager().startAuthRequest(this)
+                foursquareAuthManager.startAuthRequest(this)
             }
         }
     }
@@ -127,10 +135,10 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             FoursquareAuthManager.FOURSQUARE_CONNECT_INTENT_CODE -> {
-                FoursquareAuthManager.SharedManager().gotAuthResponse(this, resultCode, data ?: Intent())
+                foursquareAuthManager.gotAuthResponse(this, resultCode, data ?: Intent())
             }
             FoursquareAuthManager.FOURSQUARE_TOKEN_EXCHG_INTENT_CODE -> {
-                FoursquareAuthManager.SharedManager().gotTokenExchangeResponse(this, resultCode, data ?: Intent())
+                foursquareAuthManager.gotTokenExchangeResponse(this, resultCode, data ?: Intent())
             }
             LogBolusEventActivityIntentCode -> {
                 (getSupportFragmentManager().findFragmentByTag(HistoryFragmentId) as HistoryListFragment).updateMealHistory()
@@ -192,7 +200,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
 //        }
     }
 
-    public class HistoryListFragment : Fragment() {
+    class HistoryListFragment @Inject constructor(val bolusEventFactory: BolusEventFactory): Fragment() {
 
         var realmManager: RealmManager? = null
 
@@ -203,8 +211,8 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            val dataFactory = GlucloserApplication.SharedApplication().dataFactory
-            realmManager = dataFactory.realmFactory()
+            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+            realmManager = dataFactory?.realmFactory()
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -215,7 +223,7 @@ public class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener
             this.mealHistoryLayoutManager = LinearLayoutManager(getActivity())
             this.mealHistoryListView!!.setLayoutManager(this.mealHistoryLayoutManager)
 
-            this.mealHistoryAdapter = MealHistoryRecyclerAdapter(getActivity(), ArrayList<Meal>())
+            this.mealHistoryAdapter = MealHistoryRecyclerAdapter(activity, ArrayList<Meal>(), bolusEventFactory)
             this.mealHistoryListView!!.setAdapter(this.mealHistoryAdapter)
             this.mealHistoryListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
 

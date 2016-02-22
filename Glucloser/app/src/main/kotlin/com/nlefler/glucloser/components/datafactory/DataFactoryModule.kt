@@ -17,14 +17,10 @@ import javax.inject.Singleton
  * Created by nathan on 10/20/15.
  */
 @Module
-public class DataFactoryModule() {
+class DataFactoryModule() {
 
     @Provides fun realmFactory(): RealmManager {
         return RealmManager()
-    }
-
-    @Singleton @Provides fun ddpx(): DDPx {
-        return GlucloserApplication.SharedApplication().ddpx
     }
 
 }

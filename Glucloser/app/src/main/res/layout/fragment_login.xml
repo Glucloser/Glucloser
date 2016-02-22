@@ -9,28 +9,19 @@
     tools:context="com.nlefler.glucloser.ui.LoginActivityFragment">
 
     <EditText
-        android:id="@+id/login_username_value"
+        android:id="@+id/login_email_value"
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:hint="@string/login_username_placeholder" />
-
-    <EditText
-        android:id="@+id/login_password_value"
-
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/login_username_value"
-        android:inputType="textPassword"
-        android:hint="@string/login_password_placeholder" />
+        android:hint="@string/login_email_placeholder" />
 
     <Button
         android:id="@+id/login_sign_in_button"
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/login_password_value"
+        android:layout_below="@+id/login_email_value"
         android:text="@string/login_signin_button_text" />
 
 </RelativeLayout>

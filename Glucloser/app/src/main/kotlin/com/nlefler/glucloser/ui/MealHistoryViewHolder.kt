@@ -15,9 +15,8 @@ import javax.inject.Inject
 /**
  * Created by nathan on 10/27/15.
  */
-public class MealHistoryViewHolder(itemView: View, activity: Activity) : RecyclerView.ViewHolder(itemView) {
-    lateinit var bolusEventFactory: BolusEventFactory
-        @Inject set
+class MealHistoryViewHolder @Inject constructor(itemView: View, activity: Activity, bolusEventFactory: BolusEventFactory)
+    : RecyclerView.ViewHolder(itemView) {
 
     var bolusEvent: BolusEvent? = null
     var placeName: TextView

@@ -4,46 +4,39 @@ import android.app.Application
 import android.content.Context
 import android.os.Debug
 import android.support.multidex.MultiDex
-import android.util.Log
 import com.nlefler.ddpx.DDPx
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.components.datafactory.DataFactoryModule
+import com.nlefler.glucloser.components.DaggerRootComponent
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.foursquare.FoursquareAuthManager
+import com.nlefler.glucloser.user.UserManager
+import dagger.Module
+import dagger.Provides
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import javax.inject.Singleton
 
 /**
  * Created by Nathan Lefler on 12/12/14.
  */
-public class GlucloserApplication : Application() {
+@Module
+class GlucloserApplication : Application() {
     lateinit var ddpx: DDPx
 
-    val dataFactory = DaggerDataFactoryComponent.builder()
-            .dataFactoryModule(DataFactoryModule())
-            .build()
+    val rootComponent = DaggerRootComponent.builder().glucloserApplication(this).build()
 
     private var ddpxSync: DDPxSync? = null
+    private var foursquareAuthManager: FoursquareAuthManager? = null
+    private var userManager: UserManager? = null
 
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
 
         MultiDex.install(this)
 
-        _sharedApplication = this
-        ddpx = DDPx(GlucloserApplication.SharedApplication().getString(R.string.ddpx_server))
-    }
+        sharedApplication = this
 
-    override fun onCreate() {
-        super.onCreate()
-//        LeakCanary.install(this);
-        _sharedApplication = this
-
-        if (!Debug.isDebuggerConnected()) {
-            // Enable crash reporting
-        }
-
-        val realmConfig = RealmConfiguration.Builder(GlucloserApplication.SharedApplication())
+        val realmConfig = RealmConfiguration.Builder(this)
                 .name("myrealm.realm")
                 .migration(GlucloserRealmMigration())
                 .schemaVersion(4)
@@ -51,30 +44,57 @@ public class GlucloserApplication : Application() {
         Realm.setDefaultConfiguration(realmConfig)
 
 
+        ddpx = DDPx(getString(R.string.ddpx_server))
+        foursquareAuthManager = rootComponent.authAndIdentityComponent().foursquareAuthManager()
+
+        ddpx = DDPx(getString(R.string.ddpx_server))
+        ddpxSync = rootComponent.syncComponent().serverSync()
+
+        userManager = UserManager(ddpxSync!!, this)
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+//        LeakCanary.install(this);
+
+        if (!Debug.isDebuggerConnected()) {
+            // Enable crash reporting
+        }
 
         this.subscribeToPush()
 
-        var startupAction = dataFactory.startupAction()
-        startupAction.run()
-
-        val ddpx = DDPx(getString(R.string.ddpx_server))
-        val snackFactory = dataFactory.snackFactory()
-        val mealFactory = dataFactory.mealFactory()
-        val placeFactory = dataFactory.placeFactory()
-        ddpxSync = DDPxSync(ddpx, snackFactory, mealFactory, placeFactory)
     }
 
     private fun subscribeToPush() {
     }
 
+    // ContextComponent
+    @Provides
+    fun appContext(): Context {
+        return this
+    }
+
+    // DataFactoryComponent
+//    @Provides @Singleton
+//    fun serverSync(): DDPxSync {
+//        return ddpxSync!!
+//    }
+
+    // AuthAndIdentityComponent
+    @Provides
+    fun userManager(): UserManager {
+        return userManager!!
+    }
+
+    @Provides
+    fun ddpx(): DDPx {
+        return ddpx
+    }
+
     companion object {
         private val LOG_TAG = "GlucloserApplication"
 
-        private var _sharedApplication: GlucloserApplication? = null
-
-        @Synchronized
-        public fun SharedApplication(): GlucloserApplication {
-            return _sharedApplication!!
-        }
+        var sharedApplication: GlucloserApplication? = null
+        private set
     }
 }

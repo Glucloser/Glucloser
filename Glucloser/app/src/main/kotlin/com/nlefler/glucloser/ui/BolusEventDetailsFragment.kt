@@ -17,8 +17,6 @@ import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
@@ -60,9 +58,9 @@ public class BolusEventDetailsFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
-        bolusPatternFactory = dataFactory.bolusPatternFactory()
-        foodFactory = dataFactory.foodFactory()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        bolusPatternFactory = dataFactory?.bolusPatternFactory()
+        foodFactory = dataFactory?.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())

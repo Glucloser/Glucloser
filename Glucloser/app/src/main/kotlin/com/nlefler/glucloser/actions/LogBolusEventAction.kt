@@ -138,7 +138,7 @@ class LogBolusEventAction : Parcelable {
                                 val livePlace = dependsOn[1] as Place?
                                 val liveSugar = dependsOn[2] as BloodSugar?
                                 val liveBolusPattern = dependsOn[3] as BolusPattern?
-                                val liveFoods = dependsOn.slice(IntRange(4, dependsOn.size - 1)) as List<Food?>
+                                val liveFoods = dependsOn.slice(IntRange(4, dependsOn.size - 1)) as List<Food>
 
                                 liveMeal?.foods?.addAll(liveFoods)
 

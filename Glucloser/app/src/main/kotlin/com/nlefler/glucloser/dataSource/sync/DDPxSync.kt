@@ -28,6 +28,26 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
         }
     }
 
+    fun createUser(email: String, uuid: String): Task<Unit> {
+        return ddpx.method("createAppUser", arrayOf(email, email, uuid), null).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<Unit>(error)
+            }
+            return@continueWithTask Task.forResult(Unit)
+        }
+    }
+
+    fun loginUser(username: String, uuid: String): Task<Unit> {
+        return ddpx.method("loginAppUser", arrayOf(username, uuid), null).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<Unit>(error)
+            }
+            return@continueWithTask Task.forResult(Unit)
+        }
+    }
+
     fun saveModel(model: Syncable): Task<Unit> {
         var methodName = "noop";
         var json = ""

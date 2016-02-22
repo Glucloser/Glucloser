@@ -31,7 +31,7 @@ import rx.functions.Action1
 /**
  * Created by Nathan Lefler on 12/12/14.
  */
-public class FoursquarePlaceHelper(private val context: Context) {
+class FoursquarePlaceHelper(private val context: Context, val foursquareAuthManager: FoursquareAuthManager) {
     private val restAdapter: RestAdapter
     private val foursquareSearchCategories: MutableList<String>
     private val locationProvider: ReactiveLocationProvider
@@ -92,7 +92,7 @@ public class FoursquarePlaceHelper(private val context: Context) {
         }
 
         val venueSearch = restAdapter.create<NLFoursquareVenueSearch>(NLFoursquareVenueSearch::class.java)
-        venueSearch.search(parametersBuilder.buildWithClientParameters(FoursquareAuthManager.SharedManager().getClientAuthParameters(this.context)), object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
+        venueSearch.search(parametersBuilder.buildWithClientParameters(foursquareAuthManager.getClientAuthParameters(this.context)), object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
             override fun success(foursquareResponse: NLFoursquareResponse<NLFoursquareVenueSearchResponse>, response: Response) {
                 subscriber.onNext(foursquareResponse.response.venues)
                 subscriber.onCompleted()

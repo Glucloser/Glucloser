@@ -8,8 +8,6 @@ import android.view.MenuItem
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.actions.LogBolusEventAction
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.models.*
 import com.nlefler.glucloser.models.parcelable.*
@@ -17,7 +15,7 @@ import com.nlefler.glucloser.ui.BolusEventDetailsFragment
 import com.nlefler.glucloser.ui.PlaceSelectionFragment
 import javax.inject.Inject
 
-public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
+class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
 
     lateinit var placeFactory: PlaceFactory
         @Inject set
@@ -28,9 +26,9 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
 
-        val dataFactory = GlucloserApplication.SharedApplication().dataFactory
-        dataFactory.inject(this)
-        dataFactory.inject(logBolusEventAction)
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        dataFactory?.inject(this)
+        dataFactory?.inject(logBolusEventAction)
 
         val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras()) ?: return
         setupFragmentForEventType(bolusEventType, savedInstanceState)
@@ -65,8 +63,8 @@ public class LogBolusEventActivity : AppCompatActivity(), PlaceSelectionDelegate
                     getSupportFragmentManager().beginTransaction().add(R.id.log_bolus_event_activity_container, fragment).commit()
                 }
 
-                val intent = getIntent()
-                val extras = intent.getExtras()
+                val intent = intent
+                val extras = intent.extras
                 if (extras != null) {
                     val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
                     if (placeParcelable != null) {
