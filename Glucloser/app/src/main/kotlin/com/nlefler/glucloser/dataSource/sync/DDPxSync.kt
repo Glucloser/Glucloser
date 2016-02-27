@@ -28,23 +28,33 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
         }
     }
 
-    fun createUser(email: String, uuid: String): Task<Unit> {
+    fun createUser(email: String, uuid: String): Task<String> {
         return ddpx.method("createAppUser", arrayOf(email, email, uuid), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<Unit>(error)
+                return@continueWithTask Task.forError<String>(error)
             }
-            return@continueWithTask Task.forResult(Unit)
+            return@continueWithTask Task.forResult(task.result.result)
         }
     }
 
-    fun loginUser(username: String, uuid: String): Task<Unit> {
+    fun loginUser(username: String, uuid: String): Task<String> {
         return ddpx.method("loginAppUser", arrayOf(username, uuid), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<Unit>(error)
+                return@continueWithTask Task.forError<String>(error)
             }
-            return@continueWithTask Task.forResult(Unit)
+            return@continueWithTask Task.forResult(task.result.result)
+        }
+    }
+
+    fun savePushToken(userToken: String, token: String): Task<String> {
+        return ddpx.method("savePushToken", arrayOf(userToken, token), null).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<String>(error)
+            }
+            return@continueWithTask Task.forResult(task.result.result)
         }
     }
 

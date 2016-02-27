@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button
 import android.widget.EditText;
+import com.nlefler.glucloser.GlucloserApplication
 
 import com.nlefler.glucloser.R;
 import com.nlefler.glucloser.user.UserManager
@@ -22,6 +23,8 @@ public class LoginActivityFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        GlucloserApplication.sharedApplication?.rootComponent?.inject(this)
 
         var rootView = inflater?.inflate(R.layout.fragment_login, container, false);
         emailField = rootView?.findViewById(R.id.login_email_value) as EditText?

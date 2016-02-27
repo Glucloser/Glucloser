@@ -26,7 +26,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
         dataFactory?.inject(logBolusEventAction)
 

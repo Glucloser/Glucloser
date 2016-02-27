@@ -58,7 +58,7 @@ public class BolusEventDetailsFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         bolusPatternFactory = dataFactory?.bolusPatternFactory()
         foodFactory = dataFactory?.foodFactory()
 

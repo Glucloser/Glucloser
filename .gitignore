@@ -44,3 +44,5 @@ Podfile.lock
 # Keys
 Glucloser/app/src/main/res/values/keys.xml
 *.iml
+
+google-services.json

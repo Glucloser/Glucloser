@@ -54,7 +54,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
         this.setHasOptionsMenu(true)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
         dataFactory?.inject(logMealAction)
 

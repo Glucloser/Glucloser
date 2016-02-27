@@ -2,6 +2,7 @@ package com.nlefler.glucloser
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Debug
 import android.support.multidex.MultiDex
 import com.nlefler.ddpx.DDPx
@@ -9,6 +10,7 @@ import com.nlefler.glucloser.components.DaggerRootComponent
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.foursquare.FoursquareAuthManager
+import com.nlefler.glucloser.push.PushRegistrationIntentService
 import com.nlefler.glucloser.user.UserManager
 import dagger.Module
 import dagger.Provides
@@ -45,10 +47,10 @@ class GlucloserApplication : Application() {
 
 
         ddpx = DDPx(getString(R.string.ddpx_server))
-        foursquareAuthManager = rootComponent.authAndIdentityComponent().foursquareAuthManager()
+        foursquareAuthManager = rootComponent.foursquareAuthManager()
 
         ddpx = DDPx(getString(R.string.ddpx_server))
-        ddpxSync = rootComponent.syncComponent().serverSync()
+        ddpxSync = rootComponent.serverSync()
 
         userManager = UserManager(ddpxSync!!, this)
     }
@@ -66,6 +68,7 @@ class GlucloserApplication : Application() {
     }
 
     private fun subscribeToPush() {
+        startService(Intent(this, PushRegistrationIntentService::class.java))
     }
 
     // ContextComponent

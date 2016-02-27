@@ -84,16 +84,10 @@
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
-
-        <receiver
-            android:name=".push.PushReceiver"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.parse.push.intent.RECEIVE" />
-                <action android:name="com.parse.push.intent.DELETE" />
-                <action android:name="com.parse.push.intent.OPEN" />
-            </intent-filter>
-        </receiver>
+        <service
+            android:name="com.nlefler.glucloser.push.PushRegistrationIntentService"
+            android:exported="false">
+        </service>
 
         <activity
             android:name=".activities.HistoricalBolusDetailActivity"

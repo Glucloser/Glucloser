@@ -5,6 +5,7 @@ import android.content.Intent
 import com.google.android.gms.gcm.GcmPubSub
 import com.google.android.gms.gcm.GoogleCloudMessaging
 import com.google.android.gms.iid.InstanceID
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
 
 /**
@@ -14,10 +15,12 @@ class PushRegistrationIntentService: IntentService("com.nlefler.glucloser.pushre
 
     override fun onHandleIntent(intent: Intent) {
         val instanceId = InstanceID.getInstance(this)
-        val token = instanceId.getToken(getString(R.string.gcm_sender_id), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null)
+        val token = instanceId.getToken(getString(R.string.gcm_defaultSenderId),
+                GoogleCloudMessaging.INSTANCE_ID_SCOPE, null)
 
-        val pubSub = GcmPubSub.getInstance(this)
-        pubSub.subscribe(token, PushChannels.FoursquareCheckin.name, null)
+        // TODO(nl) Save token to user on server
+        val userManager = GlucloserApplication.sharedApplication?.rootComponent?.userManager()
+        userManager?.savePushToken(token)
     }
 
 }

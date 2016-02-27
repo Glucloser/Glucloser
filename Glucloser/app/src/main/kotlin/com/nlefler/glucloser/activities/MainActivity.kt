@@ -54,11 +54,13 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().add(R.id.container, HistoryListFragment(bolusEventFactory), HistoryFragmentId).commit()
+            val fragment = HistoryListFragment()
+            dataFactory?.inject(fragment)
+            supportFragmentManager.beginTransaction().add(R.id.container, fragment, HistoryFragmentId).commit()
         }
 
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName
@@ -200,7 +202,9 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
 //        }
     }
 
-    class HistoryListFragment @Inject constructor(val bolusEventFactory: BolusEventFactory): Fragment() {
+    class HistoryListFragment constructor(): Fragment() {
+        lateinit var bolusEventFactory: BolusEventFactory
+        @Inject set
 
         var realmManager: RealmManager? = null
 
@@ -211,8 +215,9 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
             realmManager = dataFactory?.realmFactory()
+            bolusEventFactory = dataFactory?.bolusEventFactory()!!
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {

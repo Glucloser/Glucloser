@@ -28,9 +28,8 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PlaceSelectionViewHolder {
         val view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.place_selection_list_item, viewGroup, false)
 
-        val viewHolder = PlaceSelectionViewHolder(view, delegate)
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
-        dataFactory?.inject(viewHolder)
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        val viewHolder = PlaceSelectionViewHolder(view, delegate, dataFactory!!.placeFactory())
 
         return viewHolder
     }

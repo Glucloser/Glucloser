@@ -38,7 +38,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent?.dataFactoryComponent()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         foodFactory = dataFactory?.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)

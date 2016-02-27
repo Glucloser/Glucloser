@@ -16,9 +16,8 @@ import javax.inject.Inject
 /**
  * Created by nathan on 10/27/15.
  */
-public class PlaceSelectionViewHolder(itemView: View, delegate: PlaceSelectionDelegate?) : RecyclerView.ViewHolder(itemView) {
-    lateinit var placeFactory: PlaceFactory
-        @Inject set
+class PlaceSelectionViewHolder @Inject constructor(itemView: View, val delegate: PlaceSelectionDelegate?,
+                                                   val placeFactory: PlaceFactory) : RecyclerView.ViewHolder(itemView) {
 
     internal var venue: NLFoursquareVenue
     internal var placeName: TextView
