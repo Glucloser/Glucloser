@@ -50,7 +50,10 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
                     // TODO(nl) Handle error
                     return@continueWith
                 }
-                updateIdentity(identity.uuids, task.result)
+                val profile = task.result
+                if (profile != null) {
+                    updateIdentity(identity.uuids, profile)
+                }
             }
         }
     }
@@ -61,7 +64,23 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
                 // TODO(nl) Handle error
                 return@continueWith
             }
-            updateIdentity(identity.uuids, task.result)
+            val profile = task.result
+            if (profile != null) {
+                updateIdentity(identity.uuids, profile)
+            }
+        }
+    }
+
+    fun saveFoursquareId(fsqId: String) {
+        ddpxSync.saveFoursquareId(identity.profile, fsqId).continueWith { task ->
+            if (task.isFaulted) {
+                // TODO(nl) Handle error
+                return@continueWith
+            }
+            val profile = task.result
+            if (profile != null) {
+                updateIdentity(identity.uuids, profile)
+            }
         }
     }
 
@@ -73,7 +92,10 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
                 // TODO(nl) Message user
                 return@continueWith;
             }
-            updateIdentity(listOf(uuid), task.result)
+            val profile = task.result
+            if (profile != null) {
+                updateIdentity(identity.uuids, profile)
+            }
         }
     }
 

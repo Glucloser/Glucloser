@@ -18,6 +18,7 @@ import com.foursquare.android.nativeoauth.model.AccessTokenResponse
 import com.foursquare.android.nativeoauth.model.AuthCodeResponse
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
+import com.nlefler.glucloser.user.UserManager
 import com.nlefler.nlfoursquare.Common.NLFoursquareEndpoint
 import com.nlefler.nlfoursquare.Model.FoursquareResponse.NLFoursquareResponse
 import com.nlefler.nlfoursquare.Model.NLFoursquareClientParameters
@@ -35,7 +36,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/28/14.
  */
-class FoursquareAuthManager @Inject constructor(val ctx: Context) {
+class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManager: UserManager) {
 
     private val crypto: Crypto
     private var _userAccessToken = ""
@@ -59,6 +60,7 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context) {
             val intent = FoursquareOAuth.getTokenExchangeIntent(managingActivity, managingActivity.getString(R.string.foursquare_app_id), managingActivity.getString(R.string.foursquare_app_secret), codeResponse.getCode())
             managingActivity.startActivityForResult(intent, FOURSQUARE_TOKEN_EXCHG_INTENT_CODE)
         }
+        fetchAndStoreUserId()
     }
 
     fun gotTokenExchangeResponse(managingActivity: Activity, responseCode: Int, responseData: Intent) {
@@ -145,10 +147,8 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context) {
                     Log.e(LOG_TAG, "Unable to get Foursquare user id")
                     return
                 }
-                // TODO(nl) Save Foursquare user id
-//                val installation = ParseInstallation.getCurrentInstallation()
-//                installation.put(PARSE_INSTALLATION_FOURSQUARE_USER_ID_KEY, userId)
-//                installation.saveInBackground()
+
+                userManager.saveFoursquareId(userId)
             }
 
             override fun failure(error: RetrofitError) {
@@ -161,8 +161,6 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context) {
 
     companion object {
         private val LOG_TAG = "FoursquareAuthManager"
-
-        private val PARSE_INSTALLATION_FOURSQUARE_USER_ID_KEY = "foursquareUserId"
 
         private val SHARED_PREFS_NAME = "com.nlefler.glucloser.foursquareprefs"
         private val SHARED_PREFS_4SQ_TOKEN_KEY = "com.nlefler.glucloser.4sqtkn"

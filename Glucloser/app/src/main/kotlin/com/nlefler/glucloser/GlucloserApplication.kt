@@ -45,14 +45,10 @@ class GlucloserApplication : Application() {
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
 
-
-        ddpx = DDPx(getString(R.string.ddpx_server))
-        foursquareAuthManager = rootComponent.foursquareAuthManager()
-
         ddpx = DDPx(getString(R.string.ddpx_server))
         ddpxSync = rootComponent.serverSync()
-
         userManager = UserManager(ddpxSync!!, this)
+        foursquareAuthManager = rootComponent.foursquareAuthManager()
     }
 
     override fun onCreate() {
