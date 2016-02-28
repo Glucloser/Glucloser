@@ -60,7 +60,6 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
             val intent = FoursquareOAuth.getTokenExchangeIntent(managingActivity, managingActivity.getString(R.string.foursquare_app_id), managingActivity.getString(R.string.foursquare_app_secret), codeResponse.getCode())
             managingActivity.startActivityForResult(intent, FOURSQUARE_TOKEN_EXCHG_INTENT_CODE)
         }
-        fetchAndStoreUserId()
     }
 
     fun gotTokenExchangeResponse(managingActivity: Activity, responseCode: Int, responseData: Intent) {
