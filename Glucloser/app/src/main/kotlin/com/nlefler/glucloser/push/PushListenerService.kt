@@ -17,23 +17,13 @@ import com.nlefler.glucloser.activities.MainActivity
 class PushListenerService: GcmListenerService() {
 
     override fun onMessageReceived(channelStr: String, data: Bundle) {
-        var channel: PushChannels? = null
-        try {
-            channel = PushChannels.valueOf(channelStr)
-        }
-        catch(e: Exception) {
-
-        }
-        if (channel == null) {
-            return
-        }
-
-        if (channel == PushChannels.FoursquareCheckin) {
-        }
+        // TODO(nl) Check if foursquare checkin message
+        showNotification(data)
     }
 
     private fun showNotification(data: Bundle) {
-        val message = data.getString("message")
+        val title = data.getString("gcm.notification.title")
+        val message = data.getString("gcm.notification.body")
 
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -44,7 +34,7 @@ class PushListenerService: GcmListenerService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         val notificationBuilder = NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("GCM Message")
+                .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

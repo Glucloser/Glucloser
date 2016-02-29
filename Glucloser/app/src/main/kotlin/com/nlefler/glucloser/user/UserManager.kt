@@ -28,7 +28,8 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         private val CONCEAL_ENTITY_NAME = "com.nlefler.glucloser.concealentity"
     }
 
-    private class Identity (val uuids: List<String>, val profile: String) {
+    private class Identity (val uuids: List<String>, val pushToken: String?,
+                            val profile: String) {
     }
 
     private val crypto = Crypto(SharedPrefsBackedKeyChain(ctx), SystemNativeCryptoLibrary())
@@ -52,7 +53,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
                 }
                 val profile = task.result
                 if (profile != null) {
-                    updateIdentity(identity.uuids, profile)
+                    updateIdentity(identity.uuids, identity.pushToken, profile)
                 }
             }
         }
@@ -66,12 +67,16 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, profile)
+                updateIdentity(identity.uuids, identity.pushToken, profile)
             }
         }
     }
 
     fun saveFoursquareId(fsqId: String) {
+        if (fsqId == identity.pushToken) {
+            return
+        }
+
         ddpxSync.saveFoursquareId(identity.profile, fsqId).continueWith { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
@@ -79,7 +84,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, profile)
+                updateIdentity(identity.uuids, identity.pushToken, profile)
             }
         }
     }
@@ -94,7 +99,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, profile)
+                updateIdentity(identity.uuids, identity.pushToken, profile)
             }
         }
     }
@@ -106,9 +111,9 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         identityLock.release()
     }
 
-    private fun updateIdentity(uuids: List<String>, profile: String) {
+    private fun updateIdentity(uuids: List<String>, pushToken: String?, profile: String) {
         identityLock.acquire()
-        identity = Identity(uuids, profile)
+        identity = Identity(uuids, pushToken, profile)
         encryptAndStoreIdentity(ctx, identity)
         identityLock.release()
     }
@@ -140,7 +145,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     private fun getDecryptedIdentity(): Identity {
-        var identity = Identity(emptyList(), "")
+        var identity = emptyIdentity()
         if (!crypto.isAvailable()) {
             return identity
         }
@@ -170,6 +175,6 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     private fun emptyIdentity(): Identity {
-        return Identity(emptyList(), "{}")
+        return Identity(emptyList(), null, "{}")
     }
 }
