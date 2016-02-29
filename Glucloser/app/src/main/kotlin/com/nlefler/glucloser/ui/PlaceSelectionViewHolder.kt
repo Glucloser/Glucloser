@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.TextView
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.dataSource.PlaceFactory
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 import javax.inject.Inject
@@ -16,9 +16,8 @@ import javax.inject.Inject
 /**
  * Created by nathan on 10/27/15.
  */
-public class PlaceSelectionViewHolder(itemView: View, delegate: PlaceSelectionDelegate?) : RecyclerView.ViewHolder(itemView) {
-    lateinit var placeFactory: PlaceFactory
-        @Inject set
+class PlaceSelectionViewHolder @Inject constructor(itemView: View, val delegate: PlaceSelectionDelegate?,
+                                                   val placeFactory: PlaceFactory) : RecyclerView.ViewHolder(itemView) {
 
     internal var venue: NLFoursquareVenue
     internal var placeName: TextView

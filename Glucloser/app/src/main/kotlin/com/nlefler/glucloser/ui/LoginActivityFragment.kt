@@ -7,34 +7,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button
 import android.widget.EditText;
+import com.nlefler.glucloser.GlucloserApplication
 
 import com.nlefler.glucloser.R;
-import com.parse.ParseUser
+import com.nlefler.glucloser.user.UserManager
+import javax.inject.Inject
 
-/**
- * A placeholder fragment containing a simple view.
- */
 public class LoginActivityFragment : Fragment() {
 
-    var usernameField: EditText? = null
-    var passwordField: EditText? = null
+    @Inject lateinit var userManager: UserManager
+
+    var emailField: EditText? = null
     var loginButton: Button? = null
 
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
+        GlucloserApplication.sharedApplication?.rootComponent?.inject(this)
+
         var rootView = inflater?.inflate(R.layout.fragment_login, container, false);
-        usernameField = rootView?.findViewById(R.id.login_username_value) as EditText?
-        passwordField = rootView?.findViewById(R.id.login_password_value) as EditText?
+        emailField = rootView?.findViewById(R.id.login_email_value) as EditText?
         loginButton = rootView?.findViewById(R.id.login_sign_in_button) as Button?
 
         loginButton?.setOnClickListener { v: View ->
-            val username = usernameField?.getText().toString()
-            val password = passwordField?.getText().toString()
+            val username = emailField?.getText().toString()
 
-            if (username.length > 0 && password.length > 0) {
-                ParseUser.logInInBackground(username, password);
+            if (username.length > 0) {
+                userManager.loginOrCreateUser(username)
             }
         }
 

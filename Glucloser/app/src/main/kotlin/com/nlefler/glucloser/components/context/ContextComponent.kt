@@ -2,16 +2,18 @@
 //
 //import android.content.Context
 //import com.nlefler.glucloser.GlucloserApplication
+//import com.nlefler.glucloser.components.datafactory.DataFactoryComponent
 //import dagger.Component
+//import dagger.Subcomponent
 //import javax.inject.Singleton
 //
 ///**
 // * Created by nathan on 12/13/15.
 // */
-//@Singleton
-//@Component(modules = arrayOf(GlucloserApplication::class))
-//public interface ContextComponent {
+//@Subcomponent(modules = arrayOf(GlucloserApplication::class))
+//interface ContextComponent {
 //
-//    @Singleton
-//    public fun applicationContext(): Context
+//    fun appContext(): Context
+//
+//    fun dataFactoryComponent(): DataFactoryComponent
 //}

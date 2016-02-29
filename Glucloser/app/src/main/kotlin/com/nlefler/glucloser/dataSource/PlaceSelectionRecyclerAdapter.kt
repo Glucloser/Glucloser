@@ -8,8 +8,6 @@ import android.widget.TextView
 
 import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
-import com.nlefler.glucloser.models.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.ui.PlaceSelectionViewHolder
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
@@ -30,9 +28,8 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PlaceSelectionViewHolder {
         val view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.place_selection_list_item, viewGroup, false)
 
-        val viewHolder = PlaceSelectionViewHolder(view, delegate)
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(viewHolder)
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        val viewHolder = PlaceSelectionViewHolder(view, delegate, dataFactory!!.placeFactory())
 
         return viewHolder
     }

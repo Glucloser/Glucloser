@@ -2,89 +2,98 @@ package com.nlefler.glucloser
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Debug
 import android.support.multidex.MultiDex
-import android.util.Log
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
+import com.nlefler.ddpx.DDPx
+import com.nlefler.glucloser.components.DaggerRootComponent
 import com.nlefler.glucloser.dataSource.realmmigrations.GlucloserRealmMigration
-import com.parse.Parse
-import com.parse.ParseException
-import com.parse.ParseInstallation
-import com.parse.ParsePush
+import com.nlefler.glucloser.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.foursquare.FoursquareAuthManager
+import com.nlefler.glucloser.push.PushRegistrationIntentService
+import com.nlefler.glucloser.user.UserManager
+import dagger.Module
+import dagger.Provides
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import javax.inject.Singleton
 
 /**
  * Created by Nathan Lefler on 12/12/14.
  */
-public class GlucloserApplication : Application() {
+@Module
+class GlucloserApplication : Application() {
+    lateinit var ddpx: DDPx
+
+    val rootComponent = DaggerRootComponent.builder().glucloserApplication(this).build()
+
+    private var ddpxSync: DDPxSync? = null
+    private var foursquareAuthManager: FoursquareAuthManager? = null
+    private var userManager: UserManager? = null
+
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
 
         MultiDex.install(this)
 
-    }
+        sharedApplication = this
 
-    override fun onCreate() {
-        super.onCreate()
-//        LeakCanary.install(this);
-        _sharedApplication = this
-
-        if (!Debug.isDebuggerConnected()) {
-            // Enable crash reporting
-        }
-
-        val realmConfig = RealmConfiguration.Builder(GlucloserApplication.SharedApplication())
+        val realmConfig = RealmConfiguration.Builder(this)
                 .name("myrealm.realm")
                 .migration(GlucloserRealmMigration())
                 .schemaVersion(4)
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
 
-        Parse.initialize(this, this.getString(R.string.parse_app_id), this.getString(R.string.parse_client_key))
-        ParseInstallation.getCurrentInstallation().saveInBackground()
+        ddpx = DDPx(getString(R.string.ddpx_server))
+        ddpxSync = rootComponent.serverSync()
+        userManager = UserManager(ddpxSync!!, this)
+        foursquareAuthManager = rootComponent.foursquareAuthManager()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+//        LeakCanary.install(this);
+
+        if (!Debug.isDebuggerConnected()) {
+            // Enable crash reporting
+        }
 
         this.subscribeToPush()
 
-        val dataFactory = DaggerDataFactoryComponent.create()
-        var startupAction = dataFactory.startupAction()
-        startupAction.run()
     }
 
     private fun subscribeToPush() {
-        ParsePush.subscribeInBackground("", {e: ParseException? ->
-            if (e == null) {
-                Log.d(LOG_TAG, "successfully subscribed to the broadcast channel.")
-            } else {
-                Log.e(LOG_TAG, "failed to subscribe for push", e)
-            }
-        })
+        startService(Intent(this, PushRegistrationIntentService::class.java))
+    }
 
-        ParsePush.subscribeInBackground("foursquareCheckin", {e: ParseException? ->
-            if (e == null) {
-                Log.d("com.parse.push", "successfully subscribed to the checkin channel.")
-            } else {
-                Log.e("com.parse.push", "failed to subscribe for push", e)
-            }
-        })
+    // ContextComponent
+    @Provides
+    fun appContext(): Context {
+        return this
+    }
 
-        ParsePush.subscribeInBackground("comcon", {e: ParseException? ->
-            if (e == null) {
-                Log.d("com.parse.push", "successfully subscribed to the comcon channel.")
-            } else {
-                Log.e("com.parse.push", "failed to subscribe for push", e)
-            }
-        })
+    // DataFactoryComponent
+//    @Provides @Singleton
+//    fun serverSync(): DDPxSync {
+//        return ddpxSync!!
+//    }
+
+    // AuthAndIdentityComponent
+    @Provides
+    fun userManager(): UserManager {
+        return userManager!!
+    }
+
+    @Provides
+    fun ddpx(): DDPx {
+        return ddpx
     }
 
     companion object {
         private val LOG_TAG = "GlucloserApplication"
 
-        private var _sharedApplication: GlucloserApplication? = null
-
-        @Synchronized
-        public fun SharedApplication(): GlucloserApplication {
-            return _sharedApplication!!
-        }
+        var sharedApplication: GlucloserApplication? = null
+        private set
     }
 }

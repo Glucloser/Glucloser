@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import com.nlefler.glucloser.GlucloserApplication
 
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.models.BolusEvent
 import com.nlefler.glucloser.models.Meal
 import com.nlefler.glucloser.ui.MealHistoryViewHolder
@@ -15,10 +14,12 @@ import com.nlefler.glucloser.ui.MealHistoryViewHolder
 /**
  * Created by Nathan Lefler on 12/25/14.
  */
-public class MealHistoryRecyclerAdapter(private var activity: Activity,
-                                        private var bolusEvents: List<BolusEvent>?) :
+class MealHistoryRecyclerAdapter(private val activity: Activity,
+                                        private var bolusEvents: List<BolusEvent>?,
+                                 val bolusEventFactory: BolusEventFactory) :
         RecyclerView.Adapter<MealHistoryViewHolder>() {
-    public fun setEvents(events: List<BolusEvent>) {
+
+    fun setEvents(events: List<BolusEvent>) {
         this.bolusEvents = events
         notifyDataSetChanged()
     }
@@ -29,9 +30,7 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
 
         // Setup view
 
-        val viewHolder = MealHistoryViewHolder(view, activity)
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(viewHolder)
+        val viewHolder = MealHistoryViewHolder(view, activity, bolusEventFactory)
 
         return viewHolder
     }
@@ -48,7 +47,15 @@ public class MealHistoryRecyclerAdapter(private var activity: Activity,
             viewHolder.placeName.setText(bolusEvent.place?.name ?: "")
         }
         else {
-            viewHolder.placeName.setText(GlucloserApplication.SharedApplication().getString(R.string.snack))
+            var name = viewHolder.itemView.context.getString(R.string.snack)
+            if (bolusEvent.foods.size == 1) {
+                val firstFoodName = bolusEvent.foods.firstOrNull()?.foodName ?: ""
+                if (firstFoodName.length > 0) {
+                    name = firstFoodName
+                }
+            }
+
+            viewHolder.placeName.text = name
         }
         viewHolder.carbsValue.text = "${bolusEvent.carbs}"
         viewHolder.insulinValue.text = "${bolusEvent.insulin}"

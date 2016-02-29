@@ -15,13 +15,17 @@ import android.widget.EditText
 import android.widget.TextView
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.dataSource.BolusPatternUtils
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.BloodSugarParcelable
+import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
+import com.nlefler.glucloser.models.parcelable.BolusPatternParcelable
+import com.nlefler.glucloser.models.parcelable.FoodParcelable
 import java.util.*
 
 /**
@@ -50,14 +54,13 @@ public class BolusEventDetailsFragment : Fragment() {
     private var totalInsulin = 0f
 
     private var bolusPattern: BolusPattern? = null
-    private var fetchTask: Task<BolusPattern?>? = null
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactoryComponent = DaggerDataFactoryComponent.create()
-        bolusPatternFactory = dataFactoryComponent.bolusPatternFactory()
-        foodFactory = dataFactoryComponent.foodFactory()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        bolusPatternFactory = dataFactory?.bolusPatternFactory()
+        foodFactory = dataFactory?.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
@@ -75,10 +78,14 @@ public class BolusEventDetailsFragment : Fragment() {
         }
         patternParcelableTask.task.continueWith { task ->
             if (bolusPattern == null) {
-                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
-                fetchTask?.continueWith { task ->
+                // TODO(nl) Fetch current bolus pattern from db
+                bolusPatternFactory?.emptyPattern()?.continueWith { task ->
                     bolusPattern = task.result
                 }
+//                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
+//                fetchTask?.continueWith { task ->
+//                    bolusPattern = task.result
+//                }
             }
         }
 
@@ -166,6 +173,7 @@ public class BolusEventDetailsFragment : Fragment() {
             if (!task.isFaulted && task.result != null) {
                 this.foods.add(task.result!!)
                 this.foodListAdapter?.setFoods(this.foods)
+                this.foodListAdapter?.notifyDataSetChanged()
             }
         }
 

@@ -12,13 +12,14 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import com.nlefler.glucloser.GlucloserApplication
 
 import com.nlefler.glucloser.R
 import com.nlefler.glucloser.actions.LogBolusEventAction
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.PlaceSelectionRecyclerAdapter
+import com.nlefler.glucloser.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.foursquare.FoursquarePlaceHelper
-import com.nlefler.glucloser.models.PlaceParcelable
+import com.nlefler.glucloser.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 
@@ -29,11 +30,15 @@ import rx.Scheduler
 import rx.Subscription
 import rx.schedulers.Schedulers
 import rx.android.*
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenue>>, PlaceSelectionDelegate {
+class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<NLFoursquareVenue>>, PlaceSelectionDelegate {
+
+    lateinit var foursquareAuthManager: FoursquareAuthManager
+    @Inject set
 
     private var foursquareHelper: FoursquarePlaceHelper? = null
     private var closestPlacesSubscription: Subscription? = null
@@ -49,10 +54,11 @@ public class PlaceSelectionFragment : Fragment(), Observer<List<NLFoursquareVenu
 
         this.setHasOptionsMenu(true)
 
-        val dataFactory = DaggerDataFactoryComponent.create()
-        dataFactory.inject(logMealAction)
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        dataFactory?.inject(this)
+        dataFactory?.inject(logMealAction)
 
-        foursquareHelper = FoursquarePlaceHelper(getActivity())
+        foursquareHelper = FoursquarePlaceHelper(getActivity(), foursquareAuthManager)
         subscriptionScheduler = Schedulers.newThread()
         getClosestPlaces(null)
     }

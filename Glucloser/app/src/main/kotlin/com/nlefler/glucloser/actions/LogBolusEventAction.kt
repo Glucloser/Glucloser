@@ -8,7 +8,9 @@ import bolts.Task
 import bolts.TaskCompletionSource
 
 import com.nlefler.glucloser.dataSource.*
+import com.nlefler.glucloser.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.models.*
+import com.nlefler.glucloser.models.parcelable.*
 
 import io.realm.Realm
 import io.realm.RealmList
@@ -19,7 +21,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class LogBolusEventAction : Parcelable {
+class LogBolusEventAction : Parcelable {
     lateinit var bolusPatternFactory: BolusPatternFactory
         @Inject set
 
@@ -41,43 +43,41 @@ public class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    lateinit var parseUploader: ParseUploader
+    lateinit var serverSync: DDPxSync
         @Inject set
-
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
     private val foodParcelableList: MutableList<FoodParcelable> = ArrayList()
 
-    public constructor() {
+    constructor() {
+
     }
 
-    public fun setPlaceParcelable(placeParcelable: PlaceParcelable) {
+    fun setPlaceParcelable(placeParcelable: PlaceParcelable) {
         this.placeParcelable = placeParcelable
     }
 
-    public fun setBolusEventParcelable(bolusEventParcelable: BolusEventParcelable) {
+    fun setBolusEventParcelable(bolusEventParcelable: BolusEventParcelable) {
         this.bolusEventParcelable = bolusEventParcelable
     }
 
-    public fun addFoodParcelable(foodParcelable: FoodParcelable) {
+    fun addFoodParcelable(foodParcelable: FoodParcelable) {
         this.foodParcelableList.add(foodParcelable)
     }
 
-    public fun log() {
-        if (this.bolusEventParcelable == null) {
-            Log.e(LOG_TAG, "Can't log bolus event, bolus event is null")
-            return
-        }
+    fun log() {
+        assert(bolusEventParcelable != null)
+        val savingBolusEventParcel = bolusEventParcelable
 
         var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
-        var beforeSugarParcelable = bolusEventParcelable?.bloodSugarParcelable;
+        val beforeSugarParcelable = bolusEventParcelable?.bloodSugarParcelable
         if (beforeSugarParcelable != null) {
             beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(beforeSugarParcelable)
         }
 
         val foodTasks = ArrayList<Task<Food?>>()
-        val foodList = RealmList<Food>()
+        val foodList = ArrayList<Food>()
         for (foodParcelable in this.foodParcelableList) {
             foodTasks.add(foodFactory.foodFromParcelable(foodParcelable).continueWithTask(Continuation<Food?, Task<Food?>> foodC@ { task ->
                 if (task.isFaulted) {
@@ -85,30 +85,34 @@ public class LogBolusEventAction : Parcelable {
                 }
 
                 val food = task.result
+                if (food == null) {
+                    return@foodC Task.forError(Exception("Food should not be nil"))
+                }
                 foodList.add(food)
                 return@foodC Task.forResult(food)
             }))
         }
 
         var bolusPatternTask: Task<BolusPattern?>? = Task.forResult(null)
-        if (bolusEventParcelable?.bolusPatternParcelable != null) {
-            bolusPatternTask = bolusPatternFactory.bolusPatternFromParcelable(bolusEventParcelable?.bolusPatternParcelable!!)
+        val bolusPatternParcel = bolusEventParcelable?.bolusPatternParcelable
+        if (bolusPatternParcel != null) {
+            bolusPatternTask = bolusPatternFactory.bolusPatternFromParcelable(bolusPatternParcel)
         }
 
-        val allTasks = arrayListOf(beforeSugarTask, bolusPatternTask)
-        allTasks.addAll(foodTasks)
+        val allTasks = listOf(beforeSugarTask, bolusPatternTask) + foodTasks
         Task.whenAll(allTasks).continueWith all@ { task ->
             if (task.isFaulted) {
                 return@all
             }
 
-            when (this.bolusEventParcelable ?: null) {
-                is MealParcelable -> {
-                    var placeTask: Task<Place?>? = Task.forResult(null)
-                    if (this.placeParcelable != null) {
-                        placeTask = placeFactory.placeFromParcelable(this.placeParcelable!!)
-                    }
+            val beforeSugar = beforeSugarTask?.result
+            val bolusPattern = bolusPatternTask?.result
 
+            when (savingBolusEventParcel) {
+                is MealParcelable -> {
+                    assert(placeParcelable != null)
+
+                    val placeTask = placeFactory.placeFromParcelable(this.placeParcelable!!)
                     val mealTask = mealFactory.mealFromParcelable(this.bolusEventParcelable as MealParcelable)
 
                     Task.whenAll(arrayListOf(mealTask, placeTask)).continueWithTask(Continuation<Void, Task<Meal?>> mealAll@ { task ->
@@ -117,67 +121,91 @@ public class LogBolusEventAction : Parcelable {
                         }
 
                         val meal = mealTask.result
-                        val place = placeTask?.result
+                        val place = placeTask.result
+
+                        if (meal == null || bolusPattern == null || foodList.size == 0) {
+                            Log.e(LOG_TAG, "meal: $meal Bolus Pattern: $bolusPattern Foods: $foodList")
+                            return@mealAll Task.forError(Exception("Dependencies null"))
+                        }
 
                         return@mealAll realmManager.executeTransaction(object: RealmManager.Tx<Meal?> {
                             override fun dependsOn(): List<RealmObject?> {
-                                return listOf(meal, place)
+                                return listOf(meal, place, beforeSugar, bolusPattern) + foodList
                             }
 
                             override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Meal? {
                                 val liveMeal = dependsOn.first() as Meal?
-                                val livePlace = dependsOn.last() as Place?
+                                val livePlace = dependsOn[1] as Place?
+                                val liveSugar = dependsOn[2] as BloodSugar?
+                                val liveBolusPattern = dependsOn[3] as BolusPattern?
+                                val liveFoods = dependsOn.slice(IntRange(4, dependsOn.size - 1)) as List<Food>
 
-                                liveMeal?.foods = foodList
+                                liveMeal?.foods?.addAll(liveFoods)
 
                                 if (livePlace != null) {
                                     liveMeal?.place = livePlace
                                 }
 
-                                liveMeal?.beforeSugar = beforeSugarTask?.result
-                                liveMeal?.bolusPattern = bolusPatternTask?.result
+                                liveMeal?.beforeSugar = liveSugar
+                                liveMeal?.bolusPattern = liveBolusPattern
+
                                 return liveMeal
                             }
 
                         })
 
                     }).continueWith mealUpload@ { task ->
-                        if (task.isFaulted || task.result == null || task.result !is Meal) {
+                        val meal = task.result
+                        if (task.isFaulted || meal == null) {
                             return@mealUpload
                         }
-
-                        parseUploader.uploadBolusEvent(task.result as Meal)
+                        val place = meal.place
+                        if (place != null) {
+                            serverSync.saveModel(place)
+                        }
+                        serverSync.saveModel(meal)
                     }
 
                 }
                 is SnackParcelable -> {
                     snackFactory.snackFromParcelable(this.bolusEventParcelable as SnackParcelable)
                             .continueWithTask(Continuation<Snack?, Task<Snack?>> snackPar@ { task ->
-                        if (task.isFaulted) {
-                            return@snackPar task
-                        }
 
+                                if (task.isFaulted) {
+                                    return@snackPar task
+                                }
+
+                                val snack = task.result
+
+                                if (snack == null || bolusPattern == null || foodList.size == 0) {
+                                    Log.e(LOG_TAG, "Snack: $snack Bolus Pattern: $bolusPattern Foods: $foodList")
+                                    return@snackPar Task.forError(Exception("Dependencies null"))
+                                }
+
+                                return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
+                                    override fun dependsOn(): List<RealmObject?> {
+                                        return listOf(snack, beforeSugar, bolusPattern) + foodList
+                                    }
+
+                                    override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
+                                        val liveSnack = dependsOn.first() as Snack?
+                                        val liveSugar = dependsOn[1] as BloodSugar?
+                                        val liveBolusPattern = dependsOn[2] as BolusPattern?
+                                        val liveFoods = dependsOn.slice(IntRange(3, dependsOn.count() - 1)) as List<Food>
+
+                                        liveSnack?.foods?.addAll(liveFoods)
+                                        liveSnack?.beforeSugar = liveSugar
+                                        liveSnack?.bolusPattern = liveBolusPattern
+                                        return liveSnack
+                                    }
+                                })
+                            }).continueWith { task ->
                         val snack = task.result
-                        return@snackPar realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
-                            override fun dependsOn(): List<RealmObject?> {
-                                return listOf(snack)
-                            }
-
-                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
-                                val liveSnack = dependsOn.first() as Snack?
-
-                                liveSnack?.foods = foodList
-                                liveSnack?.beforeSugar = beforeSugarTask?.result
-                                liveSnack?.bolusPattern = bolusPatternTask?.result
-                                return liveSnack
-                            }
-                        })
-                    }).continueWith { task ->
-                        if (task.isFaulted || task.result == null || task.result !is Snack) {
+                        if (task.isFaulted || snack == null) {
                             return@continueWith
                         }
 
-                        parseUploader.uploadBolusEvent(task.result as Snack)
+                        serverSync.saveModel(snack)
                     }
                 }
                 else -> {
@@ -188,7 +216,7 @@ public class LogBolusEventAction : Parcelable {
     }
 
     /** Parcelable  */
-    public constructor(parcel: Parcel) {
+    constructor(parcel: Parcel) {
         this.placeParcelable = parcel.readParcelable<Parcelable>(PlaceParcelable::class.java.classLoader) as PlaceParcelable
 
         val eventTypeName = parcel.readString()
@@ -222,7 +250,7 @@ public class LogBolusEventAction : Parcelable {
     companion object {
         private val LOG_TAG = "LogMealAction"
 
-        public val CREATOR = object : Parcelable.Creator<LogBolusEventAction> {
+        val CREATOR = object : Parcelable.Creator<LogBolusEventAction> {
             override fun createFromParcel(parcel: Parcel): LogBolusEventAction {
                 return LogBolusEventAction(parcel)
             }

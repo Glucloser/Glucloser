@@ -11,26 +11,17 @@ import java.util.*
  */
 @RealmClass
 public open class BolusRate(
-        @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var ordinal: Int? = null,
-        public open var carbsPerUnit: Int? = null,
-        public open var startTime: Int? = null
+        @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
+        open var ordinal: Int = 0,
+        open var carbsPerUnit: Int = 0,
+        open var startTime: Int = 0
     ) : RealmObject() {
 
     companion object {
         @Ignore
-        val ParseClassName = "CurrentCarbRatio"
+        val ModelName = "bolusRates"
 
         @Ignore
         val IdFieldName = "primaryId"
-
-        @Ignore
-        val OridnalFieldName = "ordinal"
-
-        @Ignore
-        val CarbsPerUnitFieldName = "amount"
-
-        @Ignore
-        val StartTimeFieldName = "startTime"
     }
 }

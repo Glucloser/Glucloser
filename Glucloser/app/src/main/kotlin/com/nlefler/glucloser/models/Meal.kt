@@ -11,7 +11,7 @@ import java.util.*
  * Created by Nathan Lefler on 12/11/14.
  */
 @RealmClass
-public open class Meal(
+open class Meal(
         @PrimaryKey override var primaryId: String = UUID.randomUUID().toString(),
         override var date: Date = Date(),
         override var bolusPattern: BolusPattern? = null,
@@ -21,37 +21,16 @@ public open class Meal(
         override var isCorrection: Boolean = false,
         override var foods: RealmList<Food> = RealmList(),
         override var place: Place? = null
-    ) : RealmObject(), BolusEvent, HasPlace {
+    ) : RealmObject(), BolusEvent, HasPlace, Syncable {
 
     companion object {
         @Ignore
-        public val ParseClassName: String = "Meal"
+        val ModelName = "meals"
 
         @Ignore
-        public val IdFieldName: String = "primaryId"
+        val PrimaryKeyName = "primaryId";
 
         @Ignore
-        public val MealDateFieldName: String = "date"
-
-        @Ignore
-        public val PlaceFieldName: String = "place"
-
-        @Ignore
-        public val CarbsFieldName: String = "carbs"
-
-        @Ignore
-        public val InsulinFieldName: String = "insulin"
-
-        @Ignore
-        public val BeforeSugarFieldName: String = "beforeSugar"
-
-        @Ignore
-        public val CorrectionFieldName: String = "correction"
-
-        @Ignore
-        public val FoodListFieldName: String = "foods"
-
-        @Ignore
-        public val BolusPatternFieldName: String = "bolusPattern"
+        val DateFieldName = "date"
     }
 }

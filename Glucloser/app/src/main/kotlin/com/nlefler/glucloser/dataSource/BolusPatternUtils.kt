@@ -15,21 +15,22 @@ public class BolusPatternUtils {
                             cal.get(Calendar.MINUTE) * 60 * 1000 + cal.get(Calendar.SECOND) * 1000
 
             var sortedRates = bolusPattern.rates.sortedBy { rate -> rate.ordinal }
+            if (sortedRates.isEmpty()) {
+                return 0f
+            }
+
             var activeRate: BolusRate? = null
             for (rate in sortedRates) {
-                if (rate.startTime == null) {
-                    continue
-                }
-                if (curMilSecs < rate.startTime!!) {
+                if (curMilSecs < rate.startTime) {
                     activeRate = rate
                     break;
                 }
             }
-            if (activeRate == null && sortedRates.last().startTime?.compareTo(curMilSecs) != 1) {
+            if (activeRate == null && sortedRates.last().startTime.compareTo(curMilSecs) != 1) {
                 activeRate = sortedRates.last()
             }
 
-            if (activeRate?.carbsPerUnit == null) {
+            if (activeRate?.carbsPerUnit == 0) {
                 return 0f
             }
             return carbValue.toFloat() / activeRate?.carbsPerUnit!!.toFloat()

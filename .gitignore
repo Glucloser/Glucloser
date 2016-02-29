@@ -42,4 +42,7 @@ Pods/
 Podfile.lock
 
 # Keys
-keys.xml
+Glucloser/app/src/main/res/values/keys.xml
+*.iml
+
+google-services.json

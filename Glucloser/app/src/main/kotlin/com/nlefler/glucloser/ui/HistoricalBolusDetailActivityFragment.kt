@@ -10,15 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import com.nlefler.glucloser.GlucloserApplication
 import com.nlefler.glucloser.R
-import com.nlefler.glucloser.components.datafactory.DaggerDataFactoryComponent
 import com.nlefler.glucloser.dataSource.FoodFactory
 import com.nlefler.glucloser.dataSource.FoodListRecyclerAdapter
-import com.nlefler.glucloser.models.BolusEventParcelable
+import com.nlefler.glucloser.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.models.Food
 import java.util.*
 
-public class HistoricalBolusDetailActivityFragment : Fragment() {
+class HistoricalBolusDetailActivityFragment : Fragment() {
     var foodFactory: FoodFactory? = null
 
     private var placeName: String? = null
@@ -38,8 +38,8 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
 
-        val dataFactoryComponent = DaggerDataFactoryComponent.create()
-        foodFactory = dataFactoryComponent.foodFactory()
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        foodFactory = dataFactory?.foodFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)
         this.placeName = getPlaceNameFromBundle(bundle, arguments, activity.intent.extras)
@@ -48,6 +48,8 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
             foodFactory?.foodFromParcelable(foodPar)?.continueWith { task ->
                 if (!task.isFaulted && task.result != null) {
                     this.foods.add(task.result!!)
+                    this.foodListAdapter?.setFoods(this.foods)
+                    this.foodListAdapter?.notifyDataSetChanged()
                 }
             }
         }
@@ -85,6 +87,9 @@ public class HistoricalBolusDetailActivityFragment : Fragment() {
 
         this.foodListAdapter = FoodListRecyclerAdapter(this.foods)
         this.foodListView?.adapter = this.foodListAdapter
+        this.foodListAdapter?.setFoods(this.foods)
+        this.foodListAdapter?.notifyDataSetChanged()
+
     }
 
     private fun getPlaceNameFromBundle(vararg bundles: Bundle?): String {
