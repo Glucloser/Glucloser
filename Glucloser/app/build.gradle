@@ -32,7 +32,7 @@ android {
         applicationId "com.nlefler.glucloser"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 6
+        versionCode 8
         versionName "0.1.0"
 //        multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

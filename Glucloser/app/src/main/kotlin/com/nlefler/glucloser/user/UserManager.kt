@@ -42,8 +42,8 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     fun loginOrCreateUser(email: String): Task<Unit> {
-        var uuid = identity.uuids.first()
-        if (uuid.isEmpty()) {
+        var uuid = identity.uuids.firstOrNull()
+        if (uuid == null) {
             clearIdentity()
             uuid = UUID.randomUUID().toString()
         }
