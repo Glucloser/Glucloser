@@ -28,18 +28,8 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
         }
     }
 
-    fun createUser(email: String, uuid: String): Task<String?> {
-        return ddpx.method("createAppUser", arrayOf(email, email, uuid), null).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
-
-    fun loginUser(username: String, uuid: String): Task<String?> {
-        return ddpx.method("loginAppUser", arrayOf(username, uuid), null).continueWithTask { task ->
+    fun createUserOrLogin(email: String, uuid: String): Task<String?> {
+        return ddpx.method("createOrLogin", arrayOf(email, uuid), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
                 return@continueWithTask Task.forError<String>(error)

@@ -131,6 +131,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 foursquareAuthManager.startAuthRequest(this)
             }
         }
+        navDrawerLayout?.closeDrawers()
     }
 
     /** Foursquare Connect Intent  */

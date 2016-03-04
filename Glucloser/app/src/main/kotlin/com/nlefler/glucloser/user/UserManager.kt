@@ -2,6 +2,7 @@ package com.nlefler.glucloser.user
 
 import android.content.Context
 import android.util.Base64
+import bolts.Task
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.Entity
@@ -40,22 +41,22 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         identity = getDecryptedIdentity()
     }
 
-    fun loginOrCreateUser(email: String) {
-        // TODO(nl) This check fails on new installs for current users
-        if (identity.uuids.isEmpty()) {
-            createUser(email)
+    fun loginOrCreateUser(email: String): Task<Unit> {
+        var uuid = identity.uuids.first()
+        if (uuid.isEmpty()) {
+            clearIdentity()
+            uuid = UUID.randomUUID().toString()
         }
-        else {
-            ddpxSync.loginUser(email, identity.uuids.first()).continueWith { task ->
-                if (task.isFaulted) {
-                    // TODO(nl) Handle error
-                    return@continueWith
-                }
-                val profile = task.result
-                if (profile != null) {
-                    updateIdentity(identity.uuids, identity.pushToken, profile)
-                }
+        return ddpxSync.createUserOrLogin(email, uuid).continueWithTask { task ->
+            if (task.isFaulted) {
+                // TODO(nl) Handle error
+                return@continueWithTask Task.forError<Unit>(task.error)
             }
+            val profile = task.result
+            if (profile != null) {
+                updateIdentity(identity.uuids, identity.pushToken, profile)
+            }
+            return@continueWithTask Task.forResult(Unit)
         }
     }
 
@@ -81,21 +82,6 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWith
-            }
-            val profile = task.result
-            if (profile != null) {
-                updateIdentity(identity.uuids, identity.pushToken, profile)
-            }
-        }
-    }
-
-    private fun createUser(email: String) {
-        clearIdentity()
-        val uuid = UUID.randomUUID().toString()
-        ddpxSync.createUser(email, uuid).continueWith { task ->
-            if (task.isFaulted) {
-                // TODO(nl) Message user
-                return@continueWith;
             }
             val profile = task.result
             if (profile != null) {

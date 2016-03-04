@@ -34,7 +34,13 @@ public class LoginActivityFragment : Fragment() {
             val username = emailField?.getText().toString()
 
             if (username.length > 0) {
-                userManager.loginOrCreateUser(username)
+                userManager.loginOrCreateUser(username).continueWith { task ->
+                    if (task.isFaulted) {
+                        // TODO(nl) Message user
+                        return@continueWith
+                    }
+                    activity.finish()
+                }
             }
         }
 
