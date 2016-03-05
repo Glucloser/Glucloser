@@ -29,7 +29,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         private val CONCEAL_ENTITY_NAME = "com.nlefler.glucloser.concealentity"
     }
 
-    private class Identity (val uuids: List<String>, val pushToken: String?,
+    private class Identity (val uuid: String?, val pushToken: String?,
                             val profile: String) {
     }
 
@@ -42,11 +42,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     fun loginOrCreateUser(email: String): Task<Unit> {
-        var uuid = identity.uuids.firstOrNull()
-        if (uuid == null) {
-            clearIdentity()
-            uuid = UUID.randomUUID().toString()
-        }
+        val uuid = identity.uuid ?: UUID.randomUUID().toString()
         return ddpxSync.createUserOrLogin(email, uuid).continueWithTask { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
@@ -54,38 +50,36 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, identity.pushToken, profile)
+                updateIdentity(uuid, identity.pushToken, profile)
             }
             return@continueWithTask Task.forResult(Unit)
         }
     }
 
     fun savePushToken(token: String) {
-        ddpxSync.savePushToken(identity.profile, token).continueWith { task ->
+        val uuid = identity.uuid ?: return
+        ddpxSync.savePushToken(uuid, token).continueWith { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWith
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, identity.pushToken, profile)
+                updateIdentity(uuid, identity.pushToken, profile)
             }
         }
     }
 
     fun saveFoursquareId(fsqId: String) {
-        if (fsqId == identity.pushToken) {
-            return
-        }
-
-        ddpxSync.saveFoursquareId(identity.profile, fsqId).continueWith { task ->
+        val uuid = identity.uuid ?: return
+        ddpxSync.saveFoursquareId(uuid, fsqId).continueWith { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWith
             }
             val profile = task.result
             if (profile != null) {
-                updateIdentity(identity.uuids, identity.pushToken, profile)
+                updateIdentity(uuid, identity.pushToken, profile)
             }
         }
     }
@@ -97,16 +91,16 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         identityLock.release()
     }
 
-    private fun updateIdentity(uuids: List<String>, pushToken: String?, profile: String) {
+    private fun updateIdentity(uuid: String, pushToken: String?, profile: String) {
         identityLock.acquire()
-        identity = Identity(uuids, pushToken, profile)
+        identity = Identity(uuid, pushToken, profile)
         encryptAndStoreIdentity(ctx, identity)
         identityLock.release()
     }
 
     // Helpers
     private fun encryptAndStoreIdentity(ctx: Context, identity: Identity) {
-        if (!crypto.isAvailable()) {
+        if (!crypto.isAvailable) {
             return
         }
         val entity = Entity(CONCEAL_ENTITY_NAME)
@@ -132,7 +126,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
 
     private fun getDecryptedIdentity(): Identity {
         var identity = emptyIdentity()
-        if (!crypto.isAvailable()) {
+        if (!crypto.isAvailable) {
             return identity
         }
 
@@ -161,6 +155,6 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     private fun emptyIdentity(): Identity {
-        return Identity(emptyList(), null, "{}")
+        return Identity(null, null, "{}")
     }
 }

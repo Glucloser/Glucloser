@@ -28,13 +28,14 @@ class PushListenerService: GcmListenerService() {
     private fun showNotification(data: Bundle) {
         val title = data.getString("gcm.notification.title")
         val message = data.getString("gcm.notification.body")
-//        val foursquareId = data.getString("gcm.data.foursquareId")
+        val foursquareData = data.getString("venueData")
 
 
         val intent = Intent(this, LogBolusEventActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
-//        intent.putExtra(BolusEventDetailsFragment.BolusEventDetailPlaceNameBundleKey, )
+        // TODO(nl) Extract key
+        intent.putExtra("venueData", foursquareData)
 
         val stackBuilder = TaskStackBuilder.create(this);
         // Adds the back stack

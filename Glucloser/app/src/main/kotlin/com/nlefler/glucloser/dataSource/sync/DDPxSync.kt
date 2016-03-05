@@ -38,8 +38,8 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
         }
     }
 
-    fun savePushToken(userToken: String, token: String): Task<String?> {
-        return ddpx.method("savePushToken", arrayOf(userToken, token), null).continueWithTask { task ->
+    fun savePushToken(uuid: String, token: String): Task<String?> {
+        return ddpx.method("savePushToken", arrayOf(uuid, token), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
                 return@continueWithTask Task.forError<String>(error)
@@ -48,8 +48,8 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
         }
     }
 
-    fun saveFoursquareId(userToken: String, fsqId: String): Task<String?> {
-        return ddpx.method("saveFoursquareId", arrayOf(userToken, fsqId), null).continueWithTask { task ->
+    fun saveFoursquareId(uuid: String, fsqId: String): Task<String?> {
+        return ddpx.method("saveFoursquareId", arrayOf(uuid, fsqId), null).continueWithTask { task ->
             if (task.isFaulted) {
                 val error = Exception(task.error.message)
                 return@continueWithTask Task.forError<String>(error)

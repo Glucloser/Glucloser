@@ -136,7 +136,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
             Log.e(LOG_TAG, "Cannot create Place from check-in data, bundle null")
             return null
         }
-        val checkInDataSerialized = data.getString("com.parse.Data")
+        val checkInDataSerialized = data.getString("venueData")
         if (checkInDataSerialized == null || checkInDataSerialized.isEmpty()) {
             Log.e(LOG_TAG, "Cannot create Place from check-in data, parse bundle null")
             return null
