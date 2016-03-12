@@ -84,6 +84,10 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         }
     }
 
+    fun uuid(): String? {
+        return identity.uuid
+    }
+
     private fun clearIdentity() {
         identityLock.acquire()
         identity = emptyIdentity()

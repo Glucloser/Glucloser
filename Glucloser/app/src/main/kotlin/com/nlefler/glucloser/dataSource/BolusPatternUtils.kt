@@ -21,8 +21,10 @@ public class BolusPatternUtils {
 
             var activeRate: BolusRate? = null
             for (rate in sortedRates) {
-                if (curMilSecs < rate.startTime) {
+                if (rate.startTime <= curMilSecs) {
                     activeRate = rate
+                }
+                if (curMilSecs < rate.startTime) {
                     break;
                 }
             }

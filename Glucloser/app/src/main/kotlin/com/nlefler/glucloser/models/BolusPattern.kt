@@ -14,7 +14,6 @@ import java.util.*
 @RealmClass
 open class BolusPattern(
         @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
-        open var rateCount: Int = 0,
         open var rates: RealmList<BolusRate> = RealmList<BolusRate>()
     ) : RealmObject() {
 

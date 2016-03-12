@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -81,6 +82,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         supportActionBar?.setHomeButtonEnabled(true)
 
         requestLocationPermission()
+
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

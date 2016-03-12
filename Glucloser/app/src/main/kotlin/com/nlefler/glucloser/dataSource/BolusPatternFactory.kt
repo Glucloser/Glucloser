@@ -48,7 +48,6 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
                                     override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusPattern? {
                                         val liveRate = dependsOn.first() as BolusRate?
                                         val livePattern = dependsOn.last() as BolusPattern?
-                                        livePattern?.rateCount = 1
                                         livePattern?.rates?.add(liveRate)
                                         return livePattern
                                     }
@@ -59,16 +58,15 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
         }
     }
 
-    public fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
+    fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
         val parcel = BolusPatternParcelable()
-        parcel.rateCount = pattern.rateCount
         for (rate in pattern.rates) {
             parcel.rates.add(bolusRateFactory.parcelableFromBolusRate(rate))
         }
         return parcel
     }
 
-    public fun jsonAdapter(): JsonAdapter<BolusPattern> {
+    fun jsonAdapter(): JsonAdapter<BolusPattern> {
         return Moshi.Builder()
                 .add(BolusPatternJsonAdapter(realmManager.defaultRealm()))
                 .add(EJsonAdapter())
@@ -76,7 +74,7 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
                 .adapter(BolusPattern::class.java)
     }
 
-    public fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): Task<BolusPattern?> {
+    fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): Task<BolusPattern?> {
         val patternTask = TaskCompletionSource<BolusPattern?>()
 
         val id = parcelable.id
@@ -96,7 +94,6 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
             bolusPatternForId(id, true)
         }).continueWith { task ->
             val pattern = task.result
-            pattern?.rateCount = parcelable.rateCount
             pattern?.rates?.addAll(rates)
 
             patternTask.trySetResult(pattern)

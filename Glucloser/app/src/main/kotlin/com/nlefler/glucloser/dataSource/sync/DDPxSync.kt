@@ -3,6 +3,7 @@ package com.nlefler.glucloser.dataSource.sync
 import android.util.Log
 import bolts.Task
 import com.nlefler.ddpx.DDPx
+import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.dataSource.MealFactory
 import com.nlefler.glucloser.dataSource.PlaceFactory
 import com.nlefler.glucloser.dataSource.SnackFactory
@@ -16,7 +17,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactory,
-                                   val mealFactory: MealFactory, val placeFactory: PlaceFactory) {
+                                   val mealFactory: MealFactory, val placeFactory: PlaceFactory,
+                                   val bolusPatternFactory: BolusPatternFactory) {
 
     init {
         ddpx.connect().continueWith { task ->
@@ -55,6 +57,22 @@ class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactor
                 return@continueWithTask Task.forError<String>(error)
             }
             return@continueWithTask Task.forResult(task.result.result)
+        }
+    }
+
+    fun currentCarbRatios(uuid: String): Task<BolusPattern?> {
+        return ddpx.method("currentCarbRatios", arrayOf(uuid), null).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<BolusPattern?>(error)
+            }
+            try {
+                val pattern = bolusPatternFactory.jsonAdapter().fromJson(task.result.result)
+                return@continueWithTask Task.forResult(pattern)
+            } catch (e: Exception) {
+                Log.e("", e.message)
+                return@continueWithTask Task.forError<BolusPattern?>(e)
+            }
         }
     }
 

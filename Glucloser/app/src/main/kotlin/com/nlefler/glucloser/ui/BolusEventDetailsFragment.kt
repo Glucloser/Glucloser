@@ -82,10 +82,15 @@ public class BolusEventDetailsFragment : Fragment() {
                 bolusPatternFactory?.emptyPattern()?.continueWith { task ->
                     bolusPattern = task.result
                 }
-//                fetchTask = bolusPatternFactory?.fetchCurrentBolusPattern()
-//                fetchTask?.continueWith { task ->
-//                    bolusPattern = task.result
-//                }
+
+                val uuid = dataFactory?.userManager()?.uuid()
+                if (uuid != null) {
+                    dataFactory?.serverSync()?.currentCarbRatios(uuid)?.continueWith { task ->
+                        if (!task.isFaulted) {
+                            bolusPattern = task.result
+                        }
+                    }
+                }
             }
         }
 

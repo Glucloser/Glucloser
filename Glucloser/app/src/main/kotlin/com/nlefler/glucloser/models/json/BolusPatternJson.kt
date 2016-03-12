@@ -5,9 +5,7 @@ import com.nlefler.glucloser.models.BolusRate
 /**
  * Created by nathan on 1/31/16.
  */
-public data class BolusPatternJson(
-        val primaryId: String,
-        val rateCount: Int,
+data class BolusPatternJson(
         val rates: List<BolusRateJson>
 ) {
 
