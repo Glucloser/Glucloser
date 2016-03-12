@@ -3,6 +3,7 @@ package com.nlefler.glucloser.dataSource.sync
 import android.util.Log
 import bolts.Task
 import com.nlefler.ddpx.DDPx
+import com.nlefler.ddpx.connection.DDPxConnection
 import com.nlefler.glucloser.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.dataSource.MealFactory
 import com.nlefler.glucloser.dataSource.PlaceFactory
@@ -16,17 +17,28 @@ import javax.inject.Singleton
  * Created by nathan on 1/31/16.
  */
 @Singleton
-class DDPxSync @Inject constructor(val ddpx: DDPx, val snackFactory: SnackFactory,
+class DDPxSync @Inject constructor(val newDDPx: (() ->DDPx), val snackFactory: SnackFactory,
                                    val mealFactory: MealFactory, val placeFactory: PlaceFactory,
                                    val bolusPatternFactory: BolusPatternFactory) {
 
+    lateinit var ddpx: DDPx
     init {
+        setup()
+    }
+    private fun setup() {
+        ddpx =  newDDPx()
         ddpx.connect().continueWith { task ->
             if (task.isFaulted) {
                 Log.e(LOG_TAG, task.error.message)
                 return@continueWith;
             }
             setupSubs()
+        }
+        // TODO(nl) Backoff reconnect attempts
+        ddpx.connectionState().subscribe { state ->
+            if (state == DDPxConnection.DDPxConnectionState.Disconnected) {
+                setup()
+            }
         }
     }
 

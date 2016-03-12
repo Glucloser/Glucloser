@@ -17,7 +17,6 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.google.gms.google-services'
 apply plugin: 'realm-android'
 
 kapt {
@@ -34,7 +33,7 @@ android {
         applicationId "com.nlefler.glucloser"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 10
+        versionCode 11
         versionName "0.1.0"
 //        multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -126,3 +125,5 @@ repositories {
         dirs 'libs'
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

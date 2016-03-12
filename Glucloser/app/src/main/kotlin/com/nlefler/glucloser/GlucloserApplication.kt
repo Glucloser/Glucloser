@@ -45,7 +45,6 @@ class GlucloserApplication : Application() {
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
 
-        ddpx = DDPx(getString(R.string.ddpx_server))
         ddpxSync = rootComponent.serverSync()
         userManager = UserManager(ddpxSync!!, this)
         foursquareAuthManager = rootComponent.foursquareAuthManager()
@@ -86,8 +85,8 @@ class GlucloserApplication : Application() {
     }
 
     @Provides
-    fun ddpx(): DDPx {
-        return ddpx
+    fun newDDPx(): (() -> DDPx) {
+        return {DDPx(getString(R.string.ddpx_server))}
     }
 
     companion object {

@@ -31,7 +31,7 @@ interface RootComponent {
 
     fun foursquareAuthManager(): FoursquareAuthManager
 
-    fun ddpx(): DDPx
+    fun newDDPx(): (() -> DDPx)
 
     fun serverSync(): DDPxSync
 

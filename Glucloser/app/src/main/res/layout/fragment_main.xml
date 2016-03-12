@@ -14,7 +14,9 @@
             android:id="@+id/meal_history_list"
             android:scrollbars="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/main_floating_action_menu"
