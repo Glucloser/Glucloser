@@ -8,6 +8,7 @@ import android.widget.TextView
 
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
+import com.nlefler.glucloser.a.models.Place
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.PlaceSelectionViewHolder
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
@@ -17,12 +18,8 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/20/14.
  */
 public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionDelegate,
-                                           private var venues: List<NLFoursquareVenue>?) : RecyclerView.Adapter<PlaceSelectionViewHolder>() {
-
-    public fun setVenues(venues: List<NLFoursquareVenue>) {
-        this.venues = venues
-        notifyDataSetChanged()
-    }
+                                           var mostUsedPlaces: List<Place>,
+                                           var nearestVenues: List<NLFoursquareVenue>) : RecyclerView.Adapter<PlaceSelectionViewHolder>() {
 
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PlaceSelectionViewHolder {
@@ -36,18 +33,20 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
 
     // Replaces the contents of a view (invoked by the view holder)
     override fun onBindViewHolder(viewHolder: PlaceSelectionViewHolder, i: Int) {
-        if (i >= this.venues!!.size) {
-            return
+        if (i < mostUsedPlaces.size) {
+            val place = mostUsedPlaces[i]
+            viewHolder.place = place
+            viewHolder.placeName.text = place.name
         }
-
-        val venue = this.venues!!.get(i)
-        viewHolder.venue = venue
-        viewHolder.placeName.setText(venue.name)
-        // TODO: Localized format string
-        viewHolder.placeDistance.setText("${venue.location.distance} meters")
+        else if (i - mostUsedPlaces.size < nearestVenues.size) {
+            val idx = i - mostUsedPlaces.size
+            val venue = nearestVenues[idx]
+            viewHolder.venue = venue
+            viewHolder.placeName.text = venue.name
+        }
     }
 
     override fun getItemCount(): Int {
-        return this.venues!!.size
+        return mostUsedPlaces.size + nearestVenues.size
     }
 }

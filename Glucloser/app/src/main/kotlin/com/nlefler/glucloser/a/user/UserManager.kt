@@ -43,7 +43,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
 
     fun loginOrCreateUser(email: String): Task<Unit> {
         val uuid = identity.uuid ?: UUID.randomUUID().toString()
-        return ddpxSync.createUserOrLogin(email, uuid).continueWithTask { task ->
+        return createUserOrLogin(email, uuid).continueWithTask { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWithTask Task.forError<Unit>(task.error)
@@ -58,7 +58,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
 
     fun savePushToken(token: String) {
         val uuid = identity.uuid ?: return
-        ddpxSync.savePushToken(uuid, token).continueWith { task ->
+        savePushToken(uuid, token).continueWith { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWith
@@ -72,7 +72,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
 
     fun saveFoursquareId(fsqId: String) {
         val uuid = identity.uuid ?: return
-        ddpxSync.saveFoursquareId(uuid, fsqId).continueWith { task ->
+        saveFoursquareId(uuid, fsqId).continueWith { task ->
             if (task.isFaulted) {
                 // TODO(nl) Handle error
                 return@continueWith
@@ -81,6 +81,37 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
             if (profile != null) {
                 updateIdentity(uuid, identity.pushToken, profile)
             }
+        }
+    }
+
+
+    private fun createUserOrLogin(email: String, uuid: String): Task<String?> {
+        return ddpxSync.call("createOrLogin", arrayOf(email, uuid)).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<String>(error)
+            }
+            return@continueWithTask Task.forResult(task.result.result)
+        }
+    }
+
+    private fun savePushToken(uuid: String, token: String): Task<String?> {
+        return ddpxSync.call("savePushToken", arrayOf(uuid, token)).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<String>(error)
+            }
+            return@continueWithTask Task.forResult(task.result.result)
+        }
+    }
+
+    private fun saveFoursquareId(uuid: String, fsqId: String): Task<String?> {
+        return ddpxSync.call("saveFoursquareId", arrayOf(uuid, fsqId)).continueWithTask { task ->
+            if (task.isFaulted) {
+                val error = Exception(task.error.message)
+                return@continueWithTask Task.forError<String>(error)
+            }
+            return@continueWithTask Task.forResult(task.result.result)
         }
     }
 

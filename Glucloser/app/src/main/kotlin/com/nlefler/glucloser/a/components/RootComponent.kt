@@ -44,6 +44,7 @@ interface RootComponent {
     fun inject(client: MealFactory)
     fun inject(client: PlaceFactory)
     fun inject(client: SnackFactory)
+    fun inject(client: PumpDataFactory)
 
     fun bloodSugarFactory(): BloodSugarFactory
     fun bolusEventFactory(): BolusEventFactory
@@ -53,9 +54,9 @@ interface RootComponent {
     fun mealFactory(): MealFactory
     fun placeFactory(): PlaceFactory
     fun snackFactory(): SnackFactory
+    fun pumpDataFactory(): PumpDataFactory
 
     fun realmFactory(): RealmManager
-
 
     fun inject(client: MainActivity)
     fun inject(client: LogBolusEventActivity)

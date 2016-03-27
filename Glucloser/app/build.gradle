@@ -5,6 +5,7 @@ buildscript {
         mavenCentral()
         maven {
             url 'http://oss.sonatype.org/content/repositories/snapshots'
+            url "https://jitpack.io"
         }
         mavenLocal()
     }
@@ -103,6 +104,7 @@ dependencies {
 
     // UI
     compile 'com.getbase:floatingactionbutton:1.9.0'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
 
     // Testing
     androidTestCompile 'com.android.support:support-annotations:24.0.0-alpha1'

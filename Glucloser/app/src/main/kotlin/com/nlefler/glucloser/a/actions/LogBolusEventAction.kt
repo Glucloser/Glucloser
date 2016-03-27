@@ -152,6 +152,9 @@ class LogBolusEventAction : Parcelable {
                                 liveMeal?.beforeSugar = liveSugar
                                 liveMeal?.bolusPattern = liveBolusPattern
 
+                                val visitCount = livePlace?.visitCount ?: 0
+                                livePlace?.visitCount = visitCount + 1
+
                                 return liveMeal
                             }
 

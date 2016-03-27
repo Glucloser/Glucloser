@@ -17,10 +17,7 @@ import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
-import com.nlefler.glucloser.a.dataSource.BolusPatternUtils
-import com.nlefler.glucloser.a.dataSource.FoodFactory
-import com.nlefler.glucloser.a.dataSource.FoodListRecyclerAdapter
+import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.BolusEventDetailDelegate
 import com.nlefler.glucloser.a.models.BolusPattern
@@ -38,6 +35,7 @@ import java.util.*
 public class BolusEventDetailsFragment : Fragment() {
     var bolusPatternFactory: BolusPatternFactory? = null
     var foodFactory: FoodFactory? = null
+    var pumpDataFactory: PumpDataFactory? = null
 
     private var placeName: String? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -65,6 +63,7 @@ public class BolusEventDetailsFragment : Fragment() {
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         bolusPatternFactory = dataFactory?.bolusPatternFactory()
         foodFactory = dataFactory?.foodFactory()
+        pumpDataFactory = dataFactory?.pumpDataFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
@@ -89,7 +88,7 @@ public class BolusEventDetailsFragment : Fragment() {
 
                 val uuid = dataFactory?.userManager()?.uuid()
                 if (uuid != null) {
-                    dataFactory?.serverSync()?.currentCarbRatios(uuid)?.continueWith { task ->
+                    pumpDataFactory?.currentCarbRatios(uuid)?.continueWith { task ->
                         if (!task.isFaulted) {
                             bolusPattern = task.result
                         }

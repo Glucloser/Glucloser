@@ -4,6 +4,7 @@ import android.util.Log
 import bolts.Task
 import com.nlefler.ddpx.DDPx
 import com.nlefler.ddpx.connection.DDPxConnection
+import com.nlefler.ddpx.method.DDPxMethodResult
 import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.a.dataSource.MealFactory
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
@@ -43,50 +44,8 @@ class DDPxSync @Inject constructor(val newDDPx: (() -> DDPx), val snackFactory: 
         }
     }
 
-    fun createUserOrLogin(email: String, uuid: String): Task<String?> {
-        return ddpx.method("createOrLogin", arrayOf(email, uuid), null).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
-
-    fun savePushToken(uuid: String, token: String): Task<String?> {
-        return ddpx.method("savePushToken", arrayOf(uuid, token), null).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
-
-    fun saveFoursquareId(uuid: String, fsqId: String): Task<String?> {
-        return ddpx.method("saveFoursquareId", arrayOf(uuid, fsqId), null).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
-
-    fun currentCarbRatios(uuid: String): Task<BolusPattern?> {
-        return ddpx.method("currentCarbRatios", arrayOf(uuid), null).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<BolusPattern?>(error)
-            }
-            try {
-                val pattern = bolusPatternFactory.jsonAdapter().fromJson(task.result.result)
-                return@continueWithTask Task.forResult(pattern)
-            } catch (e: Exception) {
-                Log.e("", e.message)
-                return@continueWithTask Task.forError<BolusPattern?>(e)
-            }
-        }
+    fun call(method: String, args: Array<String>): Task<DDPxMethodResult> {
+        return ddpx.method(method, args, null)
     }
 
     fun saveModel(model: Syncable): Task<Unit> {

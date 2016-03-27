@@ -10,12 +10,13 @@ import java.util.*
  * Created by Nathan Lefler on 12/11/14.
  */
 @RealmClass
-public open class Place(
-        @PrimaryKey public open var primaryId: String = UUID.randomUUID().toString(),
-        public open var name: String = "",
-        public open var foursquareId: String = UUID.randomUUID().toString(),
-        public open var latitude: Float = 0f,
-        public open var longitude: Float = 0f
+open class Place(
+        @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
+        open var name: String = "",
+        open var foursquareId: String = UUID.randomUUID().toString(),
+        open var latitude: Float = 0f,
+        open var longitude: Float = 0f,
+        open var visitCount: Int = 0
     ) : RealmObject(), Syncable {
 
     companion object {
@@ -26,15 +27,18 @@ public open class Place(
         val PrimaryKeyName: String = "primaryId"
 
         @Ignore
-        public val NameFieldName: String = "name"
+        val NameFieldName: String = "name"
 
         @Ignore
-        public val FoursquareIdFieldName: String = "foursquareId"
+        val FoursquareIdFieldName: String = "foursquareId"
 
         @Ignore
-        public val LatitudeFieldName: String = "latitude"
+        val LatitudeFieldName: String = "latitude"
 
         @Ignore
-        public val LongitudeFieldName: String = "longitude"
+        val LongitudeFieldName: String = "longitude"
+
+        @Ignore
+        val VisitCountFieldName: String = "visitCount"
     }
 }

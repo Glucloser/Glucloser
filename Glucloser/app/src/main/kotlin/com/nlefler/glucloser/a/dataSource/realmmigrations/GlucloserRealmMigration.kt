@@ -1,6 +1,7 @@
 package com.nlefler.glucloser.a.dataSource.realmmigrations
 
 import android.util.Log
+import com.nlefler.glucloser.a.models.Place
 import io.realm.DynamicRealm
 import io.realm.FieldAttribute
 import io.realm.Realm
@@ -15,19 +16,5 @@ class GlucloserRealmMigration : RealmMigration {
         var version = oldVersion
 
         Log.i("MIGRATE", "Version " + oldVersion)
-
-        if (version == 1L) {
-            // Renames 'rate' field to 'carbsPerUnit'
-            val rateSchema = schema?.get("BolusRate")
-            rateSchema?.
-                    addField("carbsPerUnit", Int::class.java)?.
-                    transform { obj -> obj.set("carbsPerUnit", obj.getInt("rate")) }?.
-                    removeField("rate")
-            version++
-        }
-        if (version == 2L) {
-            schema?.get("BolusRate")?.setRequired("carbsPerUnit", false)
-            version++
-        }
     }
 }

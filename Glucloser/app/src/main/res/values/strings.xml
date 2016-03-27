@@ -38,4 +38,6 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="login_email_placeholder">Email</string>
     <string name="login_signin_button_text">Log In</string>
+
+    <string name="sensor_readings_chart_label">Sensor Readings</string>
 </resources>

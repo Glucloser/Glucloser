@@ -16,9 +16,11 @@ import com.nlefler.glucloser.a.GlucloserApplication
 
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.actions.LogBolusEventAction
+import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.dataSource.PlaceSelectionRecyclerAdapter
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.foursquare.FoursquarePlaceHelper
+import com.nlefler.glucloser.a.models.Place
 import com.nlefler.glucloser.a.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
@@ -38,6 +40,9 @@ import javax.inject.Inject
 class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<NLFoursquareVenue>>, PlaceSelectionDelegate {
 
     lateinit var foursquareAuthManager: FoursquareAuthManager
+    @Inject set
+
+    lateinit var placeFactory: PlaceFactory
     @Inject set
 
     private var foursquareHelper: FoursquarePlaceHelper? = null
@@ -61,6 +66,14 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         foursquareHelper = FoursquarePlaceHelper(getActivity(), foursquareAuthManager)
         subscriptionScheduler = Schedulers.newThread()
         getClosestPlaces(null)
+        placeFactory.mostUsedPlaces(4).continueWith { task ->
+            if (task.isFaulted) {
+                return@continueWith
+            }
+            placeSelectionAdapter?.mostUsedPlaces = task.result
+            placeSelectionAdapter?.notifyDataSetChanged()
+        }
+
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -68,10 +81,10 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         this.placeSelectionList = rootView.findViewById(R.id.place_selection_list) as RecyclerView
 
         this.placeSelectionLayoutManager = LinearLayoutManager(getActivity())
-        this.placeSelectionAdapter = PlaceSelectionRecyclerAdapter(this, ArrayList<NLFoursquareVenue>())
+        this.placeSelectionAdapter = PlaceSelectionRecyclerAdapter(this, emptyList(), emptyList())
 
-        this.placeSelectionList!!.setLayoutManager(this.placeSelectionLayoutManager)
-        this.placeSelectionList!!.setAdapter(this.placeSelectionAdapter)
+        this.placeSelectionList!!.layoutManager = this.placeSelectionLayoutManager
+        this.placeSelectionList!!.adapter = this.placeSelectionAdapter
         this.placeSelectionList!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
         return rootView
@@ -112,11 +125,12 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
     override fun onError(e: Throwable) {
         // TODO: Show UI
         Log.e(PlaceSelectionFragment.Companion.LOG_TAG, "Unable to get places from 4sq " + e.toString())
-        getActivity().finish()
+        activity.finish()
     }
 
     override fun onNext(nlFoursquareVenues: List<NLFoursquareVenue>) {
-        this.placeSelectionAdapter!!.setVenues(nlFoursquareVenues)
+        placeSelectionAdapter?.nearestVenues = nlFoursquareVenues
+        placeSelectionAdapter?.notifyDataSetChanged()
     }
 
     /** PlaceSelectionDelegate  */

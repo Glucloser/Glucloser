@@ -10,16 +10,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.ChartData
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.FoodFactory
 import com.nlefler.glucloser.a.dataSource.FoodListRecyclerAdapter
+import com.nlefler.glucloser.a.dataSource.PumpDataFactory
 import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.Food
 import java.util.*
 
 class HistoricalBolusDetailActivityFragment : Fragment() {
     var foodFactory: FoodFactory? = null
+    var pumpDataFactory: PumpDataFactory? = null
 
     private var placeName: String? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
@@ -29,6 +37,8 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
     private var insulinValueField: TextView? = null
     private var beforeSugarValueField: TextView? = null
     private var correctionValueBox: CheckBox? = null
+
+    private var sensorChart: LineChart? = null
 
     private var foodListView: RecyclerView? = null
     private var foodListLayoutManager: RecyclerView.LayoutManager? = null
@@ -40,6 +50,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         foodFactory = dataFactory?.foodFactory()
+        pumpDataFactory = dataFactory?.pumpDataFactory()
 
         this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)
         this.placeName = getPlaceNameFromBundle(bundle, arguments, activity.intent.extras)
@@ -60,6 +71,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
 
         linkViews(rootView)
         setValuesInViews()
+        loadSensorValues()
 
         return rootView
     }
@@ -70,6 +82,8 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         this.insulinValueField = rootView.findViewById(R.id.historical_bolus_detail_total_insulin_value) as TextView
         this.beforeSugarValueField = rootView.findViewById(R.id.historical_bolus_detail_blood_sugar_before_value) as TextView
         this.correctionValueBox = rootView.findViewById(R.id.historical_bolus_detail_correction_value) as CheckBox
+
+        sensorChart = rootView.findViewById(R.id.historical_bolus_detail_sensor_chart) as LineChart
 
         this.foodListView = rootView.findViewById(R.id.historical_bolus_detail_food_list) as RecyclerView
 
@@ -89,7 +103,30 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         this.foodListView?.adapter = this.foodListAdapter
         this.foodListAdapter?.setFoods(this.foods)
         this.foodListAdapter?.notifyDataSetChanged()
+    }
 
+    private fun loadSensorValues() {
+        val date = bolusEventParcelable?.date ?: return
+        pumpDataFactory?.sensorReadingsAfter(date)?.continueWith { task ->
+            if (task.isFaulted) {
+                return@continueWith
+            }
+
+           val dataList = ArrayList<Entry>()
+            task.result.withIndex().forEach { indexed ->
+                dataList.add(Entry(indexed.value.reading.toFloat(), indexed.index))
+            }
+            val dataSet = LineDataSet(dataList, getString(R.string.sensor_readings_chart_label))
+            dataSet.lineWidth = 2f
+            dataSet.setDrawCircles(false)
+            dataSet.color = R.color.colorPrimaryDark
+
+            sensorChart?.data = LineData(ChartData.generateXVals(0, dataSet.entryCount), listOf(dataSet))
+            sensorChart?.axisLeft?.axisMinValue = task.result.minBy { reading -> reading.reading }?.reading?.toFloat() ?: 0f
+            sensorChart?.axisLeft?.axisMinValue = task.result.maxBy { reading -> reading.reading }?.reading?.toFloat() ?: 0f
+            sensorChart?.axisRight?.isEnabled = false
+            sensorChart?.invalidate()
+        }
     }
 
     private fun getPlaceNameFromBundle(vararg bundles: Bundle?): String {

@@ -18,6 +18,7 @@ import com.squareup.moshi.Moshi
 
 import io.realm.Realm
 import io.realm.RealmObject
+import io.realm.Sort
 import java.util.*
 import javax.inject.Inject
 
@@ -29,6 +30,20 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
 
     fun placeForId(id: String): Task<Place?> {
         return placeForFoursquareId(id, false)
+    }
+
+    fun mostUsedPlaces(limit: Int): Task<List<Place>> {
+        return realmManager.executeTransaction(object: RealmManager.TxList<Place> {
+            override fun dependsOn(): List<RealmObject?> {
+                return emptyList()
+            }
+
+            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): List<Place> {
+                val query = realm.where<Place>(Place::class.java)
+                val list = query.findAllSorted(Place.VisitCountFieldName, Sort.DESCENDING)
+                return list.take(Math.min(limit, list.size))
+            }
+        })
     }
 
     fun parcelableFromFoursquareVenue(venue: NLFoursquareVenue?): PlaceParcelable? {
