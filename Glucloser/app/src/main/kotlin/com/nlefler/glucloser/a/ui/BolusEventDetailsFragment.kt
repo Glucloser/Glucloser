@@ -86,7 +86,7 @@ public class BolusEventDetailsFragment : Fragment() {
                     bolusPattern = task.result
                 }
 
-                val uuid = dataFactory?.userManager()?.uuid()
+                val uuid = dataFactory?.userManager()?.sessionID()
                 if (uuid != null) {
                     pumpDataFactory?.currentCarbRatios(uuid)?.continueWith { task ->
                         if (!task.isFaulted) {

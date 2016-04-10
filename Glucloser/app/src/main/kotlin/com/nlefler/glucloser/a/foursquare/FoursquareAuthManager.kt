@@ -24,10 +24,10 @@ import com.nlefler.nlfoursquare.Model.FoursquareResponse.NLFoursquareResponse
 import com.nlefler.nlfoursquare.Model.NLFoursquareClientParameters
 import com.nlefler.nlfoursquare.Model.User.NLFoursquareUserInfoResponse
 import com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo
-import retrofit.Callback
-import retrofit.RestAdapter
-import retrofit.RetrofitError
-import retrofit.client.Response
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
 
 import java.io.IOException
 import java.nio.charset.Charset
@@ -40,11 +40,11 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
 
     private val crypto: Crypto
     private var _userAccessToken = ""
-    private val restAdapter: RestAdapter
+    private val restAdapter: Retrofit
 
     init {
         crypto = Crypto(SharedPrefsBackedKeyChain(ctx), SystemNativeCryptoLibrary())
-        restAdapter = RestAdapter.Builder().setEndpoint(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
+        restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
 
         _userAccessToken = this.getDecryptedAuthToken()
     }
@@ -140,8 +140,8 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
         val info = this.restAdapter.create<NLFoursquareUserInfo>(NLFoursquareUserInfo::class.java)
         val authParams = getClientAuthParameters(ctx)
         info.getInfo(authParams.authenticationParameters(), com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo.UserIdSelf, object : Callback<NLFoursquareResponse<NLFoursquareUserInfoResponse>> {
-            override fun success(nlFoursquareUserInfoResponseNLFoursquareResponse: NLFoursquareResponse<NLFoursquareUserInfoResponse>, response: Response) {
-                val userId = nlFoursquareUserInfoResponseNLFoursquareResponse.response.user.id
+            override fun onResponse(call: Call<NLFoursquareResponse<NLFoursquareUserInfoResponse>>, response: Response<NLFoursquareResponse<NLFoursquareUserInfoResponse>>) {
+                val userId = response.body().response.user.id
                 if (userId == null || userId.isEmpty()) {
                     Log.e(FoursquareAuthManager.Companion.LOG_TAG, "Unable to get Foursquare user id")
                     return
@@ -150,9 +150,9 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
                 userManager.saveFoursquareId(userId)
             }
 
-            override fun failure(error: RetrofitError) {
+            override fun onFailure(call: Call<NLFoursquareResponse<NLFoursquareUserInfoResponse>>, t: Throwable) {
                 Log.e(FoursquareAuthManager.Companion.LOG_TAG, "Unable to get Foursquare user id")
-                Log.e(FoursquareAuthManager.Companion.LOG_TAG, error.getBody().toString())
+                Log.e(FoursquareAuthManager.Companion.LOG_TAG, t.message)
             }
         })
 

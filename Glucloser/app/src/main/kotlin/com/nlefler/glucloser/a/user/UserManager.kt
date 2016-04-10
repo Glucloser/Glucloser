@@ -2,16 +2,15 @@ package com.nlefler.glucloser.a.user
 
 import android.content.Context
 import android.util.Base64
-import bolts.Task
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.Entity
 import com.facebook.crypto.exception.CryptoInitializationException
 import com.facebook.crypto.exception.KeyChainException
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
-import com.nlefler.glucloser.a.GlucloserApplication
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.squareup.moshi.Moshi
+import rx.Observable
 import java.io.IOException
 import java.nio.charset.Charset
 import java.util.*
@@ -21,7 +20,7 @@ import javax.inject.Inject
 /**
  * Created by nathan on 2/15/16.
  */
-class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) {
+class UserManager @Inject constructor(val userService: CairoUserService, val ctx: Context) {
 
     companion object {
         private val SHARED_PREFS_NAME = "com.nlefler.glucloser.a.usermanager"
@@ -29,8 +28,7 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         private val CONCEAL_ENTITY_NAME = "com.nlefler.glucloser.a.concealentity"
     }
 
-    private class Identity (val uuid: String?, val pushToken: String?,
-                            val profile: String) {
+    private class Identity (val sessionID: String?, val pushToken: String?) {
     }
 
     private val crypto = Crypto(SharedPrefsBackedKeyChain(ctx), SystemNativeCryptoLibrary())
@@ -41,82 +39,47 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         identity = getDecryptedIdentity()
     }
 
-    fun loginOrCreateUser(email: String): Task<Unit> {
-        val uuid = identity.uuid ?: UUID.randomUUID().toString()
-        return createUserOrLogin(email, uuid).continueWithTask { task ->
-            if (task.isFaulted) {
-                // TODO(nl) Handle error
-                return@continueWithTask Task.forError<Unit>(task.error)
-            }
-            val profile = task.result
-            if (profile != null) {
-                updateIdentity(uuid, identity.pushToken, profile)
-            }
-            return@continueWithTask Task.forResult(Unit)
-        }
+    fun loginOrCreateUser(email: String): Observable<Unit> {
+        val uuid = identity.sessionID ?: UUID.randomUUID().toString()
+        updateIdentity(uuid, identity.pushToken)
+        return createUserOrLogin(email, uuid)
     }
 
     fun savePushToken(token: String) {
-        val uuid = identity.uuid ?: return
-        savePushToken(uuid, token).continueWith { task ->
-            if (task.isFaulted) {
-                // TODO(nl) Handle error
-                return@continueWith
-            }
-            val profile = task.result
-            if (profile != null) {
-                updateIdentity(uuid, identity.pushToken, profile)
-            }
-        }
+        val uuid = identity.sessionID ?: return
+        updateIdentity(uuid, identity.pushToken)
+        savePushToken(uuid, token)
     }
 
     fun saveFoursquareId(fsqId: String) {
-        val uuid = identity.uuid ?: return
-        saveFoursquareId(uuid, fsqId).continueWith { task ->
-            if (task.isFaulted) {
-                // TODO(nl) Handle error
-                return@continueWith
-            }
-            val profile = task.result
-            if (profile != null) {
-                updateIdentity(uuid, identity.pushToken, profile)
-            }
-        }
+        val uuid = identity.sessionID ?: return
+        saveFoursquareId(uuid, fsqId)
     }
 
 
-    private fun createUserOrLogin(email: String, uuid: String): Task<String?> {
-        return ddpxSync.call("createOrLogin", arrayOf(email, uuid)).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
+    private fun createUserOrLogin(email: String, sessionID: String): Observable<Unit> {
+        return userService.createOrLogin(object: CairoUserService.CreateOrLoginBody {
+            override val sessionID = sessionID
+            override val email = email
+        })
+   }
 
-    private fun savePushToken(uuid: String, token: String): Task<String?> {
-        return ddpxSync.call("savePushToken", arrayOf(uuid, token)).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
+    private fun savePushToken(sessionID: String, token: String): Observable<Unit> {
+        return userService.savePushToken(object: CairoUserService.SavePushTokenBody {
+            override val sessionID = sessionID
+            override val token = token
+        })
+   }
 
-    private fun saveFoursquareId(uuid: String, fsqId: String): Task<String?> {
-        return ddpxSync.call("saveFoursquareId", arrayOf(uuid, fsqId)).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<String>(error)
-            }
-            return@continueWithTask Task.forResult(task.result.result)
-        }
-    }
+    private fun saveFoursquareId(sessionID: String, fsqId: String): Observable<Unit> {
+        return userService.saveFoursquareID(object: CairoUserService.SaveFoursquareIDBody {
+            override val sessionID = sessionID
+            override val token = fsqId
+        })
+   }
 
-    fun uuid(): String? {
-        return identity.uuid
+    fun sessionID(): String? {
+        return identity.sessionID
     }
 
     private fun clearIdentity() {
@@ -126,9 +89,9 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
         identityLock.release()
     }
 
-    private fun updateIdentity(uuid: String, pushToken: String?, profile: String) {
+    private fun updateIdentity(uuid: String, pushToken: String?) {
         identityLock.acquire()
-        identity = UserManager.Identity(uuid, pushToken, profile)
+        identity = UserManager.Identity(uuid, pushToken)
         encryptAndStoreIdentity(ctx, identity)
         identityLock.release()
     }
@@ -190,6 +153,6 @@ class UserManager @Inject constructor(val ddpxSync: DDPxSync, val ctx: Context) 
     }
 
     private fun emptyIdentity(): UserManager.Identity {
-        return UserManager.Identity(null, null, "{}")
+        return UserManager.Identity(null, null)
     }
 }

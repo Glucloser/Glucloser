@@ -10,6 +10,7 @@ import com.nlefler.glucloser.a.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
 import com.nlefler.glucloser.a.ui.MealHistoryViewHolder
@@ -34,7 +35,7 @@ interface RootComponent {
 
     fun newDDPx(): (() -> DDPx)
 
-    fun serverSync(): DDPxSync
+    fun userService(): CairoUserService
 
     fun inject(client: BloodSugarFactory)
     fun inject(client: BolusEventFactory)

@@ -5,7 +5,6 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 
-import com.google.gson.Gson
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.PlaceJsonAdapter
 import com.nlefler.glucloser.a.models.CheckInPushedData
@@ -156,7 +155,8 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
             Log.e(LOG_TAG, "Cannot create Place from check-in data, parse bundle null")
             return null
         }
-        val checkInData = (Gson()).fromJson<CheckInPushedData>(checkInDataSerialized, CheckInPushedData::class.java)
+        val jsonAdapter = Moshi.Builder().build().adapter(CheckInPushedData::class.java)
+        val checkInData = jsonAdapter.fromJson(checkInDataSerialized)
         if (checkInData == null) {
             Log.e(LOG_TAG, "Cannot create Place from check-in data, couldn't parse data")
             return null

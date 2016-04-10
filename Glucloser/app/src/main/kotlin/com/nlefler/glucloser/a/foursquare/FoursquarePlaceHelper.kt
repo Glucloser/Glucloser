@@ -19,10 +19,10 @@ import com.nlefler.nlfoursquare.Search.NLFoursquareVenueSearchParametersBuilder
 import java.util.ArrayList
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider
-import retrofit.Callback
-import retrofit.RestAdapter
-import retrofit.RetrofitError
-import retrofit.client.Response
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
 import rx.Observable
 import rx.Subscriber
 import rx.Subscription
@@ -32,7 +32,7 @@ import rx.functions.Action1
  * Created by Nathan Lefler on 12/12/14.
  */
 class FoursquarePlaceHelper(private val context: Context, val foursquareAuthManager: FoursquareAuthManager) {
-    private val restAdapter: RestAdapter
+    private val restAdapter: Retrofit
     private val foursquareSearchCategories: MutableList<String>
     private val locationProvider: ReactiveLocationProvider
     private val locationSubscription: Subscription
@@ -46,7 +46,7 @@ class FoursquarePlaceHelper(private val context: Context, val foursquareAuthMana
             }
         })
 
-        this.restAdapter = RestAdapter.Builder().setEndpoint(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
+        this.restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
         this.foursquareSearchCategories = ArrayList<String>()
         this.foursquareSearchCategories.add("4d4b7105d754a06374d81259") // Food
         this.foursquareSearchCategories.add("4d4b7105d754a06376d81259") // Nightlife
@@ -93,15 +93,14 @@ class FoursquarePlaceHelper(private val context: Context, val foursquareAuthMana
 
         val venueSearch = restAdapter.create<NLFoursquareVenueSearch>(NLFoursquareVenueSearch::class.java)
         venueSearch.search(parametersBuilder.buildWithClientParameters(foursquareAuthManager.getClientAuthParameters(this.context)), object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
-            override fun success(foursquareResponse: NLFoursquareResponse<NLFoursquareVenueSearchResponse>, response: Response) {
-                subscriber.onNext(foursquareResponse.response.venues)
+            override fun onResponse(call: Call<NLFoursquareResponse<NLFoursquareVenueSearchResponse>>, response: Response<NLFoursquareResponse<NLFoursquareVenueSearchResponse>>) {
+                subscriber.onNext(response.body().response.venues)
                 subscriber.onCompleted()
             }
 
-            override fun failure(error: RetrofitError) {
-                Log.e("4SQ", error.message)
-                Log.e("4SQ", error.getBody().toString())
-                subscriber.onError(error)
+            override fun onFailure(call: Call<NLFoursquareResponse<NLFoursquareVenueSearchResponse>>, t: Throwable) {
+                Log.e("4SQ", t.message)
+                subscriber.onError(t)
             }
         })
     }

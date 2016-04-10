@@ -10,6 +10,8 @@ import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.components.DaggerRootComponent
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.push.PushRegistrationIntentService
 import com.nlefler.glucloser.a.user.UserManager
@@ -24,11 +26,9 @@ import javax.inject.Singleton
  */
 @Module
 class GlucloserApplication : Application() {
-    lateinit var ddpx: DDPx
-
+    val cairoServiceBuilder = CairoServices()
     val rootComponent = DaggerRootComponent.builder().glucloserApplication(this).build()
 
-    private var ddpxSync: DDPxSync? = null
     private var foursquareAuthManager: FoursquareAuthManager? = null
     private var userManager: UserManager? = null
 
@@ -46,8 +46,7 @@ class GlucloserApplication : Application() {
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
 
-        ddpxSync = rootComponent.serverSync()
-        userManager = UserManager(ddpxSync!!, this)
+        userManager = UserManager(rootComponent.userService(), this)
         foursquareAuthManager = rootComponent.foursquareAuthManager()
     }
 
@@ -83,6 +82,11 @@ class GlucloserApplication : Application() {
     @Provides
     fun userManager(): UserManager {
         return userManager!!
+    }
+
+    @Provides
+    fun userService(): CairoUserService {
+        return cairoServiceBuilder.userService()
     }
 
     @Provides
