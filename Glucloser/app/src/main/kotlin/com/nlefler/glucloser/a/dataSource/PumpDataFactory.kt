@@ -40,7 +40,12 @@ public class PumpDataFactory @Inject constructor(val realmManager: RealmManager,
 
     fun sensorReadingsAfter(date: Date): Task<Array<SensorReading>> {
         val ejson = ejsonAdapter()
-        return ddpxSync.call("sensorReadingsAfter", arrayOf(ejson.toJson(date))).continueWithTask { task ->
+        val cal = Calendar.getInstance()
+        cal.time = date
+        cal.add(Calendar.HOUR, 2)
+        val endDate = cal.time
+
+        return ddpxSync.call("sensorReadingsBetween", arrayOf(ejson.toJson(date), ejson.toJson(endDate))).continueWithTask { task ->
             if (task.isFaulted) {
                 return@continueWithTask Task.forError<Array<SensorReading>>(task.error)
             }

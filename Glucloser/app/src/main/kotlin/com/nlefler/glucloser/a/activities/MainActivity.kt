@@ -226,14 +226,14 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val rootView = inflater!!.inflate(R.layout.fragment_main, container, false)
 
-            this.mealHistoryListView = rootView.findViewById(R.id.meal_history_list) as RecyclerView
+            mealHistoryListView = rootView.findViewById(R.id.meal_history_list) as RecyclerView
 
             this.mealHistoryLayoutManager = LinearLayoutManager(getActivity())
-            this.mealHistoryListView!!.setLayoutManager(this.mealHistoryLayoutManager)
+            this.mealHistoryListView!!.layoutManager = this.mealHistoryLayoutManager
 
             this.mealHistoryAdapter = MealHistoryRecyclerAdapter(activity, ArrayList<Meal>(), bolusEventFactory)
-            this.mealHistoryListView!!.setAdapter(this.mealHistoryAdapter)
-            this.mealHistoryListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
+            this.mealHistoryListView!!.adapter = this.mealHistoryAdapter
+//            this.mealHistoryListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
             val activity = getActivity();
 

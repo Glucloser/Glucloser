@@ -122,6 +122,8 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
             dataSet.color = R.color.colorPrimaryDark
 
             sensorChart?.data = LineData(ChartData.generateXVals(0, dataSet.entryCount), listOf(dataSet))
+            sensorChart?.setDescription(getString(R.string.sensor_readings_chart_label))
+
             sensorChart?.axisLeft?.axisMinValue = task.result.minBy { reading -> reading.reading }?.reading?.toFloat() ?: 0f
             sensorChart?.axisLeft?.axisMinValue = task.result.maxBy { reading -> reading.reading }?.reading?.toFloat() ?: 0f
             sensorChart?.axisRight?.isEnabled = false
