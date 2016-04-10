@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nlefler.glucloser" >
+    package="com.nlefler.glucloser.a" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -12,20 +12,20 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <permission
-        android:name="com.nlefler.glucloser.permission.C2D_MESSAGE"
+        android:name="com.nlefler.glucloser.a.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.nlefler.glucloser.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.nlefler.glucloser.a.permission.C2D_MESSAGE" />
 
 
     <application
-        android:name=".GlucloserApplication"
+        android:name="com.nlefler.glucloser.a.GlucloserApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.nlefler.glucloser.a.activities.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,13 +39,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.LogBolusEventActivity"
+            android:name="com.nlefler.glucloser.a.activities.LogBolusEventActivity"
             android:label="@string/title_activity_log_meal"
-            android:parentActivityName=".activities.MainActivity"
+            android:parentActivityName="com.nlefler.glucloser.a.activities.MainActivity"
             android:windowSoftInputMode="adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.MainActivity" />
+                android:value="com.nlefler.glucloser.a.activities.MainActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -54,7 +54,7 @@
 
                 <data
                     android:host="logMeal"
-                    android:scheme="com.nlefler.glucloser" />
+                    android:scheme="com.nlefler.glucloser.a" />
             </intent-filter>
         </activity>
         <activity
@@ -71,35 +71,35 @@
             </intent-filter>
         </receiver>
         <service
-            android:name=".push.PushListenerService"
+            android:name="com.nlefler.glucloser.a.push.PushListenerService"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
         <service
-            android:name=".push.PushTokenRefreshService"
+            android:name="com.nlefler.glucloser.a.push.PushTokenRefreshService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
         <service
-            android:name="com.nlefler.glucloser.push.PushRegistrationIntentService"
+            android:name="com.nlefler.glucloser.a.push.PushRegistrationIntentService"
             android:exported="false">
         </service>
 
         <activity
-            android:name=".activities.HistoricalBolusDetailActivity"
+            android:name="com.nlefler.glucloser.a.activities.HistoricalBolusDetailActivity"
             android:label="@string/title_activity_bolus_detail"
-            android:parentActivityName=".activities.MainActivity"
+            android:parentActivityName="com.nlefler.glucloser.a.activities.MainActivity"
             android:windowSoftInputMode="adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.nlefler.glucloser.activities.MainActivity" />
+                android:value="com.nlefler.glucloser.a.activities.MainActivity" />
         </activity>
         <activity
-            android:name=".activities.LoginActivity"
+            android:name="com.nlefler.glucloser.a.activities.LoginActivity"
             android:label="@string/title_activity_login" >
         </activity>
     </application>

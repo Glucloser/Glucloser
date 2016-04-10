@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1.0"
-    tools:context="com.nlefler.glucloser.ui.BolusEventDetailsFragment">
+    tools:context=".ui.BolusEventDetailsFragment">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:id="@+id/meal_edit_detail_place_name"
         android:textAppearance="@android:style/TextAppearance.Medium" />
 
 
     <RelativeLayout
         android:layout_width="match_parent"
+        android:layout_below="@id/meal_edit_detail_place_name"
         android:layout_height="80dp"
         android:id="@+id/meal_edit_carbs_insulin_totals_container">
 
@@ -108,8 +110,9 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/meal_edit_carbs_insulin_totals_container"
         android:weightSum="1.0"
-        tools:context="com.nlefler.glucloser.ui.BolusEventDetailsFragment">
+        tools:context=".ui.BolusEventDetailsFragment">
 
         <EditText
             android:id="@+id/meal_edit_detail_food_name_value"
@@ -143,14 +146,15 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/bolus_event_detail_food_list"
         android:scrollbars="vertical"
+        android:layout_below="@id/meal_edit_food_entry_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="320dp" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/save_meal_verb"
+        android:layout_alignParentBottom="true"
         android:id="@+id/meal_edit_detail_save_button" />
 
-</LinearLayout>
+</RelativeLayout>

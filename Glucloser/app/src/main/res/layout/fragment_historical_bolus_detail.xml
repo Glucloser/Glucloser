@@ -99,6 +99,11 @@
 
     </RelativeLayout>
 
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/historical_bolus_detail_sensor_chart"
+        android:layout_width="match_parent"
+        android:layout_height="150dp" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/historical_bolus_detail_food_list"
         android:scrollbars="vertical"
