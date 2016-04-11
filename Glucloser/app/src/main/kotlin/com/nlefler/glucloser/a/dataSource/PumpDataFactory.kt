@@ -2,12 +2,10 @@ package com.nlefler.glucloser.a.dataSource
 
 import android.util.Log
 import bolts.Task
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.SensorReading
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
+import rx.Observable
 import java.util.*
 import javax.inject.Inject
 
@@ -15,7 +13,7 @@ import javax.inject.Inject
  * Created by nathan on 3/26/16.
  */
 public class PumpDataFactory @Inject constructor(val realmManager: RealmManager,
-                                                 val ddpxSync: DDPxSync,
+                                                 val pumpService: CairoPumpService,
                                                  val bloodSugarFactory: BloodSugarFactory,
                                                  val bolusPatternFactory: BolusPatternFactory,
                                                  val foodFactory: FoodFactory) {
@@ -38,32 +36,12 @@ public class PumpDataFactory @Inject constructor(val realmManager: RealmManager,
         }
     }
 
-    fun sensorReadingsAfter(date: Date): Task<Array<SensorReading>> {
-        val ejson = ejsonAdapter()
+    fun sensorReadingsAfter(date: Date): Observable<SensorReading> {
         val cal = Calendar.getInstance()
         cal.time = date
         cal.add(Calendar.HOUR, 2)
         val endDate = cal.time
 
-        return ddpxSync.call("sensorReadingsBetween", arrayOf(ejson.toJson(date), ejson.toJson(endDate))).continueWithTask { task ->
-            if (task.isFaulted) {
-                return@continueWithTask Task.forError<Array<SensorReading>>(task.error)
-            }
-
-            try {
-                val readingsAdapter = Moshi.Builder().add(EJsonAdapter()).build().adapter(Array<SensorReading>::class.java)
-                val readings = readingsAdapter.fromJson(task.result.result)
-                return@continueWithTask Task.forResult(readings)
-            } catch (e: Exception) {
-                return@continueWithTask Task.forError<Array<SensorReading>>(e)
-            }
-        }
-    }
-
-    private fun ejsonAdapter(): JsonAdapter<Date> {
-        return Moshi.Builder()
-                .add(EJsonAdapter())
-                .build()
-                .adapter(Date::class.java)
+        return pumpService.cgmReadingsBetween(date, endDate)
     }
 }

@@ -5,7 +5,6 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.PlaceJsonAdapter
 import com.nlefler.glucloser.a.models.CheckInPushedData
 import com.nlefler.glucloser.a.models.Place
@@ -63,7 +62,6 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     fun jsonAdapter(): JsonAdapter<Place> {
         return Moshi.Builder()
                 .add(PlaceJsonAdapter(realmManager.defaultRealm()))
-                .add(EJsonAdapter())
                 .build().adapter(Place::class.java)
     }
 

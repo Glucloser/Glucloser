@@ -5,7 +5,6 @@ import android.util.Log
 import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
@@ -31,7 +30,6 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     public fun jsonAdapter(): JsonAdapter<Food> {
         return Moshi.Builder()
                 .add(FoodJsonAdapter(realmManager.defaultRealm()))
-                .add(EJsonAdapter())
                 .build()
                 .adapter(Food::class.java)
     }

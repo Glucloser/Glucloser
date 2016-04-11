@@ -9,8 +9,9 @@ import com.nlefler.glucloser.a.R
 import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.components.DaggerRootComponent
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.push.PushRegistrationIntentService
@@ -87,6 +88,16 @@ class GlucloserApplication : Application() {
     @Provides
     fun userService(): CairoUserService {
         return cairoServiceBuilder.userService()
+    }
+
+    @Provides
+    fun collectionService(): CairoCollectionService {
+        return cairoServiceBuilder.collectionService()
+    }
+
+    @Provides
+    fun pumpService(): CairoPumpService {
+        return cairoServiceBuilder.pumpService()
     }
 
     @Provides

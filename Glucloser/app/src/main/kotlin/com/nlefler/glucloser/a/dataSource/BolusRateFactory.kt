@@ -5,7 +5,6 @@ import com.nlefler.glucloser.a.models.BolusRate
 
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -56,7 +55,6 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
     public fun jsonAdapter(): JsonAdapter<BolusRate> {
         return Moshi.Builder()
                 .add(BolusRateJsonAdapter(realmManager.defaultRealm()))
-                .add(EJsonAdapter())
                 .build()
                 .adapter(BolusRate::class.java)
     }

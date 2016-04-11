@@ -5,7 +5,6 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.BolusRate
@@ -69,7 +68,6 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
     fun jsonAdapter(): JsonAdapter<BolusPattern> {
         return Moshi.Builder()
                 .add(BolusPatternJsonAdapter(realmManager.defaultRealm()))
-                .add(EJsonAdapter())
                 .build()
                 .adapter(BolusPattern::class.java)
     }
