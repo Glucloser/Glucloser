@@ -12,28 +12,12 @@ import javax.inject.Inject
 /**
  * Created by nathan on 3/26/16.
  */
-public class PumpDataFactory @Inject constructor(val realmManager: RealmManager,
-                                                 val pumpService: CairoPumpService,
-                                                 val bloodSugarFactory: BloodSugarFactory,
-                                                 val bolusPatternFactory: BolusPatternFactory,
-                                                 val foodFactory: FoodFactory) {
+public class PumpDataFactory @Inject constructor(val pumpService: CairoPumpService) {
 
     private val LOG_TAG = "PumpDataFactory"
 
-    fun currentCarbRatios(uuid: String): Task<BolusPattern?> {
-        return ddpxSync.call("currentCarbRatios", arrayOf(uuid)).continueWithTask { task ->
-            if (task.isFaulted) {
-                val error = Exception(task.error.message)
-                return@continueWithTask Task.forError<BolusPattern?>(error)
-            }
-            try {
-                val pattern = bolusPatternFactory.jsonAdapter().fromJson(task.result.result)
-                return@continueWithTask Task.forResult(pattern)
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, e.message)
-                return@continueWithTask Task.forError<BolusPattern?>(e)
-            }
-        }
+    fun currentCarbRatios(uuid: String): Observable<BolusPattern> {
+        return pumpService.currentBolusPattern()
     }
 
     fun sensorReadingsAfter(date: Date): Observable<SensorReading> {
