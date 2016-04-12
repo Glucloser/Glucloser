@@ -88,10 +88,8 @@ public class BolusEventDetailsFragment : Fragment() {
 
                 val uuid = dataFactory?.userManager()?.sessionID()
                 if (uuid != null) {
-                    pumpDataFactory?.currentCarbRatios(uuid)?.continueWith { task ->
-                        if (!task.isFaulted) {
-                            bolusPattern = task.result
-                        }
+                    pumpDataFactory?.currentCarbRatios(uuid)?.subscribe { pattern ->
+                        bolusPattern = pattern
                     }
                 }
             }
