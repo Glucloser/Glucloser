@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Debug
 import android.support.multidex.MultiDex
 import com.nlefler.glucloser.a.R
-import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.components.DaggerRootComponent
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
@@ -27,11 +26,7 @@ import javax.inject.Singleton
  */
 @Module
 class GlucloserApplication : Application() {
-    val cairoServiceBuilder = CairoServices()
     val rootComponent = DaggerRootComponent.builder().glucloserApplication(this).build()
-
-    private var foursquareAuthManager: FoursquareAuthManager? = null
-    private var userManager: UserManager? = null
 
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
@@ -46,9 +41,6 @@ class GlucloserApplication : Application() {
                 .schemaVersion(4)
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
-
-        userManager = UserManager(rootComponent.userService(), this)
-        foursquareAuthManager = rootComponent.foursquareAuthManager()
     }
 
     override fun onCreate() {
@@ -71,38 +63,6 @@ class GlucloserApplication : Application() {
     @Provides
     fun appContext(): Context {
         return this
-    }
-
-    // DataFactoryComponent
-//    @Provides @Singleton
-//    fun serverSync(): DDPxSync {
-//        return ddpxSync!!
-//    }
-
-    // AuthAndIdentityComponent
-    @Provides
-    fun userManager(): UserManager {
-        return userManager!!
-    }
-
-    @Provides
-    fun userService(): CairoUserService {
-        return cairoServiceBuilder.userService()
-    }
-
-    @Provides
-    fun collectionService(): CairoCollectionService {
-        return cairoServiceBuilder.collectionService()
-    }
-
-    @Provides
-    fun pumpService(): CairoPumpService {
-        return cairoServiceBuilder.pumpService()
-    }
-
-    @Provides
-    fun newDDPx(): (() -> DDPx) {
-        return { DDPx(getString(R.string.ddpx_server)) }
     }
 
     companion object {

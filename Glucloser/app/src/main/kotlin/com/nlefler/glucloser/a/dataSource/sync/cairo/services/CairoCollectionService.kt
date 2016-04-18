@@ -11,12 +11,12 @@ import rx.Observable
  * Created by nathan on 4/10/16.
  */
 interface CairoCollectionService {
-   @PUT("/collection/places/addPlace")
+   @PUT("collection/places/addPlace")
    fun addPlace(@Body body: Place): Observable<Unit>
 
-   @PUT("/collection/meals/addMeal")
+   @PUT("collection/meals/addMeal")
    fun addMeal(@Body body: Meal): Observable<Unit>
 
-   @PUT("/collection/snacks/addSnack")
+   @PUT("collection/snacks/addSnack")
    fun addSnack(@Body body: Snack): Observable<Unit>
 }

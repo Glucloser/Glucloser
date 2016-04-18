@@ -19,12 +19,16 @@ def _create_DATEOBJ(data, tmz_delta, format):
         date += tmz_delta
     return date
 
+def dateToStr(date):
+    # Since datetime doesn't understand parsing timezones
+    return date.strftime("%Y-%m-%dT%H:%M:%S") + "-04:00"
+
 def create_DATE(data, tmz_delta):
     date = _create_DATEOBJ(data, tmz_delta, "%m/%d/%y")
-    return {"__type": "Date", "iso": date.isoformat()}
+    return dateToStr(date)
 
 def create_TIME(data, tmz_delta):
-    date = _create_DATEOBJ(data, None, "%H:%M:%S")
+    date = _create_DATEOBJ(data, tmz_delta, "%H:%M:%S")
     time_struct = date.timetuple()
     hour = time_struct[3] * 60 * 60
     min =  time_struct[4] * 60
@@ -33,7 +37,7 @@ def create_TIME(data, tmz_delta):
 
 def create_TIMESTAMP(data, tmz_delta):
     date = _create_DATEOBJ(data, tmz_delta, "%m/%d/%y %H:%M:%S")
-    return {"__type": "Date", "iso": date.isoformat()}
+    return dateToStr(date)
 
 def create_STRING(data):
     return str(data)
@@ -54,14 +58,13 @@ def hilite(string, status, bold):
         attr.append('1')
     return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
 
-API_KEY_HEADER = "X-Parse-REST-API-Key"
-APP_ID_HEADER = "X-Parse-Application-Id"
+API_KEY_HEADER = "X-Cairo-API-Key"
+APP_ID_HEADER = "X-Cairo-Application-ID"
 
-API_KEY = ""
-APP_ID = ""
+API_KEY = "GODRG097oZwx2/3IvTX57NjkRtbXfrafY1uHz+ZC9P61XhVhR/m3RWpeYNaDfHR2joUqcHOjkETOfIeoy1HyBcj/OnhvK/7DUShI9FuuFt7g16CWo9NUu9LzJ1GZVFZLqnxdr5/MX1Vyn4mdfqGZ+dWG5yk0R+PkDaWA18Yei26q24RHraShip3lSNa6Bxs3VgD+ksrQqigYu93V6QzjEy3Etj/NtFcegDahJjfwd6mhvtZBcNRLs+aw+Ub6Tf6/XvJcvNphOgmKE672NEX4/VeUdNkluLvN8udfp/VWERXlSPDpg/bnpINGCyW6eWfbORUCznZ2iG1REejf+ZNUDQ=="
+APP_ID = "glucloser"
 
-URL = "https://api.parse.com/1/classes/"
-CLASS_NAME = "MedtronicMinimedParadigmRevel755PumpData"
+URL = "https://cairo.glucloser.com:443/pump/data/upload"
 
 HEADERS = {API_KEY_HEADER: API_KEY, APP_ID_HEADER: APP_ID, "Content-Type": "application/json"}
 
@@ -74,13 +77,13 @@ TIMESTAMP = 4
 STRING = 5
 
 # Export format v1.0.1
-column_types = [INT, DATE, TIME, TIMESTAMP, TIMESTAMP, INT, STRING, FLOAT, STRING, TIME, STRING, FLOAT, FLOAT, TIME, STRING, FLOAT, STRING, STRING, FLOAT, INT, INT, FLOAT, INT, FLOAT, INT, FLOAT, FLOAT, FLOAT, STRING, INT, INT, FLOAT, FLOAT, STRING, STRING, FLOAT, FLOAT, FLOAT, STRING]
+column_types = [INT, DATE, STRING, TIMESTAMP, TIMESTAMP, INT, STRING, FLOAT, STRING, STRING, STRING, FLOAT, FLOAT, TIME, STRING, FLOAT, STRING, STRING, FLOAT, INT, INT, INT, INT, INT, INT, FLOAT, FLOAT, FLOAT, STRING, INT, INT, FLOAT, FLOAT, STRING, STRING, INT, INT, INT, STRING]
 
 skip_info_rows_count = 11
 
 # Don't have any way to get the GMT offset of the device
-# Need to reverse time zone because Parse expects GMT
-pst_delta = timedelta(hours=7)
+# TODO(nl) EST/EDT
+tz_delta = timedelta(hours=4)
 
 csv_file = sys.argv[1]
 
@@ -115,11 +118,11 @@ for row in csv_reader:
         elif type == FLOAT:
             value = create_FLOAT(data)
         elif type == DATE:
-            value = create_DATE(data, pst_delta)
+            value = create_DATE(data, tz_delta)
         elif type == TIME:
-            value = create_TIME(data, pst_delta)
+            value = data #create_TIME(data, tz_delta)
         elif type == TIMESTAMP:
-            value = create_TIMESTAMP(data, pst_delta)
+            value = create_TIMESTAMP(data, tz_delta)
         elif type == STRING:
             value = create_STRING(data)
         else:
@@ -127,17 +130,17 @@ for row in csv_reader:
             exit(-1)
 
         payload[massage_column_header(column_header)] = value
-    
+
     if not payload:
         print "Empty payload, skipping"
         continue
 
     print "Uploading ", payload
 
-    response = requests.post(URL + CLASS_NAME, data=json.dumps(payload), headers=HEADERS)
-    
+    response = requests.put(URL, data=json.dumps(payload), headers=HEADERS)
+
     if isTTY and response.status_code >= 400 and response.status_code < 500:
         print hilite("Response code " + str(response.status_code) + " => " + response.text, response.status_code, True)
+        exit()
     else:
         print hilite("Response code " + str(response.status_code) + " => " + response.text, response.status_code, False)
-

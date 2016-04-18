@@ -11,6 +11,7 @@ import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.dataSource.*
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
@@ -46,12 +47,13 @@ class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    lateinit var collectionService: CairoCollectionService
+    lateinit var userServices: CairoServices
         @Inject set
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
     private val foodParcelableList: MutableList<FoodParcelable> = ArrayList()
+    private val collectionService = userServices.collectionService()
 
     constructor() {
 

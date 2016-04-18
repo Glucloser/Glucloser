@@ -24,11 +24,12 @@ import com.nlefler.glucloser.a.dataSource.PumpDataFactory
 import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.SensorReading
+import rx.Observer
 import rx.Scheduler
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import java.util.*
+import java.util.ArrayList
 
 class HistoricalBolusDetailActivityFragment : Fragment() {
     var foodFactory: FoodFactory? = null
@@ -119,7 +120,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         pumpDataFactory?.sensorReadingsAfter(date)
                 ?.subscribeOn(Schedulers.newThread())
                 ?.observeOn(AndroidSchedulers.mainThread())
-                ?.subscribe(object: Subscriber<SensorReading>() {
+                ?.subscribe(object: Observer<SensorReading> {
                     override fun onNext(reading: SensorReading) {
                         val fReading = reading.reading.toFloat()
                         dataList.add(Entry(fReading, dataList.count() + 1))
@@ -131,13 +132,13 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
                         val dataSet = LineDataSet(dataList, getString(R.string.sensor_readings_chart_label))
                         dataSet.lineWidth = 2f
                         dataSet.setDrawCircles(false)
-                        dataSet.color = R.color.colorPrimaryDark
+                        dataSet.color = R.color.bright_foreground_material_dark
 
                         sensorChart?.data = LineData(ChartData.generateXVals(0, dataSet.entryCount), listOf(dataSet))
                         sensorChart?.setDescription(getString(R.string.sensor_readings_chart_label))
 
-                        sensorChart?.axisLeft?.axisMinValue = minReading
-                        sensorChart?.axisLeft?.axisMinValue = maxReading
+                        sensorChart?.axisLeft?.setAxisMinValue(minReading)
+                        sensorChart?.axisLeft?.setAxisMaxValue(maxReading)
                         sensorChart?.axisRight?.isEnabled = false
                         sensorChart?.invalidate()
                     }

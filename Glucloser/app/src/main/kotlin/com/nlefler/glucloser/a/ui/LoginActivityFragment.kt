@@ -11,9 +11,13 @@ import com.nlefler.glucloser.a.GlucloserApplication
 
 import com.nlefler.glucloser.a.R;
 import com.nlefler.glucloser.a.user.UserManager
+import rx.Observer
+import rx.Subscriber
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import javax.inject.Inject
 
-public class LoginActivityFragment : Fragment() {
+public class LoginActivityFragment : Fragment(), Observer<Void?> {
 
     @Inject lateinit var userManager: UserManager
 
@@ -35,12 +39,21 @@ public class LoginActivityFragment : Fragment() {
 
             if (username.length > 0) {
                 userManager.loginOrCreateUser(username)
-                // TODO(nl) Handle failure
-                activity.finish()
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this)
             }
         }
 
         return rootView;
     }
-
+    override fun onNext(v: Void?) {
+    }
+    override fun onCompleted() {
+        activity.finish()
+    }
+    override fun onError(t: Throwable) {
+        // TODO(nl) Handle failure
+        activity.finish()
+    }
 }

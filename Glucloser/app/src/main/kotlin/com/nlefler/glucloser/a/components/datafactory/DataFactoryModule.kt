@@ -1,6 +1,5 @@
 package com.nlefler.glucloser.a.components.datafactory
 
-import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
