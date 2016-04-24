@@ -6,7 +6,6 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BloodSugarJsonAdapter
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
@@ -75,7 +74,6 @@ public class BloodSugarFactory @Inject constructor(val realmManager: RealmManage
     public fun jsonAdapter(): JsonAdapter<BloodSugar> {
         return Moshi.Builder()
                 .add(BloodSugarJsonAdapter(realmManager.defaultRealm()))
-                .add(EJsonAdapter())
                 .build()
                 .adapter(BloodSugar::class.java)
     }

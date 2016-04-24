@@ -1,12 +1,10 @@
 package com.nlefler.glucloser.a.components.datafactory
 
-import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.dataSource.RealmManager
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
 import dagger.Module
 import dagger.Provides
 import io.realm.Realm

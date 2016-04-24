@@ -1,7 +1,6 @@
 package com.nlefler.glucloser.a.components
 
 import android.content.Context
-import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.actions.LogBolusEventAction
 import com.nlefler.glucloser.a.activities.LogBolusEventActivity
@@ -9,7 +8,10 @@ import com.nlefler.glucloser.a.activities.MainActivity
 import com.nlefler.glucloser.a.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.*
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
 import com.nlefler.glucloser.a.ui.MealHistoryViewHolder
@@ -32,9 +34,7 @@ interface RootComponent {
 
     fun foursquareAuthManager(): FoursquareAuthManager
 
-    fun newDDPx(): (() -> DDPx)
-
-    fun serverSync(): DDPxSync
+    fun cairoServices(): CairoServices
 
     fun inject(client: BloodSugarFactory)
     fun inject(client: BolusEventFactory)
@@ -66,5 +66,7 @@ interface RootComponent {
     fun inject(client: PlaceSelectionViewHolder)
     fun inject(client: LoginActivityFragment)
     fun inject(client: MainActivity.HistoryListFragment)
+    fun inject(client: CairoServices)
+    fun inject(client: UserManager)
 
 }

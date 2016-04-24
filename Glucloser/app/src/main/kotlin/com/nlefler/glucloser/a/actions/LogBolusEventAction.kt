@@ -8,10 +8,11 @@ import bolts.Task
 import bolts.TaskCompletionSource
 
 import com.nlefler.glucloser.a.dataSource.*
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.dataSource.*
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
 
@@ -46,12 +47,13 @@ class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    lateinit var serverSync: DDPxSync
+    lateinit var userServices: CairoServices
         @Inject set
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
     private val foodParcelableList: MutableList<FoodParcelable> = ArrayList()
+    private val collectionService = userServices.collectionService()
 
     constructor() {
 
@@ -167,9 +169,9 @@ class LogBolusEventAction : Parcelable {
                         }
                         val place = meal.place
                         if (place != null) {
-                            serverSync.saveModel(place)
+                            collectionService.addPlace(place)
                         }
-                        serverSync.saveModel(meal)
+                        collectionService.addMeal(meal)
                     }
 
                 }
@@ -211,7 +213,7 @@ class LogBolusEventAction : Parcelable {
                             return@continueWith
                         }
 
-                        serverSync.saveModel(snack)
+                        collectionService.addSnack(snack)
                     }
                 }
                 else -> {

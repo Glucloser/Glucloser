@@ -3,7 +3,6 @@ package com.nlefler.glucloser.a.dataSource
 import bolts.Continuation
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.EJsonAdapter
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.SnackJsonAdapter
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.Food
@@ -59,7 +58,6 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager,
         val realm = realmManager.defaultRealm()
         return Moshi.Builder()
                 .add(SnackJsonAdapter(realm))
-                .add(EJsonAdapter())
                 .build()
                 .adapter(Snack::class.java)
     }

@@ -6,10 +6,12 @@ import android.content.Intent
 import android.os.Debug
 import android.support.multidex.MultiDex
 import com.nlefler.glucloser.a.R
-import com.nlefler.ddpx.DDPx
 import com.nlefler.glucloser.a.components.DaggerRootComponent
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
-import com.nlefler.glucloser.a.dataSource.sync.DDPxSync
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.push.PushRegistrationIntentService
 import com.nlefler.glucloser.a.user.UserManager
@@ -24,13 +26,7 @@ import javax.inject.Singleton
  */
 @Module
 class GlucloserApplication : Application() {
-    lateinit var ddpx: DDPx
-
     val rootComponent = DaggerRootComponent.builder().glucloserApplication(this).build()
-
-    private var ddpxSync: DDPxSync? = null
-    private var foursquareAuthManager: FoursquareAuthManager? = null
-    private var userManager: UserManager? = null
 
     override fun attachBaseContext(context: Context) {
         super.attachBaseContext(context)
@@ -45,10 +41,6 @@ class GlucloserApplication : Application() {
                 .schemaVersion(4)
                 .build();
         Realm.setDefaultConfiguration(realmConfig)
-
-        ddpxSync = rootComponent.serverSync()
-        userManager = UserManager(ddpxSync!!, this)
-        foursquareAuthManager = rootComponent.foursquareAuthManager()
     }
 
     override fun onCreate() {
@@ -71,23 +63,6 @@ class GlucloserApplication : Application() {
     @Provides
     fun appContext(): Context {
         return this
-    }
-
-    // DataFactoryComponent
-//    @Provides @Singleton
-//    fun serverSync(): DDPxSync {
-//        return ddpxSync!!
-//    }
-
-    // AuthAndIdentityComponent
-    @Provides
-    fun userManager(): UserManager {
-        return userManager!!
-    }
-
-    @Provides
-    fun newDDPx(): (() -> DDPx) {
-        return { DDPx(getString(R.string.ddpx_server)) }
     }
 
     companion object {
