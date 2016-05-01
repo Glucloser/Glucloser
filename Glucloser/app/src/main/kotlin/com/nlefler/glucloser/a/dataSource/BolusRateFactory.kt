@@ -4,13 +4,13 @@ import bolts.Continuation
 import com.nlefler.glucloser.a.models.BolusRate
 
 import bolts.Task
+import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
+import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import io.realm.Realm
-import io.realm.RealmObject
 import javax.inject.Inject
 
 /**
@@ -18,33 +18,15 @@ import javax.inject.Inject
  */
 class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
-    fun emptyRate(): Task<BolusRate?> {
-        return bolusRateForId("__glucloser_special_empty_bolus_rate", true)
+    fun emptyRate(): BolusRate {
+        return BolusRate()
     }
 
-    public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): Task<BolusRate?> {
-        return bolusRateForId(parcelable.id, true).continueWithTask { task ->
-            if (task.isFaulted) {
-                return@continueWithTask task
-            }
-            val rate = task.result
-            return@continueWithTask dbManager.executeTransaction(object: DBManager.Tx<BolusRate?> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return listOf(rate)
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
-                    val liveRate = dependsOn.first() as BolusRate?
-                    liveRate?.ordinal = parcelable.ordinal
-                    liveRate?.carbsPerUnit = parcelable.carbsPerUnit
-                    liveRate?.startTime = parcelable.startTime
-                    return liveRate
-                }
-            })
-        }
+    fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
+        return BolusRate(parcelable.id, parcelable.ordinal, parcelable.carbsPerUnit, parcelable.startTime)
     }
 
-    public fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
+    fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
         val parcel = BolusRateParcelable()
         parcel.ordinal = rate.ordinal
         parcel.carbsPerUnit = rate.carbsPerUnit
@@ -53,40 +35,34 @@ class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
         return parcel
     }
 
-    public fun jsonAdapter(): JsonAdapter<BolusRate> {
+    fun jsonAdapter(): JsonAdapter<BolusRate> {
         return Moshi.Builder()
-                .add(BolusRateJsonAdapter(dbManager.defaultRealm()))
+                .add(BolusRateJsonAdapter())
                 .build()
                 .adapter(BolusRate::class.java)
     }
 
-    private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
-        assert(id.length > 0)
+    private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate> {
+        if (id.isEmpty()) {
+            return Task.forError<BolusRate>(Exception("Invalid ID"))
+        }
 
-        return dbManager.executeTransaction(object: DBManager.Tx<BolusRate?> {
-            override fun dependsOn(): List<RealmObject?> {
-                return emptyList()
+        val task = TaskCompletionSource<BolusRate>()
+        val query = SQLStmts.BolusRate.ForID()
+        dbManager.query(query, arrayOf(id), { cursor ->
+            if (cursor == null) {
+                task.setError(Exception("Unable to read db"))
+                return@query
             }
-
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
-
-                val query = realm.where<BolusRate>(BolusRate::class.java)
-
-                query?.equalTo(BolusRate.IdFieldName, id)
-                val foundRate = query?.findFirst()
-                if (foundRate != null) {
-                    return foundRate
-                }
-                else if (create) {
-                    val rate = realm.createObject<BolusRate>(BolusRate::class.java)
-                    rate!!.primaryId = id
-                    return rate
-                }
-                else {
-                    return null
-                }
+            if (!cursor.moveToFirst()) {
+                task.setError(Exception("No result for id and create not set"))
+                return@query
             }
+            task.setResult(BolusRate(id, query.getOridnal(cursor), query.getCarbsPerUnit(cursor),
+                    query.getStartTime(cursor)))
+            cursor.close()
         })
+        return task.task
     }
 
 }

@@ -46,12 +46,12 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
                 .adapter(BloodSugar::class.java)
     }
 
-    private fun bloodSugarForBloodSugarId(id: String, create: Boolean): Task<BloodSugar?> {
-        if (create && id.isEmpty()) {
-            return Task.forResult(BloodSugar())
+    private fun bloodSugarForBloodSugarId(id: String): Task<BloodSugar> {
+        if (id.isEmpty()) {
+            return Task.forError<BloodSugar>(Exception("Invalid ID"))
         }
 
-        var task = TaskCompletionSource<BloodSugar?>()
+        var task = TaskCompletionSource<BloodSugar>()
         val query = SQLStmts.BloodSugar.ForID()
         dbManager.query(query, arrayOf(id), { cursor ->
             if (cursor == null) {
@@ -59,16 +59,11 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
                 return@query
             }
             if (!cursor.moveToFirst()) {
-                if (create) {
-                    task.setResult(BloodSugar(id))
-                    return@query
-                }
-                else {
-                    task.setError(Exception("No result for id and create not set"))
-                    return@query
-                }
+                task.setError(Exception("No result for id and create not set"))
+                return@query
             }
             task.setResult(BloodSugar(id, query.getValue(cursor), query.getDate(cursor)))
+            cursor.close()
         })
         return task.task
     }

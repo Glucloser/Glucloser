@@ -30,18 +30,24 @@ class DBManager @Inject constructor(val ctx: Context):
     }
 
     fun query(query: SQLStmts.Query, whereArgs: Array<String>?, handle: (Cursor?)->Unit): Task<Unit> {
-        val _task = TaskCompletionSource<Unit>()
+        val task = TaskCompletionSource<Unit>()
         scheduler.createWorker().schedule {
-            val cursor = db?.query(query.table, query.projection, whereColsToClause(query.whereCols), whereArgs, null, null, query.sortClause, null)
+            val cursor = db?.query(query.table, query.projection, query.whereClause, whereArgs, null, null, query.sortClause, null)
             handle(cursor)
+            task.setResult(Unit)
         }
-        return _task.task
+        return task.task
     }
 
-    private fun whereColsToClause(cols: Array<String>): String {
-        return cols.joinToString(" = ? AND ") + " = ?"
+    fun rawQuery(query: SQLStmts.RawQuery, whereArgs: Array<String>?, handle: (Cursor?)->Unit): Task<Unit> {
+        val task = TaskCompletionSource<Unit>()
+        scheduler.createWorker().schedule {
+            val cursor = db?.rawQuery(query.query, whereArgs)
+            handle(cursor)
+            task.setResult(Unit)
+        }
+        return task.task
     }
-
 
     companion object {
         val LOG_TAG = "RealmManager"
