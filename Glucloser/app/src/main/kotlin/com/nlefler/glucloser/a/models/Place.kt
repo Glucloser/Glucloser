@@ -12,7 +12,5 @@ data class Place(
         val latitude: Float = 0f,
         val longitude: Float = 0f,
         val visitCount: Int = 0
-    ) : DBTable, Syncable {
-    override val tableName = Place::class.simpleName!!
-    override val primaryKeyField = Place::primaryId.name
+    ): Syncable {
 }

@@ -3,7 +3,7 @@ package com.nlefler.glucloser.a.components.datafactory
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
 import dagger.Module
 import dagger.Provides
@@ -17,8 +17,8 @@ import javax.inject.Singleton
 @Module
 class DataFactoryModule() {
 
-    @Provides fun realmFactory(): RealmManager {
-        return RealmManager()
+    @Provides fun realmFactory(): DBManager {
+        return DBManager()
     }
 
 }

@@ -9,7 +9,5 @@ data class Food(
         val primaryId: String = UUID.randomUUID().toString(),
         val carbs: Int = 0,
         val foodName: String = ""
-    ) : DBTable {
-    override val tableName = Food::class.simpleName!!
-    override val primaryKeyField = Food::primaryId.name
+    ) {
 }

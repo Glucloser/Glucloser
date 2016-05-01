@@ -6,7 +6,7 @@ import bolts.Continuation
 import bolts.Task
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.PlaceJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.CheckInPushedData
 import com.nlefler.glucloser.a.models.Place
 import com.nlefler.glucloser.a.models.parcelable.PlaceParcelable
@@ -24,7 +24,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
+class PlaceFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "PlaceFactory"
 
     fun placeForId(id: String): Task<Place?> {
@@ -32,7 +32,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     fun mostUsedPlaces(limit: Int): Task<List<Place>> {
-        return realmManager.executeTransaction(object: RealmManager.TxList<Place> {
+        return dbManager.executeTransaction(object: DBManager.TxList<Place> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }
@@ -62,7 +62,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
 
     fun jsonAdapter(): JsonAdapter<Place> {
         return Moshi.Builder()
-                .add(PlaceJsonAdapter(realmManager.defaultRealm()))
+                .add(PlaceJsonAdapter(dbManager.defaultRealm()))
                 .build().adapter(Place::class.java)
     }
 
@@ -78,7 +78,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                 return@placeForId task
             }
             val place = task.result
-            return@placeForId realmManager.executeTransaction(object : RealmManager.Tx<Place?> {
+            return@placeForId dbManager.executeTransaction(object : DBManager.Tx<Place?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(place)
                 }
@@ -114,7 +114,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
                     }
 
                     val place = task.result
-                    return@placeForId realmManager.executeTransaction(object : RealmManager.Tx<Place?> {
+                    return@placeForId dbManager.executeTransaction(object : DBManager.Tx<Place?> {
                         override fun dependsOn(): List<RealmObject?> {
                             return listOf(place)
                         }
@@ -183,7 +183,7 @@ class PlaceFactory @Inject constructor(val realmManager: RealmManager) {
             place.name = ""
         }
 
-        return realmManager.executeTransaction(object: RealmManager.Tx<Place?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<Place?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

@@ -4,7 +4,7 @@ import bolts.Continuation
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.SnackJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.Snack
@@ -21,7 +21,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 4/25/15.
  */
-public class SnackFactory @Inject constructor(val realmManager: RealmManager,
+public class SnackFactory @Inject constructor(val dbManager: DBManager,
                                               val bloodSugarFactory: BloodSugarFactory,
                                               val bolusPatternFactory: BolusPatternFactory,
                                               val foodFactory: FoodFactory) {
@@ -56,7 +56,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     fun jsonAdapter(): JsonAdapter<Snack> {
-        val realm = realmManager.defaultRealm()
+        val realm = dbManager.defaultRealm()
         return Moshi.Builder()
                 .add(SnackJsonAdapter(realm))
                 .build()
@@ -80,7 +80,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager,
                     val snack = snackTask.result
                     val sugar = beforeSugarTask?.result
 
-                    return@whenAll realmManager.executeTransaction(object : RealmManager.Tx<Snack?> {
+                    return@whenAll dbManager.executeTransaction(object : DBManager.Tx<Snack?> {
                         override fun dependsOn(): List<RealmObject?> {
                             return listOf(sugar, snack)
                         }
@@ -100,7 +100,7 @@ public class SnackFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     private fun snackForSnackId(id: String, create: Boolean): Task<Snack?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx<Snack?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<Snack?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

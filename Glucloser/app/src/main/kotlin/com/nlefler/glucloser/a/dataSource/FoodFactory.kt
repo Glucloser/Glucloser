@@ -6,7 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.JsonAdapter
@@ -21,7 +21,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 5/19/15.
  */
-public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
+public class FoodFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "BloodSugarFactory"
 
     public fun food(): Task<Food?> {
@@ -30,7 +30,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun jsonAdapter(): JsonAdapter<Food> {
         return Moshi.Builder()
-                .add(FoodJsonAdapter(realmManager.defaultRealm()))
+                .add(FoodJsonAdapter(dbManager.defaultRealm()))
                 .build()
                 .adapter(Food::class.java)
     }
@@ -43,7 +43,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
                     }
 
                     val food = task.result
-                    return@foodForId realmManager.executeTransaction(object : RealmManager.Tx<Food?> {
+                    return@foodForId dbManager.executeTransaction(object : DBManager.Tx<Food?> {
                         override fun dependsOn(): List<RealmObject?> {
                             return listOf(food)
                         }
@@ -79,7 +79,7 @@ public class FoodFactory @Inject constructor(val realmManager: RealmManager) {
     }
 
     private fun foodForFoodId(id: String, create: Boolean): Task<Food?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx<Food?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<Food?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

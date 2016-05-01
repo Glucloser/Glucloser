@@ -5,7 +5,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.BolusRate
@@ -20,7 +20,7 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/19/15.
  */
-class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
+class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolusRateFactory: BolusRateFactory) {
 
     fun emptyPattern(): Task<BolusPattern?> {
         return bolusPatternForId("__glucloser_special_empty_bolus_pattern", false).continueWithTask { task ->
@@ -40,7 +40,7 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
                     return@emptyRate bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
                             .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
                                 val bolusPattern = task.result
-                                return@patternForId realmManager.executeTransaction(object : RealmManager.Tx<BolusPattern?> {
+                                return@patternForId dbManager.executeTransaction(object : DBManager.Tx<BolusPattern?> {
                                     override fun dependsOn(): List<RealmObject?> {
                                         return listOf(bolusRate, bolusPattern)
                                     }
@@ -68,7 +68,7 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
 
     fun jsonAdapter(): JsonAdapter<BolusPattern> {
         return Moshi.Builder()
-                .add(BolusPatternJsonAdapter(realmManager.defaultRealm()))
+                .add(BolusPatternJsonAdapter(dbManager.defaultRealm()))
                 .build()
                 .adapter(BolusPattern::class.java)
     }
@@ -102,7 +102,7 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
     }
 
     private fun bolusPatternForId(id: String, create: Boolean): Task<BolusPattern?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx<BolusPattern?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<BolusPattern?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

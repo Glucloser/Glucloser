@@ -14,7 +14,5 @@ data class Snack(
         override val beforeSugar: BloodSugar? = null,
         override val isCorrection: Boolean = false,
         override val foods: List<Food> = ArrayList()
-    ) : DBTable, BolusEvent, Syncable {
-    override val tableName = Snack::class.simpleName!!
-    override val primaryKeyField = Snack::primaryId.name
+    ) : BolusEvent, Syncable {
 }

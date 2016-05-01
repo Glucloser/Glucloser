@@ -10,7 +10,5 @@ data class BolusRate(
         val ordinal: Int = 0,
         val carbsPerUnit: Int = 0,
         val startTime: Int = 0
-    ) : DBTable {
-    override val tableName = BolusRate::class.simpleName!!
-    override val primaryKeyField = BolusRate::primaryId.name
+    ) {
 }

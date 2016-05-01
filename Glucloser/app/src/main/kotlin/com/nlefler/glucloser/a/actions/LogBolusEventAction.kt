@@ -1,5 +1,6 @@
 package com.nlefler.glucloser.a.actions
 
+import android.database.sqlite.SQLiteDatabase
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
@@ -13,7 +14,7 @@ import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
 
@@ -42,7 +43,7 @@ class LogBolusEventAction : Parcelable {
     lateinit var snackFactory: SnackFactory
         @Inject set
 
-    lateinit var realmManager: RealmManager
+    lateinit var dbManager: DBManager
         @Inject set
 
     lateinit var cairoServices: CairoServices
@@ -130,12 +131,8 @@ class LogBolusEventAction : Parcelable {
                             return@mealAll Task.forError(Exception("Dependencies null"))
                         }
 
-                        return@mealAll realmManager.executeTransaction(object : RealmManager.Tx<Meal?> {
-                            override fun dependsOn(): List<RealmObject?> {
-                                return listOf(meal, place, beforeSugar, bolusPattern) + foodList
-                            }
-
-                            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Meal? {
+                        return@mealAll dbManager.executeTransaction(object : DBManager.Tx {
+                            override fun execute(db: SQLiteDatabase) {
                                 val liveMeal = dependsOn.first() as Meal?
                                 val livePlace = dependsOn[1] as Place?
                                 val liveSugar = dependsOn[2] as BloodSugar?
@@ -156,7 +153,6 @@ class LogBolusEventAction : Parcelable {
 
                                 return liveMeal
                             }
-
                         })
 
                     }).continueWith mealUpload@ { task ->
@@ -187,7 +183,7 @@ class LogBolusEventAction : Parcelable {
                                     return@snackPar Task.forError(Exception("Dependencies null"))
                                 }
 
-                                return@snackPar realmManager.executeTransaction(object : RealmManager.Tx<Snack?> {
+                                return@snackPar dbManager.executeTransaction(object : DBManager.Tx<Snack?> {
                                     override fun dependsOn(): List<RealmObject?> {
                                         return listOf(snack, beforeSugar, bolusPattern) + foodList
                                     }

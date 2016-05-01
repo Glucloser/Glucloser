@@ -6,7 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.MealJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BolusPattern
@@ -29,7 +29,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealFactory @Inject constructor(val realmManager: RealmManager,
+public class MealFactory @Inject constructor(val dbManager: DBManager,
                                              val bolusPatternFactory: BolusPatternFactory,
                                              val bloodSugarFactory: BloodSugarFactory,
                                              val placeFactory: PlaceFactory,
@@ -79,7 +79,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
 
     public fun jsonAdapter(): JsonAdapter<Meal> {
         return Moshi.Builder()
-                .add(MealJsonAdapter(realmManager.defaultRealm()))
+                .add(MealJsonAdapter(dbManager.defaultRealm()))
                 .build()
                 .adapter(Meal::class.java)
     }
@@ -126,7 +126,7 @@ public class MealFactory @Inject constructor(val realmManager: RealmManager,
     }
 
     private fun mealForMealId(id: String, create: Boolean): Task<Meal?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx<Meal?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<Meal?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

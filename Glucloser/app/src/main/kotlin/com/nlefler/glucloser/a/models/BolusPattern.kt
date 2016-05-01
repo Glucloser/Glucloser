@@ -9,7 +9,5 @@ import java.util.*
 data class BolusPattern(
         val primaryId: String = UUID.randomUUID().toString(),
         val rates: List<BolusRate> = ArrayList<BolusRate>()
-    ) : DBTable {
-    override val tableName = BolusPattern::class.simpleName!!
-    override val primaryKeyField = BolusPattern::primaryId.name
+    ) {
 }

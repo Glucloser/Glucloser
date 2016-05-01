@@ -27,7 +27,7 @@ import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.BolusEventFactory
 import com.nlefler.glucloser.a.dataSource.MealHistoryRecyclerAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.models.BolusEvent
 import com.nlefler.glucloser.a.models.BolusEventType
@@ -209,7 +209,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         lateinit var bolusEventFactory: BolusEventFactory
         @Inject set
 
-        var realmManager: RealmManager? = null
+        var dbManager: DBManager? = null
 
         private var mealHistoryListView: RecyclerView? = null
         private var mealHistoryLayoutManager: RecyclerView.LayoutManager? = null
@@ -219,7 +219,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
             super.onCreate(savedInstanceState)
 
             val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
-            realmManager = dataFactory?.realmFactory()
+            dbManager = dataFactory?.realmFactory()
             bolusEventFactory = dataFactory?.bolusEventFactory()!!
         }
 
@@ -265,7 +265,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         }
 
         internal fun updateMealHistory() {
-            val realm = realmManager?.defaultRealm()
+            val realm = dbManager?.defaultRealm()
             val mealQuery = realm?.allObjectsSorted(Meal::class.java, Meal.DateFieldName, Sort.DESCENDING)
             val snackQuery = realm?.allObjectsSorted(Snack::class.java, Snack.DateFieldName, Sort.DESCENDING)
 
@@ -290,13 +290,13 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
 
             mealQuery?.asObservable()?.subscribe { meals ->
                 mealResults.clear()
-                val deadMeals = realmManager?.defaultRealm()?.copyFromRealm(meals) ?: emptyList()
+                val deadMeals = dbManager?.defaultRealm()?.copyFromRealm(meals) ?: emptyList()
                 mealResults.addAll(deadMeals)
                 updateDisplayedList()
             }
             snackQuery?.asObservable()?.subscribe { snacks ->
                 snackResults.clear()
-                val deadSnacks = realmManager?.defaultRealm()?.copyFromRealm(snacks) ?: emptyList()
+                val deadSnacks = dbManager?.defaultRealm()?.copyFromRealm(snacks) ?: emptyList()
                 snackResults.addAll(deadSnacks)
                 updateDisplayedList()
             }

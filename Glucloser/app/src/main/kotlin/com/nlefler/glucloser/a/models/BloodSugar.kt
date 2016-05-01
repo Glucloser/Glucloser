@@ -9,7 +9,5 @@ data class BloodSugar(
         val primaryId: String = UUID.randomUUID().toString(),
         val value: Int = 0,
         val recordedDate: Date = Date()
-    ): DBTable {
-    override val tableName = BloodSugar::class.simpleName!!
-    override val primaryKeyField = BloodSugar::primaryId.name
+    ) {
 }

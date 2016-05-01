@@ -15,7 +15,5 @@ data class Meal(
         override val isCorrection: Boolean = false,
         override val foods: List<Food> = ArrayList(),
         override val place: Place? = null
-    ) : DBTable, BolusEvent, HasPlace, Syncable {
-    override val tableName = Meal::class.simpleName!!
-    override val primaryKeyField = Meal::primaryId.name
+    ) : BolusEvent, HasPlace, Syncable {
 }

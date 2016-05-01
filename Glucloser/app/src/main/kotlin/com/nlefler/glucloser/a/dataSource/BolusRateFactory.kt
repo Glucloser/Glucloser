@@ -5,7 +5,7 @@ import com.nlefler.glucloser.a.models.BolusRate
 
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
-import com.nlefler.glucloser.a.db.RealmManager
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -16,7 +16,7 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/1/15.
  */
-class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
+class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
     fun emptyRate(): Task<BolusRate?> {
         return bolusRateForId("__glucloser_special_empty_bolus_rate", true)
@@ -28,7 +28,7 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
                 return@continueWithTask task
             }
             val rate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
+            return@continueWithTask dbManager.executeTransaction(object: DBManager.Tx<BolusRate?> {
                 override fun dependsOn(): List<RealmObject?> {
                     return listOf(rate)
                 }
@@ -55,7 +55,7 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
 
     public fun jsonAdapter(): JsonAdapter<BolusRate> {
         return Moshi.Builder()
-                .add(BolusRateJsonAdapter(realmManager.defaultRealm()))
+                .add(BolusRateJsonAdapter(dbManager.defaultRealm()))
                 .build()
                 .adapter(BolusRate::class.java)
     }
@@ -63,7 +63,7 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
     private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
         assert(id.length > 0)
 
-        return realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
+        return dbManager.executeTransaction(object: DBManager.Tx<BolusRate?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()
             }

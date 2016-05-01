@@ -4,22 +4,13 @@ import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.json.BloodSugarJson
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
-import io.realm.Realm
 
 /**
  * Created by nathan on 1/31/16.
  */
-public class BloodSugarJsonAdapter(val realm: Realm) {
+public class BloodSugarJsonAdapter() {
     @FromJson fun fromJson(json: BloodSugarJson): BloodSugar {
-        val sugar = realm.createObject(BloodSugar::class.java)
-
-        realm.executeTransaction {
-            sugar.primaryId = json.primaryId
-            sugar.recordedDate = json.date
-            sugar.value = json.value
-        }
-
-        return sugar
+        return BloodSugar(json.primaryId, json.value, json.date)
     }
 
     @ToJson fun toJson(sugar: BloodSugar): BloodSugarJson {
