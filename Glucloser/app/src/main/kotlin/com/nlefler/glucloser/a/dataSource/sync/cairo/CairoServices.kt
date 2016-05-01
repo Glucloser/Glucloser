@@ -4,10 +4,13 @@ import android.content.Context
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
+import com.nlefler.glucloser.a.dataSource.RealmManager
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.DateJsonAdapter
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.RealmListAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
+import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.util.EncryptedPrefsStorageHelper
 import com.squareup.moshi.Moshi
 import okhttp3.*
@@ -19,7 +22,7 @@ import javax.inject.Inject
 /**
  * Created by nathan on 4/10/16.
  */
-class CairoServices @Inject constructor(val ctx: Context) {
+class CairoServices @Inject constructor(val ctx: Context, val realmManager: RealmManager) {
 
     companion object {
         private val SHARED_PREFS_NAME = "com.nlefler.glucloser.a.cairoservices"
@@ -48,7 +51,16 @@ class CairoServices @Inject constructor(val ctx: Context) {
         response
     }.build()
 
-    private val moshi = Moshi.Builder().add(DateJsonAdapter()).build()
+    private val moshi = Moshi.Builder()
+            .add(DateJsonAdapter())
+            .add(RealmListAdapter<Place>(realmManager))
+            .add(RealmListAdapter<Meal>(realmManager))
+            .add(RealmListAdapter<Snack>(realmManager))
+            .add(RealmListAdapter<BolusPattern>(realmManager))
+            .add(RealmListAdapter<BolusRate>(realmManager))
+            .add(RealmListAdapter<BloodSugar>(realmManager))
+            .add(RealmListAdapter<Food>(realmManager))
+            .build()
 
     private val retrofit = Retrofit.Builder()
             .client(httpClient)

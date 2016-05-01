@@ -18,16 +18,20 @@ import com.foursquare.android.nativeoauth.model.AccessTokenResponse
 import com.foursquare.android.nativeoauth.model.AuthCodeResponse
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.UrlJsonAdapter
 import com.nlefler.glucloser.a.user.UserManager
 import com.nlefler.nlfoursquare.Common.NLFoursquareEndpoint
 import com.nlefler.nlfoursquare.Model.FoursquareResponse.NLFoursquareResponse
 import com.nlefler.nlfoursquare.Model.NLFoursquareClientParameters
 import com.nlefler.nlfoursquare.Model.User.NLFoursquareUserInfoResponse
 import com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo
+import com.squareup.moshi.Moshi
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 import java.io.IOException
 import java.nio.charset.Charset
@@ -44,7 +48,11 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
 
     init {
         crypto = Crypto(SharedPrefsBackedKeyChain(ctx), SystemNativeCryptoLibrary())
-        restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
+        val moshi = Moshi.Builder().add(UrlJsonAdapter()).build()
+        restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT)
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
 
         _userAccessToken = this.getDecryptedAuthToken()
     }
@@ -139,7 +147,7 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
     fun fetchAndStoreUserId() {
         val info = this.restAdapter.create<NLFoursquareUserInfo>(NLFoursquareUserInfo::class.java)
         val authParams = getClientAuthParameters(ctx)
-        info.getInfo(authParams.authenticationParameters(), com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo.UserIdSelf, object : Callback<NLFoursquareResponse<NLFoursquareUserInfoResponse>> {
+        info.getInfo(authParams.authenticationParameters(), com.nlefler.nlfoursquare.Users.NLFoursquareUserInfo.UserIdSelf).enqueue(object : Callback<NLFoursquareResponse<NLFoursquareUserInfoResponse>> {
             override fun onResponse(call: Call<NLFoursquareResponse<NLFoursquareUserInfoResponse>>, response: Response<NLFoursquareResponse<NLFoursquareUserInfoResponse>>) {
                 val userId = response.body().response.user.id
                 if (userId == null || userId.isEmpty()) {

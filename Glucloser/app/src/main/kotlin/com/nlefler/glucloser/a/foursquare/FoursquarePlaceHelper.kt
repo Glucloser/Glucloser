@@ -6,6 +6,7 @@ import android.util.Log
 
 import com.google.android.gms.location.LocationRequest
 import com.nlefler.glucloser.a.R
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.UrlJsonAdapter
 import com.nlefler.nlfoursquare.Common.NLFoursquareEndpoint
 import com.nlefler.nlfoursquare.Common.NLFoursquareEndpointParametersBuilder
 import com.nlefler.nlfoursquare.Model.FoursquareResponse.NLFoursquareResponse
@@ -15,6 +16,7 @@ import com.nlefler.nlfoursquare.Model.Venue.Search.NLFoursquareVenueSearchRespon
 import com.nlefler.nlfoursquare.Search.NLFoursquareVenueSearch
 import com.nlefler.nlfoursquare.Search.NLFoursquareVenueSearchIntent
 import com.nlefler.nlfoursquare.Search.NLFoursquareVenueSearchParametersBuilder
+import com.squareup.moshi.Moshi
 
 import java.util.ArrayList
 
@@ -23,6 +25,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import rx.Observable
 import rx.Subscriber
 import rx.Subscription
@@ -46,7 +50,11 @@ class FoursquarePlaceHelper(private val context: Context, val foursquareAuthMana
             }
         })
 
-        this.restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT).build()
+        val moshi = Moshi.Builder().add(UrlJsonAdapter()).build()
+        this.restAdapter = Retrofit.Builder().baseUrl(NLFoursquareEndpoint.NLFOURSQUARE_V2_ENDPOINT)
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
         this.foursquareSearchCategories = ArrayList<String>()
         this.foursquareSearchCategories.add("4d4b7105d754a06374d81259") // Food
         this.foursquareSearchCategories.add("4d4b7105d754a06376d81259") // Nightlife
@@ -92,7 +100,7 @@ class FoursquarePlaceHelper(private val context: Context, val foursquareAuthMana
         }
 
         val venueSearch = restAdapter.create<NLFoursquareVenueSearch>(NLFoursquareVenueSearch::class.java)
-        venueSearch.search(parametersBuilder.buildWithClientParameters(foursquareAuthManager.getClientAuthParameters(this.context)), object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
+        venueSearch.search(parametersBuilder.buildWithClientParameters(foursquareAuthManager.getClientAuthParameters(this.context))).enqueue(object : Callback<NLFoursquareResponse<NLFoursquareVenueSearchResponse>> {
             override fun onResponse(call: Call<NLFoursquareResponse<NLFoursquareVenueSearchResponse>>, response: Response<NLFoursquareResponse<NLFoursquareVenueSearchResponse>>) {
                 subscriber.onNext(response.body().response.venues)
                 subscriber.onCompleted()

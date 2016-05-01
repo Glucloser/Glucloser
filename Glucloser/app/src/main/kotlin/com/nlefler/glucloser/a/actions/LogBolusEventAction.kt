@@ -47,16 +47,15 @@ class LogBolusEventAction : Parcelable {
     lateinit var realmManager: RealmManager
         @Inject set
 
-    lateinit var userServices: CairoServices
+    lateinit var cairoServices: CairoServices
         @Inject set
+
 
     private var placeParcelable: PlaceParcelable? = null
     private var bolusEventParcelable: BolusEventParcelable? = null
     private val foodParcelableList: MutableList<FoodParcelable> = ArrayList()
-    private val collectionService = userServices.collectionService()
 
     constructor() {
-
     }
 
     fun setPlaceParcelable(placeParcelable: PlaceParcelable) {
@@ -169,9 +168,9 @@ class LogBolusEventAction : Parcelable {
                         }
                         val place = meal.place
                         if (place != null) {
-                            collectionService.addPlace(place)
+                            cairoServices.collectionService().addPlace(place)
                         }
-                        collectionService.addMeal(meal)
+                        cairoServices.collectionService().addMeal(meal)
                     }
 
                 }
@@ -213,7 +212,7 @@ class LogBolusEventAction : Parcelable {
                             return@continueWith
                         }
 
-                        collectionService.addSnack(snack)
+                        cairoServices.collectionService().addSnack(snack)
                     }
                 }
                 else -> {

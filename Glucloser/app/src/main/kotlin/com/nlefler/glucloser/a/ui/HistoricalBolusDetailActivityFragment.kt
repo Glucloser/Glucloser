@@ -144,6 +144,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
                     }
 
                     override fun onError(t: Throwable) {
+                        val a =1
 
                     }
                 })
