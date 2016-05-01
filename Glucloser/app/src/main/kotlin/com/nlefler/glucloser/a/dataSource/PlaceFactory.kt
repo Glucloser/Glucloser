@@ -6,6 +6,7 @@ import bolts.Continuation
 import bolts.Task
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.PlaceJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.CheckInPushedData
 import com.nlefler.glucloser.a.models.Place
 import com.nlefler.glucloser.a.models.parcelable.PlaceParcelable

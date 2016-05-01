@@ -6,6 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.JsonAdapter

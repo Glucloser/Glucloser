@@ -6,6 +6,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.MealJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BolusPattern

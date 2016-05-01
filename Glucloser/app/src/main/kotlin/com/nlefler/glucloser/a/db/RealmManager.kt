@@ -1,4 +1,4 @@
-package com.nlefler.glucloser.a.dataSource
+package com.nlefler.glucloser.a.db
 
 import android.util.Log
 import bolts.Task
@@ -22,7 +22,7 @@ public class RealmManager {
                 realm = Realm.getDefaultInstance()
             }
             catch(e: Exception) {
-                Log.e(RealmManager.Companion.LOG_TAG, e.message)
+                Log.e(LOG_TAG, e.message)
             }
         })
     }
@@ -31,7 +31,7 @@ public class RealmManager {
         return Realm.getDefaultInstance()
     }
 
-    public fun <T: RealmObject?> executeTransaction(tx: RealmManager.Tx<T>) : Task<T> {
+    public fun <T: RealmObject?> executeTransaction(tx: Tx<T>) : Task<T> {
         val _task = TaskCompletionSource<T>()
         realmExecutor.submit({
             try {
@@ -51,7 +51,7 @@ public class RealmManager {
                 })
             }
             catch (e: Exception) {
-                Log.e(RealmManager.Companion.LOG_TAG, e.message)
+                Log.e(LOG_TAG, e.message)
                 taskExecutor.submit {
                     _task.trySetError(e)
                 }
@@ -60,7 +60,7 @@ public class RealmManager {
         return _task.task
     }
 
-    public fun executeTransaction(tx: RealmManager.TxMulti) : Task<List<RealmObject?>> {
+    public fun executeTransaction(tx: TxMulti) : Task<List<RealmObject?>> {
         val _task = TaskCompletionSource<List<RealmObject?>>()
         realmExecutor.submit({
             try {
@@ -80,7 +80,7 @@ public class RealmManager {
                 })
             }
             catch (e: Exception) {
-                Log.e(RealmManager.Companion.LOG_TAG, e.message)
+                Log.e(LOG_TAG, e.message)
                 taskExecutor.submit {
                     _task.trySetError(e)
                 }
@@ -89,7 +89,7 @@ public class RealmManager {
         return _task.task
     }
 
-    public fun <T: RealmObject?> executeTransaction(tx: RealmManager.TxList<T>) : Task<List<T>> {
+    public fun <T: RealmObject?> executeTransaction(tx: TxList<T>) : Task<List<T>> {
         val _task = TaskCompletionSource<List<T>>()
         realmExecutor.submit({
             try {
@@ -104,7 +104,7 @@ public class RealmManager {
                 })
             }
             catch (e: Exception) {
-                Log.e(RealmManager.Companion.LOG_TAG, e.message)
+                Log.e(LOG_TAG, e.message)
                 taskExecutor.submit {
                     _task.trySetError(e)
                 }

@@ -4,9 +4,8 @@ import android.content.Context
 import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
-import com.nlefler.glucloser.a.dataSource.RealmManager
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.DateJsonAdapter
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.RealmListAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService

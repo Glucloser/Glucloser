@@ -12,6 +12,7 @@ import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
 import com.nlefler.glucloser.a.ui.MealHistoryViewHolder

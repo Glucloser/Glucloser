@@ -3,10 +3,9 @@ package com.nlefler.glucloser.a.models
 /**
  * Created by Nathan Lefler on 12/29/14.
  */
-class CheckInPushedData {
-    var venueId: String = ""
-    var venueName: String = ""
-    var venueLat: Float = 0.toFloat()
-    var venueLon: Float = 0.toFloat()
-
-}
+data class CheckInPushedData (
+    val venueId: String = "",
+    val venueName: String = "",
+    val venueLat: Float = 0.toFloat(),
+    val venueLon: Float = 0.toFloat()
+){}

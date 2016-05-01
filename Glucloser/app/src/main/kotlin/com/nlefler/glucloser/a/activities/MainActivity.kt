@@ -27,7 +27,7 @@ import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.BolusEventFactory
 import com.nlefler.glucloser.a.dataSource.MealHistoryRecyclerAdapter
-import com.nlefler.glucloser.a.dataSource.RealmManager
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.models.BolusEvent
 import com.nlefler.glucloser.a.models.BolusEventType

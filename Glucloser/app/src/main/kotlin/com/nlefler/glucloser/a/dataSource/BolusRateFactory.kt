@@ -5,6 +5,7 @@ import com.nlefler.glucloser.a.models.BolusRate
 
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi

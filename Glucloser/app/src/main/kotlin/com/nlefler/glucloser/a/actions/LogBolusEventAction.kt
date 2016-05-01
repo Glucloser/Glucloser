@@ -13,12 +13,10 @@ import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
 
-import io.realm.Realm
-import io.realm.RealmList
-import io.realm.RealmObject
 import java.util.ArrayList
 import javax.inject.Inject
 

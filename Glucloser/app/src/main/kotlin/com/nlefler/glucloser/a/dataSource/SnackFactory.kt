@@ -4,6 +4,7 @@ import bolts.Continuation
 import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.SnackJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.Snack

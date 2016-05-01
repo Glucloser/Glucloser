@@ -5,6 +5,7 @@ import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.BolusRate

@@ -3,7 +3,7 @@ package com.nlefler.glucloser.a.components.datafactory
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
-import com.nlefler.glucloser.a.dataSource.RealmManager
+import com.nlefler.glucloser.a.db.RealmManager
 import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
 import dagger.Module
 import dagger.Provides
