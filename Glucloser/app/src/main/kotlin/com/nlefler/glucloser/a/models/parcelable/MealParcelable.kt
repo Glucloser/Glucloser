@@ -13,11 +13,11 @@ import java.util.*
  * Created by Nathan Lefler on 12/24/14.
  */
 public class MealParcelable() : Parcelable, BolusEventParcelable {
-    public var placeParcelable: PlaceParcelable? = null
 
+    var placeParcelable: PlaceParcelable
     override var id: String = UUID.randomUUID().toString()
     override var date: Date = Date()
-    override var bolusPatternParcelable: BolusPatternParcelable? = null
+    override var bolusPatternParcelable: BolusPatternParcelable
     override var carbs: Int = 0
     override var insulin: Float = 0f
     override var bloodSugarParcelable: BloodSugarParcelable? = null

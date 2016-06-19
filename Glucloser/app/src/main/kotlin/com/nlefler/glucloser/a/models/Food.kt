@@ -1,13 +1,17 @@
 package com.nlefler.glucloser.a.models
 
+import io.requery.Entity
+import io.requery.Key
 import java.util.*
 
 /**
  * Created by Nathan Lefler on 5/16/15.
  */
-data class Food(
-        val primaryId: String = UUID.randomUUID().toString(),
-        val carbs: Int = 0,
-        val foodName: String = ""
+@Entity
+open class Food(
+        @Key
+        open val primaryId: String = UUID.randomUUID().toString(),
+        open val carbs: Int,
+        open val foodName: String
     ) {
 }

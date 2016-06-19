@@ -2,12 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 'android-N'
-    buildToolsVersion "24.0.0 rc1"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 'android-N'
+        targetSdkVersion 24
     }
 
     buildTypes {
@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:24.0.0-alpha1'
+    compile 'com.android.support:support-v4:24.0.0'
     compile 'com.facebook.conceal:conceal:1.0.0@aar'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

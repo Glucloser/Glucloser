@@ -1,13 +1,10 @@
 package com.nlefler.glucloser.a.dataSource
 
-import android.content.Context
-import android.util.Log
-import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.MealJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.models.*
+import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.MealParcelable
@@ -19,56 +16,33 @@ import com.squareup.moshi.Moshi
 import java.util.Date
 import java.util.UUID
 
-import io.realm.Realm
-import io.realm.RealmObject
-import io.realm.RealmQuery
-import rx.functions.Action1
-import rx.functions.Action2
 import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealFactory @Inject constructor(val dbManager: DBManager,
+class MealFactory @Inject constructor(val dbManager: DBManager,
                                              val bolusPatternFactory: BolusPatternFactory,
                                              val bloodSugarFactory: BloodSugarFactory,
                                              val placeFactory: PlaceFactory,
                                              val foodFactory: FoodFactory) {
     private val LOG_TAG = "MealFactory"
 
-    public fun meal(): Task<Meal?> {
-        val mealTask = TaskCompletionSource<Meal?>()
-        mealForMealId(UUID.randomUUID().toString(), true).continueWith { task ->
-            if (task.isFaulted) {
-                mealTask.trySetError(task.error)
-            }
-            else {
-                mealTask.trySetResult(task.result)
-            }
-        }
-
-        return mealTask.task
-    }
-
-    public fun fetchMeal(id: String): Task<Meal?> {
-        return mealForMealId(id, false)
-    }
-
-    public fun parcelableFromMeal(meal: Meal): MealParcelable {
+    fun parcelableFromMeal(meal: Meal): MealParcelable {
         val parcelable = MealParcelable()
         if (meal.place != null) {
-            parcelable.placeParcelable = placeFactory.parcelableFromPlace(meal.place!!)
+            parcelable.placeParcelable = placeFactory.parcelableFromPlace(meal.place)
         }
         parcelable.carbs = meal.carbs
         parcelable.insulin = meal.insulin
         parcelable.id = meal.primaryId
         parcelable.isCorrection = meal.isCorrection
         if (meal.beforeSugar != null) {
-            parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(meal.beforeSugar!!)
+            parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(meal.beforeSugar)
         }
         parcelable.date = meal.date
         if (meal.bolusPattern != null) {
-            parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(meal.bolusPattern!!)
+            parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(meal.bolusPattern)
         }
         meal.foods.forEach { food ->
             parcelable.foodParcelables.add(foodFactory.parcelableFromFood(food))
@@ -77,55 +51,55 @@ public class MealFactory @Inject constructor(val dbManager: DBManager,
         return parcelable
     }
 
-    public fun jsonAdapter(): JsonAdapter<Meal> {
+    fun jsonAdapter(): JsonAdapter<Meal> {
         return Moshi.Builder()
-                .add(MealJsonAdapter(dbManager.defaultRealm()))
+                .add(MealJsonAdapter())
                 .build()
                 .adapter(Meal::class.java)
     }
 
-    public fun mealFromParcelable(parcelable: MealParcelable): Task<Meal?> {
-        var placeTask: Task<Place?> = Task.forResult(null)
-        if (parcelable.placeParcelable != null) {
-            placeTask = placeFactory.placeFromParcelable(parcelable.placeParcelable!!)
-        }
-
-        var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
-        if (parcelable.bloodSugarParcelable != null) {
-            beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
-        }
-
-        var bolusPatternTask: Task<BolusPattern?>? = Task.forResult(null)
-        if (parcelable.bolusPatternParcelable != null) {
-            bolusPatternTask = bolusPatternFactory.bolusPatternFromParcelable(parcelable.bolusPatternParcelable!!)
-        }
-
-        val mealTask = mealForMealId(parcelable.id, true)
-
-        val doneTask = TaskCompletionSource<Meal?>()
-        Task.whenAll(arrayListOf(beforeSugarTask, bolusPatternTask, placeTask, mealTask)).continueWith { task ->
-            if (task.isFaulted) {
-                doneTask.trySetError(task.error)
-                return@continueWith
-            }
-
-            val meal = mealTask.result
-
-            meal?.insulin = parcelable.insulin
-            meal?.carbs = parcelable.carbs
-            meal?.place = placeTask.result
-            meal?.beforeSugar = beforeSugarTask?.result
-            meal?.isCorrection = parcelable.isCorrection
-            meal?.date = parcelable.date
-            meal?.bolusPattern = bolusPatternTask?.result
-
-            doneTask.trySetResult(meal)
-        }
-
-        return doneTask.task
+    fun mealFromParcelable(parcelable: MealParcelable): Meal {
+        val pattern = bolusPatternFactory.bolusPatternFromParcelable(parcelable.bolusPatternParcelable)
+        val sugar = if (parcelable.bloodSugarParcelable != null) {bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)} else {null}
+        val foods = parcelable.foodParcelables.map {fp -> foodFactory.foodFromParcelable(fp)}
+        val place = placeFactory.placeFromParcelable(parcelable.placeParcelable)
+        return Meal(parcelable.id, parcelable.date, pattern,
+                parcelable.carbs, parcelable.insulin, sugar,
+                parcelable.isCorrection, foods, place)
     }
 
-    private fun mealForMealId(id: String, create: Boolean): Task<Meal?> {
+    private fun mealForMealId(id: String): Task<Meal> {
+        if (id.isEmpty()) {
+            return Task.forError<Meal>(Exception("Invalid ID"))
+        }
+
+        val task = TaskCompletionSource<Meal>()
+        val mealQuery = SQLStmts.Meal().forID()
+
+        val beforeSugarQuery = SQLStmts.Meal().BeforeSugarForMeal(id)
+        var beforeSugar: BloodSugar? = null
+        dbManager.query(beforeSugarQuery, arrayOf(id)) { cursor ->
+            if (cursor == null) {
+                task.setError(Exception("Unable to read db"))
+                return@query
+            }
+            if (!cursor.moveToFirstld()) {
+                task.setError(Exception("No result for id and create not set"))
+                return@query
+            }
+            beforeSugar = BloodSugar(beforeSugarQuery.getID(cursor))
+        }
+        var meal: Meal? = null
+        dbManager.query(mealQuery, arrayOf(id)) { cursor ->
+            if (cursor == null) {
+                task.setError(Exception("Unable to read db"))
+                return@query
+            }
+            if (!cursor.moveToFirst()) {
+                task.setError(Exception("No result for id and create not set"))
+                return@query
+            }
+        }
         return dbManager.executeTransaction(object: DBManager.Tx<Meal?> {
             override fun dependsOn(): List<RealmObject?> {
                 return emptyList()

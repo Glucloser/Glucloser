@@ -51,7 +51,7 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
             return Task.forError<BloodSugar>(Exception("Invalid ID"))
         }
 
-        var task = TaskCompletionSource<BloodSugar>()
+        val task = TaskCompletionSource<BloodSugar>()
         val query = SQLStmts.BloodSugar.ForID()
         dbManager.query(query, arrayOf(id), { cursor ->
             if (cursor == null) {

@@ -8,10 +8,11 @@ import java.util.*
  * Created by Nathan Lefler on 12/24/14.
  */
 public class PlaceParcelable() : Parcelable {
-    public var name: String = ""
-    public var foursquareId: String = UUID.randomUUID().toString()
-    public var latitude: Float = 0.toFloat()
-    public var longitude: Float = 0.toFloat()
+    var primaryId: String
+    public var name: String
+    var foursquareId: String
+    var latitude: Float
+    var longitude: Float
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {

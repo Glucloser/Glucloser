@@ -7,27 +7,28 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import bolts.Task
 import bolts.TaskCompletionSource
+import com.nlefler.glucloser.a.models.Models
+import io.requery.Persistable
+import io.requery.android.sqlite.DatabaseSource
+import io.requery.rx.RxSupport
+import io.requery.sql.EntityDataStore
 import rx.schedulers.Schedulers
 import javax.inject.Inject
 
 /**
  * Created by nathan on 12/16/15.
  */
-class DBManager @Inject constructor(val ctx: Context):
-// TODO(nl) DB Version
-        SQLiteOpenHelper(ctx, "GlucloserDB", null, 1) {
+class DBManager @Inject constructor(val ctx: Context) {
+    private val DB_VERSION = 0
+
+    private val dbSource = DatabaseSource(ctx, Models.DEFAULT, DB_VERSION)
+    private val entitySource = RxSupport.toReactiveStore(
+            EntityDataStore<Persistable>(dbSource.configuration))
 
     private val scheduler = Schedulers.io()
     private var db: SQLiteDatabase? = null
 
-    override fun onCreate(aDb: SQLiteDatabase) {
-        db = aDb
-    }
 
-    override fun onUpgrade(aDB: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // TODL(nl) Upgrade DB
-        onCreate(aDB)
-    }
 
     fun query(query: SQLStmts.Query, whereArgs: Array<String>?, handle: (Cursor?)->Unit): Task<Unit> {
         val task = TaskCompletionSource<Unit>()
@@ -44,6 +45,9 @@ class DBManager @Inject constructor(val ctx: Context):
         scheduler.createWorker().schedule {
             val cursor = db?.rawQuery(query.query, whereArgs)
             handle(cursor)
+            if (!(cursor?.isClosed ?: false)) {
+                cursor?.close()
+            }
             task.setResult(Unit)
         }
         return task.task

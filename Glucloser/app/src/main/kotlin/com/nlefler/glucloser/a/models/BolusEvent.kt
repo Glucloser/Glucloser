@@ -6,12 +6,12 @@ import java.util.Date
  * Created by Nathan Lefler on 5/8/15.
  */
 interface BolusEvent {
-    val primaryId: String
-    val date: Date
-    val bolusPattern: BolusPattern?
-    val carbs: Int
-    val insulin: Float
-    val beforeSugar: BloodSugar?
-    val isCorrection: Boolean
-    val foods: List<Food>
+    open val primaryId: String
+    open val date: Date
+    open val bolusPattern: BolusPattern?
+    open val carbs: Int
+    open val insulin: Float
+    open val beforeSugar: BloodSugar?
+    open val isCorrection: Boolean
+    open val foods: List<Food>
 }

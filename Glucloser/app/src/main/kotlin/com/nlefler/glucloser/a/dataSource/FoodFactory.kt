@@ -1,19 +1,15 @@
 package com.nlefler.glucloser.a.dataSource
 
-import android.content.Context
-import android.util.Log
 import bolts.Continuation
 import bolts.Task
 import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
+import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import io.realm.Realm
-import io.realm.RealmObject
-import rx.functions.Action2
 import java.util.UUID
 import javax.inject.Inject
 
@@ -24,39 +20,15 @@ import javax.inject.Inject
 public class FoodFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "BloodSugarFactory"
 
-    public fun food(): Task<Food?> {
-        return foodForFoodId(UUID.randomUUID().toString(), true)
-    }
-
-    public fun jsonAdapter(): JsonAdapter<Food> {
+    fun jsonAdapter(): JsonAdapter<Food> {
         return Moshi.Builder()
-                .add(FoodJsonAdapter(dbManager.defaultRealm()))
+                .add(FoodJsonAdapter())
                 .build()
                 .adapter(Food::class.java)
     }
 
-    public fun foodFromParcelable(parcelable: FoodParcelable): Task<Food?> {
-        return foodForFoodId(parcelable.foodId, true)
-                .continueWithTask(Continuation<Food?, Task<Food?>> foodForId@ { task ->
-                    if (task.isFaulted) {
-                        return@foodForId task
-                    }
-
-                    val food = task.result
-                    return@foodForId dbManager.executeTransaction(object : DBManager.Tx<Food?> {
-                        override fun dependsOn(): List<RealmObject?> {
-                            return listOf(food)
-                        }
-
-                        override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Food? {
-                            val liveFood = dependsOn.first() as Food?
-                            liveFood?.foodName = parcelable.foodName
-                            liveFood?.carbs = parcelable.carbs
-                            return liveFood
-                        }
-                    })
-                })
-
+    fun foodFromParcelable(parcelable: FoodParcelable): Food {
+        return Food(parcelable.foodId, parcelable.carbs, parcelable.foodName)
     }
 
     public fun parcelableFromFood(food: Food): FoodParcelable {
@@ -78,35 +50,25 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
         return nameOK && carbsOK
     }
 
-    private fun foodForFoodId(id: String, create: Boolean): Task<Food?> {
-        return dbManager.executeTransaction(object: DBManager.Tx<Food?> {
-            override fun dependsOn(): List<RealmObject?> {
-                return emptyList()
+    private fun foodForFoodId(id: String): Task<Food> {
+        if (id.isEmpty()) {
+            return Task.forError<Food>(Exception("Invalid ID"))
+        }
+
+        val task = TaskCompletionSource<Food>()
+        val query = SQLStmts.Food.ForID()
+        dbManager.query(query, arrayOf(id), { cursor ->
+            if (cursor == null) {
+                task.setError(Exception("Unable to read db"))
+                return@query
             }
-
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Food? {
-                if (create && id.isEmpty()) {
-                    val food = realm.createObject<Food>(Food::class.java)
-                    food!!.primaryId = UUID.randomUUID().toString()
-                    food.carbs = 0
-                    food.foodName = ""
-                    return food
-                }
-
-                val query = realm.where<Food>(Food::class.java)
-
-                query?.equalTo(Food.IdFieldName, id)
-                var food = query?.findFirst()
-
-                if (food == null && create) {
-                    food = realm.createObject<Food>(Food::class.java)
-                    food!!.primaryId = id
-                    food.carbs = 0
-                    food.foodName = ""
-                }
-
-                return food
+            if (!cursor.moveToFirst()) {
+                task.setError(Exception("No result for id and create not set"))
+                return@query
             }
+            task.setResult(Food(id, query.getCarbs(cursor), query.getFoodName(cursor)))
+            cursor.close()
         })
+        return task.task
     }
 }
