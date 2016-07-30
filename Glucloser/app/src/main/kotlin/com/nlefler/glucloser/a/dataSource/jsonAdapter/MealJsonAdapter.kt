@@ -16,25 +16,28 @@ class MealJsonAdapter() {
 
     @FromJson fun fromJson(json: MealJson): Meal {
 
-        val place = placeAdapter.fromJson(json.place)
+        val place = if (json.place != null) placeAdapter.fromJson(json.place) else null
         val foods = json.foods.map { foodJson -> foodAdapter.fromJson(foodJson)}
-        val bolusPattern = bolusPatternAdapter.fromJson(json.bolusPattern)
+        val bolusPattern = if (json.bolusPattern != null) bolusPatternAdapter.fromJson(json.bolusPattern) else null
         val beforeSugar = if (json.beforeSugar != null) {sugarAdapter.fromJson(json.beforeSugar)} else {null}
         return Meal(json.primaryId, json.date, bolusPattern, json.carbs, json.insulin,
                 beforeSugar, json.isCorrection, foods, place)
     }
 
     @ToJson fun toJson(meal: Meal): MealJson {
+        val pattern = meal.bolusPattern
+        val sugar = meal.beforeSugar
+        val place = meal.place
         return MealJson(
                 primaryId = meal.primaryId,
-                date = meal.date,
-                bolusPattern = bolusPatternAdapter.toJson(meal.bolusPattern),
+                date = meal.eatenDate,
+                bolusPattern = if (pattern != null) bolusPatternAdapter.toJson(pattern) else  null ,
                 carbs = meal.carbs,
                 insulin = meal.insulin,
-                beforeSugar = if (meal.beforeSugar != null) sugarAdapter.toJson(meal.beforeSugar) else null,
+                beforeSugar = if (sugar != null) sugarAdapter.toJson(sugar) else null,
                 isCorrection = meal.isCorrection,
                 foods = meal.foods.map { food -> foodAdapter.toJson(food) },
-                place = placeAdapter.toJson(meal.place)
+                place = if (place != null) placeAdapter.toJson(place) else null
         )
     }
 }

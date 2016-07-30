@@ -1,36 +1,36 @@
 package com.nlefler.glucloser.a.dataSource.jsonAdapter
 
-import android.util.Log
-import bolts.Task
-import com.nlefler.glucloser.a.models.Snack
+import com.nlefler.glucloser.a.models.BloodSugar
+import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.json.SnackJson
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
-import io.realm.Realm
+import java.util.*
 
 /**
  * Created by nathan on 1/31/16.
  */
-public class SnackJsonAdapter(val realm: Realm) {
-    val bolusPatternAdapter = BolusPatternJsonAdapter(realm)
-    val sugarAdapter = BloodSugarJsonAdapter(realm)
-    val foodAdapter = FoodJsonAdapter(realm)
+class SnackJsonAdapter() {
+    val bolusPatternAdapter = BolusPatternJsonAdapter()
+    val sugarAdapter = BloodSugarJsonAdapter()
+    val foodAdapter = FoodJsonAdapter()
 
     @FromJson fun fromJson(json: SnackJson): Snack {
-        val snack = realm.createObject(Snack::class.java)
-
-        realm.executeTransaction {
-            snack.primaryId = json.primaryId
-
-            snack.beforeSugar = if (json.beforeSugar != null) sugarAdapter.fromJson(json.beforeSugar) else null
-            snack.carbs = json.carbs
-            snack.insulin = json.insulin
-            snack.isCorrection = json.isCorrection
-            snack.date = json.date
-            snack.foods.addAll(json.foods.map { foodJson -> foodAdapter.fromJson(foodJson) })
+        var bolusPattern: BolusPattern? = null
+        if (json.bolusPattern != null) {
+            bolusPattern = bolusPatternAdapter.fromJson(json.bolusPattern)
         }
-
-        return snack
+        var beforeSugar: BloodSugar? = null
+        if (json.beforeSugar != null) {
+            beforeSugar = sugarAdapter.fromJson(json.beforeSugar)
+        }
+        var foods = ArrayList<Food>()
+        json.foods.forEach { jf ->
+            foods.add(foodAdapter.fromJson(jf))
+        }
+        return Snack(json.primaryId, json.date, bolusPattern, json.carbs, json.insulin,
+                beforeSugar, json.isCorrection, foods)
     }
 
     @ToJson fun toJson(snack: Snack): SnackJson {

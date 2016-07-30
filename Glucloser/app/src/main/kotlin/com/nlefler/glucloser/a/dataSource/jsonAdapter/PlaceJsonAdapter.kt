@@ -14,7 +14,7 @@ public class PlaceJsonAdapter() {
     }
 
     @FromJson fun fromJson(json: PlaceJson): Place {
-        return Place(json.primaryId, json.name, json.foursquareId, json.latitude, json.longitude)
+        return Place(json.primaryId, json.name, json.foursquareId, json.latitude, json.longitude, json.visitCount)
     }
 
     @ToJson fun toJson(place: Place): PlaceJson {
@@ -22,6 +22,7 @@ public class PlaceJsonAdapter() {
                 foursquareId = place.foursquareId,
                 name = place.name,
                 latitude = place.latitude,
-                longitude = place.longitude)
+                longitude = place.longitude,
+                visitCount = place.visitCount)
     }
 }

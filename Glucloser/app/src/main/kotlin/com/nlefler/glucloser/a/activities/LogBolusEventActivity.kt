@@ -7,7 +7,6 @@ import android.view.Menu
 import android.view.MenuItem
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.actions.LogBolusEventAction
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
@@ -25,7 +24,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
     lateinit var placeFactory: PlaceFactory
         @Inject set
 
-    private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
+//    private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +32,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
-        dataFactory?.inject(logBolusEventAction)
+//        dataFactory?.inject(logBolusEventAction)
 
         val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras()) ?: return
         setupFragmentForEventType(bolusEventType, savedInstanceState)
@@ -85,19 +84,19 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
 
     /** PlaceSelectionDelegate  */
     override fun placeSelected(placeParcelable: PlaceParcelable) {
-        this.logBolusEventAction.setPlaceParcelable(placeParcelable)
+//        this.logBolusEventAction.setPlaceParcelable(placeParcelable)
         switchToBolusEventDetailsFragment(MealParcelable(), placeParcelable)
     }
 
     /** MealDetailDelegate  */
     override fun bolusEventDetailUpdated(bolusEventParcelable: BolusEventParcelable) {
-        this.logBolusEventAction.setBolusEventParcelable(bolusEventParcelable)
+//        this.logBolusEventAction.setBolusEventParcelable(bolusEventParcelable)
         finishLoggingBolusEvent()
     }
 
     /** FoodDetailDelegate */
     override fun foodDetailUpdated(foodParcelable: FoodParcelable) {
-        this.logBolusEventAction.addFoodParcelable(foodParcelable)
+//        this.logBolusEventAction.addFoodParcelable(foodParcelable)
     }
 
     /** Helpers  */
@@ -115,7 +114,8 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
     }
 
     private fun finishLoggingBolusEvent() {
-        this.logBolusEventAction.log()
+        // TODO(nl) log
+//        this.logBolusEventAction.log()
         finish()
     }
 

@@ -14,10 +14,10 @@ import java.util.*
  */
 public class MealParcelable() : Parcelable, BolusEventParcelable {
 
-    var placeParcelable: PlaceParcelable
-    override var id: String = UUID.randomUUID().toString()
+    var placeParcelable: PlaceParcelable? = null
+    override var primaryId: String = UUID.randomUUID().toString()
     override var date: Date = Date()
-    override var bolusPatternParcelable: BolusPatternParcelable
+    override var bolusPatternParcelable: BolusPatternParcelable? = null
     override var carbs: Int = 0
     override var insulin: Float = 0f
     override var bloodSugarParcelable: BloodSugarParcelable? = null
@@ -26,7 +26,7 @@ public class MealParcelable() : Parcelable, BolusEventParcelable {
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {
-        id = parcel.readString()
+        primaryId = parcel.readString()
         placeParcelable = parcel.readParcelable<PlaceParcelable>(PlaceParcelable::class.java.classLoader)
         carbs = parcel.readInt()
         insulin = parcel.readFloat()
@@ -45,7 +45,7 @@ public class MealParcelable() : Parcelable, BolusEventParcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(id)
+        dest.writeString(primaryId)
         dest.writeParcelable(placeParcelable, flags)
         dest.writeInt(carbs)
         dest.writeFloat(insulin)

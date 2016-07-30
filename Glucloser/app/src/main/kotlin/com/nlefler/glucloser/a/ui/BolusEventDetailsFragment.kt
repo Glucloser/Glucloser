@@ -13,8 +13,6 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.*
@@ -70,31 +68,17 @@ public class BolusEventDetailsFragment : Fragment() {
 
         val bolusPatternParcelable = getBolusPatternFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
-        val patternParcelableTask = TaskCompletionSource<BolusPattern?>()
         if (bolusPatternParcelable != null) {
-            bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)?.continueWith { task ->
-                this.bolusPattern = task.result
-            }
+            this.bolusPattern = bolusPatternFactory?.bolusPatternFromParcelable(bolusPatternParcelable)
         }
         else {
-            patternParcelableTask.trySetResult(null)
-        }
-        patternParcelableTask.task.continueWith { task ->
-            if (bolusPattern == null) {
-                // TODO(nl) Fetch current bolus pattern from db
-                bolusPatternFactory?.emptyPattern()?.continueWith { task ->
-                    bolusPattern = task.result
-                }
-
-                val uuid = dataFactory?.userManager()?.sessionID()
-                if (uuid != null) {
-                    pumpDataFactory?.currentCarbRatios(uuid)?.subscribe { pattern ->
-                        bolusPattern = pattern
-                    }
+            val uuid = dataFactory?.userManager()?.sessionID()
+            if (uuid != null) {
+                pumpDataFactory?.currentCarbRatios(uuid)?.subscribe { pattern ->
+                    bolusPattern = pattern
                 }
             }
         }
-
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -174,11 +158,10 @@ public class BolusEventDetailsFragment : Fragment() {
             foodParcelable.setCarbs(0)
         }
 
-        foodFactory?.foodFromParcelable(foodParcelable)?.continueWith { task ->
-            if (!task.isFaulted && task.result != null) {
-                this.foods.add(task.result!!)
-                this.foodListAdapter?.setFoods(this.foods)
-            }
+        val food = foodFactory?.foodFromParcelable(foodParcelable)
+        if (food != null) {
+            this.foods.add(food)
+            this.foodListAdapter?.setFoods(this.foods)
         }
 
         (getActivity() as FoodDetailDelegate).foodDetailUpdated(foodParcelable)
@@ -214,13 +197,6 @@ public class BolusEventDetailsFragment : Fragment() {
 
         if (this.bolusPattern != null) {
             this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(this.bolusPattern!!)
-        }
-        else {
-             bolusPatternFactory?.emptyPattern()?.continueWith { task ->
-                if (!task.isFaulted && task.result != null) {
-                    this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(task.result!!)
-                }
-            }
         }
 
         (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)

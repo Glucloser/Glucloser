@@ -1,20 +1,23 @@
 package com.nlefler.glucloser.a.models
 
 import io.requery.Entity
+import io.requery.Generated
 import io.requery.Key
+import io.requery.Persistable
 import java.util.*
 
 /**
  * Created by Nathan Lefler on 12/11/14.
  */
 @Entity
-open class Place(
-        @Key
-        open val primaryId: String = UUID.randomUUID().toString(),
-        open val name: String = "",
-        open val foursquareId: String = UUID.randomUUID().toString(),
-        open val latitude: Float = 0f,
-        open val longitude: Float = 0f,
-        open val visitCount: Int = 0
-    ): Syncable {
+interface Place: Persistable {
+    @get:Key
+    @get:Generated
+    @get:io.requery.ForeignKey
+    var primaryId: String
+    var name: String
+    var foursquareId: String
+    var latitude: Float
+    var longitude: Float
+    var visitCount: Int
 }

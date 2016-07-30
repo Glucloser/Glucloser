@@ -1,11 +1,9 @@
 package com.nlefler.glucloser.a.dataSource
 
-import bolts.Continuation
-import bolts.Task
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.SnackJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BloodSugar
+import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.Snack
 import com.nlefler.glucloser.a.models.parcelable.SnackParcelable
@@ -13,8 +11,9 @@ import com.nlefler.glucloser.a.models.parcelable.SnackParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 
-import io.realm.Realm
-import io.realm.RealmObject
+import io.requery.kotlin.eq
+import io.requery.kotlin.invoke
+import rx.Observable
 import java.util.*
 import javax.inject.Inject
 
@@ -27,19 +26,15 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
                                               val foodFactory: FoodFactory) {
     private val LOG_TAG = "SnackFactory"
 
-    public fun snack(): Task<Snack?> {
-        return snackForSnackId(UUID.randomUUID().toString(), true)
-    }
-
-    public fun fetchSnack(id: String): Task<Snack?> {
-        return snackForSnackId(id, false)
+    public fun fetchSnack(id: String): Observable<Snack> {
+        return snackForSnackId(id)
     }
 
     public fun parcelableFromSnack(snack: Snack): SnackParcelable {
         val parcelable = SnackParcelable()
         parcelable.carbs = snack.carbs
         parcelable.insulin = snack.insulin
-        parcelable.id = snack.primaryId
+        parcelable.primaryId = snack.primaryId
         parcelable.isCorrection = snack.isCorrection
         if (snack.beforeSugar != null) {
             parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(snack.beforeSugar!!)
@@ -56,75 +51,50 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
     }
 
     fun jsonAdapter(): JsonAdapter<Snack> {
-        val realm = dbManager.defaultRealm()
         return Moshi.Builder()
-                .add(SnackJsonAdapter(realm))
+                .add(SnackJsonAdapter())
                 .build()
                 .adapter(Snack::class.java)
     }
 
-    public fun snackFromParcelable(parcelable: SnackParcelable): Task<Snack?> {
+    public fun snackFromParcelable(parcelable: SnackParcelable): Snack {
 
-        var beforeSugarTask: Task<BloodSugar?>? = Task.forResult(null)
-        if (parcelable.bloodSugarParcelable != null) {
-            beforeSugarTask = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
+        val sugarPar = parcelable.bloodSugarParcelable
+        var beforeSugar: BloodSugar? = null
+        if (sugarPar != null) {
+            beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)
         }
 
-        val snackTask = snackForSnackId(parcelable.id, true)
-        return Task.whenAll(arrayListOf(beforeSugarTask, snackTask))
-                .continueWithTask(Continuation<Void, Task<Snack?>> whenAll@ { task ->
-                    if (task.isFaulted) {
-                        return@whenAll Task.forError(task.error)
-                    }
+        val patternPar = parcelable.bolusPatternParcelable
+        var pattern: BolusPattern? = null
+        if (patternPar != null) {
+            pattern = bolusPatternFactory.bolusPatternFromParcelable(patternPar)
+        }
 
-                    val snack = snackTask.result
-                    val sugar = beforeSugarTask?.result
+        var foods = ArrayList<Food>()
+        parcelable.foodParcelables.forEach { par ->
+            foods.add(foodFactory.foodFromParcelable(par))
+        }
 
-                    return@whenAll dbManager.executeTransaction(object : DBManager.Tx<Snack?> {
-                        override fun dependsOn(): List<RealmObject?> {
-                            return listOf(sugar, snack)
-                        }
-
-                        override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
-                            val liveSugar = dependsOn.first() as BloodSugar?
-                            val liveSnack = dependsOn.last() as Snack?
-                            liveSnack?.insulin = parcelable.insulin
-                            liveSnack?.carbs = parcelable.carbs
-                            liveSnack?.isCorrection = parcelable.isCorrection
-                            liveSnack?.beforeSugar = liveSugar
-                            liveSnack?.date = parcelable.date
-                            return liveSnack
-                        }
-                    })
-                })
+        return Snack(parcelable.primaryId, parcelable.date, pattern, parcelable.carbs,
+                parcelable.insulin, beforeSugar, parcelable.isCorrection,
+                foods)
     }
 
-    private fun snackForSnackId(id: String, create: Boolean): Task<Snack?> {
-        return dbManager.executeTransaction(object: DBManager.Tx<Snack?> {
-            override fun dependsOn(): List<RealmObject?> {
-                return emptyList()
-            }
-
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): Snack? {
-                if (create && id.isEmpty()) {
-                    val snack = realm.createObject<Snack>(Snack::class.java)
-                    snack?.primaryId = UUID.randomUUID().toString()
-                    snack?.date = Date()
-                    return snack
+    private fun snackForSnackId(id: String): Observable<Snack> {
+        return Observable.create { s ->
+            dbManager.data {
+                val result = select(Snack::class) where (Snack::primaryId eq id)
+                val snack = result.invoke().firstOrNull()
+                if (snack != null) {
+                    s.onNext(snack)
                 }
-
-                val query = realm.where<Snack>(Snack::class.java)
-
-                query?.equalTo(Snack.PrimaryKeyName, id)
-                var snack: Snack? = query?.findFirst()
-
-                if (snack == null && create) {
-                    snack = realm.createObject<Snack>(Snack::class.java)
-                    snack?.primaryId = id
-                    snack?.date = Date()
+                else {
+                    // TODO(nl) no id error
+                    s.onError(Error())
                 }
-                return snack
+                s.onCompleted()
             }
-        })
+        }
     }
 }

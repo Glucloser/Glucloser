@@ -17,7 +17,7 @@ public class BloodSugarJsonAdapter() {
         val json = BloodSugarJson(
                 primaryId = sugar.primaryId,
                 date = sugar.recordedDate,
-                value = sugar.value
+                value = sugar.readingValue
         )
         return json
     }

@@ -1,7 +1,6 @@
 package com.nlefler.glucloser.a.dataSource
 
 import android.util.Log
-import bolts.Task
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.models.BolusPattern

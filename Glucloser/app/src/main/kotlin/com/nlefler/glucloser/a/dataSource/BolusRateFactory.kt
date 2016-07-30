@@ -1,16 +1,15 @@
 package com.nlefler.glucloser.a.dataSource
 
-import bolts.Continuation
 import com.nlefler.glucloser.a.models.BolusRate
 
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import io.requery.kotlin.eq
+import io.requery.query.Result
+import rx.Observable
 import javax.inject.Inject
 
 /**
@@ -19,7 +18,7 @@ import javax.inject.Inject
 class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
     fun emptyRate(): BolusRate {
-        return BolusRate()
+        return BolusRate("__EMPTY", 0, 0, 0)
     }
 
     fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
@@ -42,27 +41,12 @@ class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
                 .adapter(BolusRate::class.java)
     }
 
-    private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate> {
+    private fun bolusRateForId(id: String, create: Boolean): Observable<Result<BolusRate>> {
         if (id.isEmpty()) {
-            return Task.forError<BolusRate>(Exception("Invalid ID"))
+            return Observable.error(Exception("Invalid Id"))
         }
 
-        val task = TaskCompletionSource<BolusRate>()
-        val query = SQLStmts.BolusRate.ForID()
-        dbManager.query(query, arrayOf(id), { cursor ->
-            if (cursor == null) {
-                task.setError(Exception("Unable to read db"))
-                return@query
-            }
-            if (!cursor.moveToFirst()) {
-                task.setError(Exception("No result for id and create not set"))
-                return@query
-            }
-            task.setResult(BolusRate(id, query.getOridnal(cursor), query.getCarbsPerUnit(cursor),
-                    query.getStartTime(cursor)))
-            cursor.close()
-        })
-        return task.task
+        return dbManager.data.select(BolusRate::class).where(BolusRate::primaryId.eq(id)).get().toSelfObservable()
     }
 
 }

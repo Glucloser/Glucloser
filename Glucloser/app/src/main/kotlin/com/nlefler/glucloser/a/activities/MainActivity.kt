@@ -2,7 +2,6 @@ package com.nlefler.glucloser.a.activities
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
@@ -14,30 +13,20 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.getbase.floatingactionbutton.FloatingActionButton
 import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.BolusEventFactory
-import com.nlefler.glucloser.a.dataSource.MealHistoryRecyclerAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
-import com.nlefler.glucloser.a.models.BolusEvent
 import com.nlefler.glucloser.a.models.BolusEventType
 import com.nlefler.glucloser.a.models.Meal
-import com.nlefler.glucloser.a.models.Snack
-import com.nlefler.glucloser.a.ui.DividerItemDecoration
-import io.realm.*
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
+import java.util.*
 import javax.inject.Inject
 
 class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
@@ -146,7 +135,6 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 foursquareAuthManager.gotTokenExchangeResponse(this, resultCode, data ?: Intent())
             }
             LogBolusEventActivityIntentCode -> {
-                (getSupportFragmentManager().findFragmentByTag(HistoryFragmentId) as HistoryListFragment).updateMealHistory()
             }
         }
     }
@@ -206,34 +194,13 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
     }
 
     class HistoryListFragment constructor(): Fragment() {
-        lateinit var bolusEventFactory: BolusEventFactory
-        @Inject set
-
-        var dbManager: DBManager? = null
-
-        private var mealHistoryListView: RecyclerView? = null
-        private var mealHistoryLayoutManager: RecyclerView.LayoutManager? = null
-        private var mealHistoryAdapter: MealHistoryRecyclerAdapter? = null
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-
-            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
-            dbManager = dataFactory?.realmFactory()
-            bolusEventFactory = dataFactory?.bolusEventFactory()!!
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val rootView = inflater!!.inflate(R.layout.fragment_main, container, false)
-
-            mealHistoryListView = rootView.findViewById(R.id.meal_history_list) as RecyclerView
-
-            this.mealHistoryLayoutManager = LinearLayoutManager(getActivity())
-            this.mealHistoryListView!!.layoutManager = this.mealHistoryLayoutManager
-
-            this.mealHistoryAdapter = MealHistoryRecyclerAdapter(activity, ArrayList<Meal>(), bolusEventFactory)
-            this.mealHistoryListView!!.adapter = this.mealHistoryAdapter
-//            this.mealHistoryListView!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
             val activity = getActivity();
 
@@ -259,48 +226,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 }
             })
 
-            updateMealHistory()
-
             return rootView
-        }
-
-        internal fun updateMealHistory() {
-            val realm = dbManager?.defaultRealm()
-            val mealQuery = realm?.allObjectsSorted(Meal::class.java, Meal.DateFieldName, Sort.DESCENDING)
-            val snackQuery = realm?.allObjectsSorted(Snack::class.java, Snack.DateFieldName, Sort.DESCENDING)
-
-            val comparator = object: Comparator<BolusEvent> {
-                override fun compare(a: BolusEvent, b: BolusEvent): Int {
-                    return -1 * a.date.compareTo(b.date)
-                }
-
-                override fun equals(other: Any?): Boolean {
-                    return other == this
-                }
-            }
-
-            val mealResults = ArrayList<Meal>()
-            val snackResults = ArrayList<Snack>()
-            val updateDisplayedList = fun (): Unit {
-                val sortedResults: List<BolusEvent> = mealResults + snackResults
-                Collections.sort(sortedResults, comparator)
-
-                this.mealHistoryAdapter!!.setEvents(sortedResults)
-            }
-
-            mealQuery?.asObservable()?.subscribe { meals ->
-                mealResults.clear()
-                val deadMeals = dbManager?.defaultRealm()?.copyFromRealm(meals) ?: emptyList()
-                mealResults.addAll(deadMeals)
-                updateDisplayedList()
-            }
-            snackQuery?.asObservable()?.subscribe { snacks ->
-                snackResults.clear()
-                val deadSnacks = dbManager?.defaultRealm()?.copyFromRealm(snacks) ?: emptyList()
-                snackResults.addAll(deadSnacks)
-                updateDisplayedList()
-            }
-
         }
 
         companion object {

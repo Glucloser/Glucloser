@@ -15,7 +15,6 @@ import android.view.ViewGroup
 import com.nlefler.glucloser.a.GlucloserApplication
 
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.actions.LogBolusEventAction
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.dataSource.PlaceSelectionRecyclerAdapter
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
@@ -48,7 +47,6 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
     private var foursquareHelper: FoursquarePlaceHelper? = null
     private var closestPlacesSubscription: Subscription? = null
     private var subscriptionScheduler: Scheduler? = null
-    private var logMealAction: LogBolusEventAction = LogBolusEventAction()
 
     private var placeSelectionList: RecyclerView? = null
     private var placeSelectionAdapter: PlaceSelectionRecyclerAdapter? = null
@@ -61,19 +59,14 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
-        dataFactory?.inject(logMealAction)
 
         foursquareHelper = FoursquarePlaceHelper(getActivity(), foursquareAuthManager)
         subscriptionScheduler = Schedulers.newThread()
         getClosestPlaces(null)
-        placeFactory.mostUsedPlaces(4).continueWith { task ->
-            if (task.isFaulted) {
-                return@continueWith
-            }
-            placeSelectionAdapter?.mostUsedPlaces = task.result
+        placeFactory.mostUsedPlaces(4).map { result ->
+            placeSelectionAdapter?.mostUsedPlaces = result.toList()
             placeSelectionAdapter?.notifyDataSetChanged()
         }
-
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {

@@ -15,7 +15,7 @@ public class FoodJsonAdapter() {
 
     @ToJson fun toJson(food: Food): FoodJson {
         return FoodJson(
-                primaryId = food.primaryId,
+                primaryId = food.primaryID,
                 foodName = food.foodName,
                 carbs = food.carbs
         )

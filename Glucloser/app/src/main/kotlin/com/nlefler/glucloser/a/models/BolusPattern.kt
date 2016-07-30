@@ -1,19 +1,17 @@
 package com.nlefler.glucloser.a.models
 
 import com.nlefler.glucloser.a.models.BolusRate
-import io.requery.Entity
-import io.requery.Key
-import io.requery.OneToMany
+import io.requery.*
 import java.util.*
 
 /**
  * Created by nathan on 9/19/15.
  */
 @Entity
-open class BolusPattern(
-        @Key
-        open val primaryId: String = UUID.randomUUID().toString(),
-        @OneToMany
-        open val rates: List<BolusRate>
-    ) {
+interface BolusPattern: Persistable {
+    @get:Key
+    @get:Generated
+    @get:io.requery.ForeignKey
+    var primaryId: String
+    var rates: MutableList<BolusRate>
 }

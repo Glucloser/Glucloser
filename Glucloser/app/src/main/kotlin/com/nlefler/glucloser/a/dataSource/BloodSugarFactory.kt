@@ -1,9 +1,6 @@
 package com.nlefler.glucloser.a.dataSource
 
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
@@ -22,7 +19,7 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
             return false
         }
 
-        val valueOk = sugar1.value == sugar2.value
+        val valueOk = sugar1.readingValue == sugar2.readingValue
         val dateOK = sugar1.recordedDate == sugar2.recordedDate
 
         return valueOk && dateOK
@@ -35,7 +32,7 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
     fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
         val parcelable = BloodSugarParcelable()
         parcelable.id = sugar.primaryId
-        parcelable.value = sugar.value
+        parcelable.value = sugar.readingValue
         parcelable.date = sugar.recordedDate
         return parcelable
     }
@@ -44,27 +41,5 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
         return Moshi.Builder()
                 .build()
                 .adapter(BloodSugar::class.java)
-    }
-
-    private fun bloodSugarForBloodSugarId(id: String): Task<BloodSugar> {
-        if (id.isEmpty()) {
-            return Task.forError<BloodSugar>(Exception("Invalid ID"))
-        }
-
-        val task = TaskCompletionSource<BloodSugar>()
-        val query = SQLStmts.BloodSugar.ForID()
-        dbManager.query(query, arrayOf(id), { cursor ->
-            if (cursor == null) {
-                task.setError(Exception("Unable to read db"))
-                return@query
-            }
-            if (!cursor.moveToFirst()) {
-                task.setError(Exception("No result for id and create not set"))
-                return@query
-            }
-            task.setResult(BloodSugar(id, query.getValue(cursor), query.getDate(cursor)))
-            cursor.close()
-        })
-        return task.task
     }
 }

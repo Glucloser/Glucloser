@@ -8,6 +8,7 @@ public data class PlaceJson(
         val name: String,
         val foursquareId: String,
         val latitude: Float,
-        val longitude: Float
+        val longitude: Float,
+        val visitCount: Int
     ) {
 }

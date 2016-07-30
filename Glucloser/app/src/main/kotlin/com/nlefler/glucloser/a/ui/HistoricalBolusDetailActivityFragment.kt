@@ -62,12 +62,12 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         this.placeName = getPlaceNameFromBundle(bundle, arguments, activity.intent.extras)
 
         for (foodPar in this.bolusEventParcelable?.foodParcelables ?: ArrayList()) {
-            foodFactory?.foodFromParcelable(foodPar)?.continueWith { task ->
-                if (!task.isFaulted && task.result != null) {
-                    this.foods.add(task.result!!)
-                    this.foodListAdapter?.setFoods(this.foods)
-                    this.foodListAdapter?.notifyDataSetChanged()
-                }
+            // TODO(nl) make food
+            val food = foodFactory?.foodFromParcelable(foodPar)
+            if (food != null) {
+                this.foods.add(food)
+                this.foodListAdapter?.setFoods(this.foods)
+                this.foodListAdapter?.notifyDataSetChanged()
             }
         }
     }

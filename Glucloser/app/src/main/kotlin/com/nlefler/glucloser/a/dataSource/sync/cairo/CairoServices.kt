@@ -52,13 +52,6 @@ class CairoServices @Inject constructor(val ctx: Context, val dbManager: DBManag
 
     private val moshi = Moshi.Builder()
             .add(DateJsonAdapter())
-            .add(RealmListAdapter<Place>(dbManager))
-            .add(RealmListAdapter<Meal>(dbManager))
-            .add(RealmListAdapter<Snack>(dbManager))
-            .add(RealmListAdapter<BolusPattern>(dbManager))
-            .add(RealmListAdapter<BolusRate>(dbManager))
-            .add(RealmListAdapter<BloodSugar>(dbManager))
-            .add(RealmListAdapter<Food>(dbManager))
             .build()
 
     private val retrofit = Retrofit.Builder()

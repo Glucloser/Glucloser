@@ -1,16 +1,20 @@
 package com.nlefler.glucloser.a.models
 
 import io.requery.Entity
+import io.requery.Generated
 import io.requery.Key
+import io.requery.Persistable
 import java.util.*
 
 /**
  * Created by nathan on 3/26/16.
  */
 @Entity
-open class SensorReading(
-        @Key
-        open val primaryId: String = UUID.randomUUID().toString(),
-        open val timestamp: Date,
-        open val reading: Int) {
+interface SensorReading: Persistable {
+    @get:Key
+    @get:Generated
+    @get:io.requery.ForeignKey
+    var primaryId: String
+    var readingTimestamp: Date
+    var reading: Int
 }

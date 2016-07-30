@@ -1,15 +1,14 @@
 package com.nlefler.glucloser.a.dataSource
 
-import bolts.Continuation
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.db.SQLStmts
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import io.requery.kotlin.eq
+import io.requery.query.Result
+import rx.Observable
 import java.util.UUID
 import javax.inject.Inject
 
@@ -33,7 +32,7 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
 
     public fun parcelableFromFood(food: Food): FoodParcelable {
         val parcelable = FoodParcelable()
-        parcelable.foodId = food.primaryId
+        parcelable.foodId = food.primaryID
         parcelable.foodName = food.foodName
         parcelable.carbs = food.carbs
         return parcelable
@@ -50,25 +49,10 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
         return nameOK && carbsOK
     }
 
-    private fun foodForFoodId(id: String): Task<Food> {
+    private fun foodForFoodId(id: String): Observable<Result<Food>> {
         if (id.isEmpty()) {
-            return Task.forError<Food>(Exception("Invalid ID"))
+            return Observable.error(Exception("Invalid Id"))
         }
-
-        val task = TaskCompletionSource<Food>()
-        val query = SQLStmts.Food.ForID()
-        dbManager.query(query, arrayOf(id), { cursor ->
-            if (cursor == null) {
-                task.setError(Exception("Unable to read db"))
-                return@query
-            }
-            if (!cursor.moveToFirst()) {
-                task.setError(Exception("No result for id and create not set"))
-                return@query
-            }
-            task.setResult(Food(id, query.getCarbs(cursor), query.getFoodName(cursor)))
-            cursor.close()
-        })
-        return task.task
+        return dbManager.data.select(Food::class).where(Food::primaryID.eq(id)).get().toSelfObservable()
     }
 }
