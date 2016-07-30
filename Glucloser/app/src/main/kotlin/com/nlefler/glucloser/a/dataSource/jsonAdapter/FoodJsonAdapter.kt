@@ -1,6 +1,7 @@
 package com.nlefler.glucloser.a.dataSource.jsonAdapter
 
 import com.nlefler.glucloser.a.models.Food
+import com.nlefler.glucloser.a.models.FoodEntity
 import com.nlefler.glucloser.a.models.json.FoodJson
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
@@ -10,7 +11,11 @@ import com.squareup.moshi.ToJson
  */
 public class FoodJsonAdapter() {
     @FromJson fun fromJson(json: FoodJson): Food {
-        return Food(json.primaryId, json.carbs, json.foodName)
+        val food = FoodEntity()
+        food.primaryID = json.primaryId
+        food.carbs = json.carbs
+        food.foodName = json.foodName
+        return food
     }
 
     @ToJson fun toJson(food: Food): FoodJson {

@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.dataSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.FoodJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.Food
+import com.nlefler.glucloser.a.models.FoodEntity
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -27,7 +28,11 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
     }
 
     fun foodFromParcelable(parcelable: FoodParcelable): Food {
-        return Food(parcelable.foodId, parcelable.carbs, parcelable.foodName)
+        val f = FoodEntity()
+        f.primaryID = parcelable.foodId
+        f.carbs = parcelable.carbs
+        f.foodName = parcelable.foodName
+        return f
     }
 
     public fun parcelableFromFood(food: Food): FoodParcelable {

@@ -3,8 +3,10 @@ package com.nlefler.glucloser.a.dataSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.BolusPatternEntity
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.BolusRate
+import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import io.requery.kotlin.eq
@@ -36,9 +38,17 @@ class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolu
     fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
         val rates = ArrayList<BolusRate>()
         parcelable.rates.forEach { rateParcelable ->
-            rates.add(BolusRate(rateParcelable.id, rateParcelable.ordinal, rateParcelable.carbsPerUnit, rateParcelable.startTime))
+            val br = BolusRateEntity()
+            br.primaryId = rateParcelable.id
+            br.ordinal = rateParcelable.ordinal
+            br.carbsPerUnit = rateParcelable.carbsPerUnit
+            br.startTime = rateParcelable.startTime
+            rates.add(br)
         }
-        return BolusPattern(parcelable.id, rates)
+        val bp = BolusPatternEntity()
+        bp.primaryId = parcelable.id
+        bp.rates = rates
+        return bp
     }
 
     private fun bolusPatternForId(id: String): Observable<Result<BolusPattern>> {

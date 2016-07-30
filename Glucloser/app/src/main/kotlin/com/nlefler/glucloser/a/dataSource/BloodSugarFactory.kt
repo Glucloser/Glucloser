@@ -2,6 +2,7 @@ package com.nlefler.glucloser.a.dataSource
 
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BloodSugar
+import com.nlefler.glucloser.a.models.BloodSugarEntity
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -26,7 +27,11 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
     }
 
     fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): BloodSugar {
-        return BloodSugar(parcelable.id, parcelable.value, parcelable.date)
+        val bs = BloodSugarEntity()
+        bs.primaryId = parcelable.id
+        bs.readingValue = parcelable.value
+        bs.recordedDate = parcelable.date
+        return bs
     }
 
     fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {

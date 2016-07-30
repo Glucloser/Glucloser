@@ -7,6 +7,7 @@ import com.nlefler.glucloser.a.dataSource.jsonAdapter.PlaceJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.CheckInPushedData
 import com.nlefler.glucloser.a.models.Place
+import com.nlefler.glucloser.a.models.PlaceEntity
 import com.nlefler.glucloser.a.models.parcelable.PlaceParcelable
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 
@@ -58,7 +59,7 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
                 .build().adapter(Place::class.java)
     }
 
-    fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Observable<Result<Place>> {
+    fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Observable<Place> {
         if (venue == null || !IsVenueValid(venue)) {
             val errorMessage = "Unable to create Place from 4sq venue"
             Log.e(LOG_TAG, errorMessage)
@@ -66,9 +67,17 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         }
 
         return placeForFoursquareId(venue.id).map { result ->
-            Observable.just(Place(primaryId = UUID.randomUUID().toString(),
-                    foursquareId = venue.id, name = venue.name, latitude = venue.location.lat,
-                    longitude = venue.location.lng, visitCount = 0))
+            if (result.count() > 0) {
+                return@map result.first()
+            }
+            val place = PlaceEntity()
+            place.foursquareId = venue.id
+            place.name = venue.name
+            place.latitude = venue.location.lat
+            place.longitude = venue.location.lng
+            place.visitCount = 0
+
+            return@map place
         }
     }
 
@@ -83,8 +92,14 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
     }
 
     fun placeFromParcelable(parcelable: PlaceParcelable): Place {
-        return Place(parcelable.primaryId, parcelable.foursquareId, parcelable.name,
-                parcelable.latitude, parcelable.longitude, parcelable.visitCount)
+        val place = PlaceEntity()
+        place.primaryId = parcelable.primaryId
+        place.foursquareId = parcelable.foursquareId
+        place.name = parcelable.name
+        place.latitude = parcelable.latitude
+        place.longitude = parcelable.longitude
+        place.visitCount = parcelable.visitCount
+        return place
     }
 
     fun arePlacesEqual(place1: Place?, place2: Place?): Boolean {

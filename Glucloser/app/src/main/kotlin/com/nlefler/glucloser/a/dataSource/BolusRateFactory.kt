@@ -4,6 +4,7 @@ import com.nlefler.glucloser.a.models.BolusRate
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
+import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -18,11 +19,16 @@ import javax.inject.Inject
 class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
     fun emptyRate(): BolusRate {
-        return BolusRate("__EMPTY", 0, 0, 0)
+        return BolusRateEntity()
     }
 
     fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
-        return BolusRate(parcelable.id, parcelable.ordinal, parcelable.carbsPerUnit, parcelable.startTime)
+        val br = BolusRateEntity()
+        br.primaryId = parcelable.id
+        br.ordinal = parcelable.ordinal
+        br.carbsPerUnit = parcelable.carbsPerUnit
+        br.startTime = parcelable.startTime
+        return br
     }
 
     fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
@@ -41,7 +47,7 @@ class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
                 .adapter(BolusRate::class.java)
     }
 
-    private fun bolusRateForId(id: String, create: Boolean): Observable<Result<BolusRate>> {
+    private fun bolusRateForId(id: String): Observable<Result<BolusRate>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }

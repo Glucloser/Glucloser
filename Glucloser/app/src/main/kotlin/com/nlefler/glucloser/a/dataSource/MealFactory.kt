@@ -2,11 +2,8 @@ package com.nlefler.glucloser.a.dataSource
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.MealJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.models.BloodSugar
-import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.MealParcelable
-import com.nlefler.glucloser.a.models.Meal
-import com.nlefler.glucloser.a.models.Place
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import io.requery.kotlin.eq
@@ -73,9 +70,17 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
         val foods = parcelable.foodParcelables.map {fp -> foodFactory.foodFromParcelable(fp)}
         val placePar = parcelable.placeParcelable
         val place = if (placePar != null) placeFactory.placeFromParcelable(placePar) else null
-        return Meal(parcelable.primaryId, parcelable.date, pattern,
-                parcelable.carbs, parcelable.insulin, sugar,
-                parcelable.isCorrection, foods, place)
+        val meal = MealEntity()
+        meal.primaryId = parcelable.primaryId
+        meal.eatenDate = parcelable.date
+        meal.bolusPattern = pattern
+        meal.carbs = parcelable.carbs
+        meal.insulin = parcelable.insulin
+        meal.beforeSugar = sugar
+        meal.isCorrection = parcelable.isCorrection
+        meal.foods = foods
+        meal.place = place
+        return meal
     }
 
     private fun mealForMealId(id: String): Observable<Result<Meal>> {

@@ -2,6 +2,7 @@ package com.nlefler.glucloser.a.dataSource.jsonAdapter
 
 import com.nlefler.glucloser.a.models.json.MealJson
 import com.nlefler.glucloser.a.models.Meal
+import com.nlefler.glucloser.a.models.MealEntity
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
@@ -20,8 +21,18 @@ class MealJsonAdapter() {
         val foods = json.foods.map { foodJson -> foodAdapter.fromJson(foodJson)}
         val bolusPattern = if (json.bolusPattern != null) bolusPatternAdapter.fromJson(json.bolusPattern) else null
         val beforeSugar = if (json.beforeSugar != null) {sugarAdapter.fromJson(json.beforeSugar)} else {null}
-        return Meal(json.primaryId, json.date, bolusPattern, json.carbs, json.insulin,
-                beforeSugar, json.isCorrection, foods, place)
+
+        val meal = MealEntity()
+        meal.primaryId = json.primaryId
+        meal.eatenDate = json.date
+        meal.bolusPattern = bolusPattern
+        meal.carbs = json.carbs
+        meal.insulin = json.insulin
+        meal.beforeSugar = beforeSugar
+        meal.isCorrection = json.isCorrection
+        meal.foods = foods
+        meal.place = place
+        return meal
     }
 
     @ToJson fun toJson(meal: Meal): MealJson {

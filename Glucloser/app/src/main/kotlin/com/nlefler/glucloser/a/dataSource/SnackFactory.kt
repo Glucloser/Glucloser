@@ -2,10 +2,7 @@ package com.nlefler.glucloser.a.dataSource
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.SnackJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.models.BloodSugar
-import com.nlefler.glucloser.a.models.BolusPattern
-import com.nlefler.glucloser.a.models.Food
-import com.nlefler.glucloser.a.models.Snack
+import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.SnackParcelable
 
 import com.squareup.moshi.JsonAdapter
@@ -39,7 +36,7 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
         if (snack.beforeSugar != null) {
             parcelable.bloodSugarParcelable = bloodSugarFactory.parcelableFromBloodSugar(snack.beforeSugar!!)
         }
-        parcelable.date = snack.date
+        parcelable.date = snack.eatenDate
         if (snack.bolusPattern != null) {
             parcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(snack.bolusPattern!!)
         }
@@ -76,9 +73,16 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
             foods.add(foodFactory.foodFromParcelable(par))
         }
 
-        return Snack(parcelable.primaryId, parcelable.date, pattern, parcelable.carbs,
-                parcelable.insulin, beforeSugar, parcelable.isCorrection,
-                foods)
+        val snack = SnackEntity()
+        snack.primaryId = parcelable.primaryId
+        snack.eatenDate = parcelable.date
+        snack.bolusPattern = pattern
+        snack.carbs = parcelable.carbs
+        snack.insulin = parcelable.insulin
+        snack.beforeSugar = beforeSugar
+        snack.isCorrection = parcelable.isCorrection
+        snack.foods = foods
+        return snack
     }
 
     private fun snackForSnackId(id: String): Observable<Snack> {
