@@ -7,7 +7,6 @@ import android.os.Debug
 import android.support.multidex.MultiDex
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.components.DaggerRootComponent
-import com.nlefler.glucloser.a.dataSource.realmmigrations.GlucloserRealmMigration
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
@@ -17,8 +16,6 @@ import com.nlefler.glucloser.a.push.PushRegistrationIntentService
 import com.nlefler.glucloser.a.user.UserManager
 import dagger.Module
 import dagger.Provides
-import io.realm.Realm
-import io.realm.RealmConfiguration
 import javax.inject.Singleton
 
 /**
@@ -34,13 +31,6 @@ class GlucloserApplication : Application() {
         MultiDex.install(this)
 
         com.nlefler.glucloser.a.GlucloserApplication.Companion.sharedApplication = this
-
-        val realmConfig = RealmConfiguration.Builder(this)
-                .name("myrealm.realm")
-                .migration(GlucloserRealmMigration())
-                .schemaVersion(4)
-                .build();
-        Realm.setDefaultConfiguration(realmConfig)
     }
 
     override fun onCreate() {

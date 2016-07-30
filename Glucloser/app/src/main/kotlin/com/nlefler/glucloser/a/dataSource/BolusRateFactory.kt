@@ -1,49 +1,37 @@
 package com.nlefler.glucloser.a.dataSource
 
-import bolts.Continuation
 import com.nlefler.glucloser.a.models.BolusRate
 
-import bolts.Task
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
+import com.nlefler.glucloser.a.db.DBManager
+import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import io.realm.Realm
-import io.realm.RealmObject
+import io.requery.kotlin.eq
+import io.requery.query.Result
+import rx.Observable
 import javax.inject.Inject
 
 /**
  * Created by nathan on 9/1/15.
  */
-class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
+class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
-    fun emptyRate(): Task<BolusRate?> {
-        return bolusRateForId("__glucloser_special_empty_bolus_rate", true)
+    fun emptyRate(): BolusRate {
+        return BolusRateEntity()
     }
 
-    public fun bolusRateFromParcelable(parcelable: BolusRateParcelable): Task<BolusRate?> {
-        return bolusRateForId(parcelable.id, true).continueWithTask { task ->
-            if (task.isFaulted) {
-                return@continueWithTask task
-            }
-            val rate = task.result
-            return@continueWithTask realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
-                override fun dependsOn(): List<RealmObject?> {
-                    return listOf(rate)
-                }
-
-                override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
-                    val liveRate = dependsOn.first() as BolusRate?
-                    liveRate?.ordinal = parcelable.ordinal
-                    liveRate?.carbsPerUnit = parcelable.carbsPerUnit
-                    liveRate?.startTime = parcelable.startTime
-                    return liveRate
-                }
-            })
-        }
+    fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
+        val br = BolusRateEntity()
+        br.primaryId = parcelable.id
+        br.ordinal = parcelable.ordinal
+        br.carbsPerUnit = parcelable.carbsPerUnit
+        br.startTime = parcelable.startTime
+        return br
     }
 
-    public fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
+    fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
         val parcel = BolusRateParcelable()
         parcel.ordinal = rate.ordinal
         parcel.carbsPerUnit = rate.carbsPerUnit
@@ -52,40 +40,19 @@ class BolusRateFactory @Inject constructor(val realmManager: RealmManager) {
         return parcel
     }
 
-    public fun jsonAdapter(): JsonAdapter<BolusRate> {
+    fun jsonAdapter(): JsonAdapter<BolusRate> {
         return Moshi.Builder()
-                .add(BolusRateJsonAdapter(realmManager.defaultRealm()))
+                .add(BolusRateJsonAdapter())
                 .build()
                 .adapter(BolusRate::class.java)
     }
 
-    private fun bolusRateForId(id: String, create: Boolean): Task<BolusRate?> {
-        assert(id.length > 0)
+    private fun bolusRateForId(id: String): Observable<Result<BolusRate>> {
+        if (id.isEmpty()) {
+            return Observable.error(Exception("Invalid Id"))
+        }
 
-        return realmManager.executeTransaction(object: RealmManager.Tx<BolusRate?> {
-            override fun dependsOn(): List<RealmObject?> {
-                return emptyList()
-            }
-
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusRate? {
-
-                val query = realm.where<BolusRate>(BolusRate::class.java)
-
-                query?.equalTo(BolusRate.IdFieldName, id)
-                val foundRate = query?.findFirst()
-                if (foundRate != null) {
-                    return foundRate
-                }
-                else if (create) {
-                    val rate = realm.createObject<BolusRate>(BolusRate::class.java)
-                    rate!!.primaryId = id
-                    return rate
-                }
-                else {
-                    return null
-                }
-            }
-        })
+        return dbManager.data.select(BolusRate::class).where(BolusRate::primaryId.eq(id)).get().toSelfObservable()
     }
 
 }

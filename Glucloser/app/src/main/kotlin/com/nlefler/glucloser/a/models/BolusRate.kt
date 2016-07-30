@@ -1,27 +1,22 @@
 package com.nlefler.glucloser.a.models
 
-import io.realm.RealmObject
-import io.realm.annotations.Ignore
-import io.realm.annotations.PrimaryKey
-import io.realm.annotations.RealmClass
+import io.requery.Entity
+import io.requery.Generated
+import io.requery.Key
+import io.requery.Persistable
 import java.util.*
 
 /**
  * Created by nathan on 8/30/15.
  */
-@RealmClass
-open class BolusRate(
-        @PrimaryKey open var primaryId: String = UUID.randomUUID().toString(),
-        open var ordinal: Int = 0,
-        open var carbsPerUnit: Int = 0,
-        open var startTime: Int = 0
-    ) : RealmObject() {
-
-    companion object {
-        @Ignore
-        val ModelName = "bolusRates"
-
-        @Ignore
-        val IdFieldName = "primaryId"
-    }
+@Entity
+interface BolusRate: Persistable {
+        @get:Key
+        @get:Generated
+        @get:io.requery.ForeignKey
+        var primaryId: String
+        var ordinal: Int
+        var carbsPerUnit: Int
+        var startTime: Int
 }
+

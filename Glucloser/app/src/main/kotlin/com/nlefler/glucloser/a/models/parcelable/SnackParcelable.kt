@@ -14,7 +14,7 @@ import java.util.*
  */
 public class SnackParcelable() : Parcelable, BolusEventParcelable {
 
-    override var id: String = UUID.randomUUID().toString()
+    override var primaryId: String = UUID.randomUUID().toString()
     override var date: Date = Date()
     override var bolusPatternParcelable: BolusPatternParcelable? = null
     override var carbs: Int = 0
@@ -25,7 +25,7 @@ public class SnackParcelable() : Parcelable, BolusEventParcelable {
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {
-        id = parcel.readString()
+        primaryId = parcel.readString()
         carbs = parcel.readInt()
         insulin = parcel.readFloat()
         isCorrection = parcel.readInt() != 0
@@ -43,7 +43,7 @@ public class SnackParcelable() : Parcelable, BolusEventParcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(id)
+        dest.writeString(primaryId)
         dest.writeInt(carbs)
         dest.writeFloat(insulin)
         dest.writeInt(if (isCorrection) 1 else 0)

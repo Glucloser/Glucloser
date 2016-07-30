@@ -1,61 +1,24 @@
 package com.nlefler.glucloser.a.dataSource
 
-import android.os.Parcelable
-import bolts.Continuation
-import bolts.Task
-import bolts.TaskCompletionSource
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
+import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.BolusPatternEntity
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.BolusRate
+import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import io.realm.Realm
-import io.realm.RealmList
-import io.realm.RealmObject
-import java.util.*
+import io.requery.kotlin.eq
+import io.requery.query.Result
+import rx.Observable
+import java.util.ArrayList
 import javax.inject.Inject
 
 /**
  * Created by nathan on 9/19/15.
  */
-class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, val bolusRateFactory: BolusRateFactory) {
-
-    fun emptyPattern(): Task<BolusPattern?> {
-        return bolusPatternForId("__glucloser_special_empty_bolus_pattern", false).continueWithTask { task ->
-            if (task.isFaulted) {
-                return@continueWithTask task
-            }
-            val pattern = task.result
-            if (pattern != null) {
-                return@continueWithTask Task.forResult(pattern)
-            }
-
-            return@continueWithTask bolusRateFactory.emptyRate().continueWithTask(Continuation<BolusRate?, Task<BolusPattern?>> emptyRate@ { rateTask ->
-                if (rateTask.isFaulted) {
-                    return@emptyRate Task.forError(Exception("Unable to create BolusRate"))
-                } else {
-                    val bolusRate = rateTask.result
-                    return@emptyRate bolusPatternForId("__glucloser_special_empty_bolus_pattern", true)
-                            .continueWithTask(Continuation<BolusPattern?, Task<BolusPattern?>> patternForId@ { task ->
-                                val bolusPattern = task.result
-                                return@patternForId realmManager.executeTransaction(object : RealmManager.Tx<BolusPattern?> {
-                                    override fun dependsOn(): List<RealmObject?> {
-                                        return listOf(bolusRate, bolusPattern)
-                                    }
-
-                                    override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusPattern? {
-                                        val liveRate = dependsOn.first() as BolusRate?
-                                        val livePattern = dependsOn.last() as BolusPattern?
-                                        livePattern?.rates?.add(liveRate)
-                                        return livePattern
-                                    }
-                                })
-                            })
-                }
-            })
-        }
-    }
+class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolusRateFactory: BolusRateFactory) {
 
     fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
         val parcel = BolusPatternParcelable()
@@ -67,62 +30,31 @@ class BolusPatternFactory @Inject constructor(val realmManager: RealmManager, va
 
     fun jsonAdapter(): JsonAdapter<BolusPattern> {
         return Moshi.Builder()
-                .add(BolusPatternJsonAdapter(realmManager.defaultRealm()))
+                .add(BolusPatternJsonAdapter())
                 .build()
                 .adapter(BolusPattern::class.java)
     }
 
-    fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): Task<BolusPattern?> {
-        val patternTask = TaskCompletionSource<BolusPattern?>()
-
-        val id = parcelable.id
+    fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
         val rates = ArrayList<BolusRate>()
-        val ratePromises = ArrayList<Task<BolusRate?>>()
-
-        for (rateParcelable in parcelable.rates) {
-            ratePromises.add(bolusRateFactory.bolusRateFromParcelable(rateParcelable).continueWithTask { rateTask ->
-                if (!rateTask.isFaulted && rateTask.result != null) {
-                    rates.add(rateTask.result!!)
-                }
-                rateTask
-            })
+        parcelable.rates.forEach { rateParcelable ->
+            val br = BolusRateEntity()
+            br.primaryId = rateParcelable.id
+            br.ordinal = rateParcelable.ordinal
+            br.carbsPerUnit = rateParcelable.carbsPerUnit
+            br.startTime = rateParcelable.startTime
+            rates.add(br)
         }
-
-        Task.whenAll(ratePromises).continueWithTask({ task ->
-            bolusPatternForId(id, true)
-        }).continueWith { task ->
-            val pattern = task.result
-            pattern?.rates?.addAll(rates)
-
-            patternTask.trySetResult(pattern)
-        }
-
-        return patternTask.task
+        val bp = BolusPatternEntity()
+        bp.primaryId = parcelable.id
+        bp.rates = rates
+        return bp
     }
 
-    private fun bolusPatternForId(id: String, create: Boolean): Task<BolusPattern?> {
-        return realmManager.executeTransaction(object: RealmManager.Tx<BolusPattern?> {
-            override fun dependsOn(): List<RealmObject?> {
-                return emptyList()
-            }
-
-            override fun execute(dependsOn: List<RealmObject?>, realm: Realm): BolusPattern? {
-                if (create && id.length == 0) {
-                    val pattern = realm.createObject<BolusPattern>(BolusPattern::class.java)
-                    return pattern
-                }
-
-                val query = realm.where<BolusPattern>(BolusPattern::class.java)
-
-                query?.equalTo(BolusPattern.IdFieldName, id)
-                var pattern = query?.findFirst()
-
-                if (pattern == null && create) {
-                    pattern = realm.createObject<BolusPattern>(BolusPattern::class.java)
-                    pattern!!.primaryId = id
-                }
-                return pattern
-            }
-        })
+    private fun bolusPatternForId(id: String): Observable<Result<BolusPattern>> {
+        if (id.isEmpty()) {
+            return Observable.error(Exception("Invalid ID"))
+        }
+        return dbManager.data.select(BolusPattern::class).where(BolusPattern::primaryId.eq(id)).get().toSelfObservable()
     }
 }
