@@ -17,8 +17,6 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import com.getbase.floatingactionbutton.FloatingActionButton
-import com.getbase.floatingactionbutton.FloatingActionsMenu
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.BolusEventFactory
@@ -36,13 +34,10 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
     @Inject set
 
     private var navBarItems: Array<String>? = null
-    private var navDrawerLayout: DrawerLayout? = null
-    private var navDrawerListView: ListView? = null
-    private var navDrawerToggle: ActionBarDrawerToggle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.main_activity)
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
@@ -59,13 +54,6 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 getString(R.string.nav_drawer_item_glucloser_login),
                 getString(R.string.nav_drawer_item_foursquare_login),
                 "v$versionName.$versionCode")
-        this.navDrawerLayout = findViewById(R.id.drawer_layout) as DrawerLayout
-        this.navDrawerListView = findViewById(R.id.left_drawer) as ListView
-        this.navDrawerListView?.adapter = ArrayAdapter(this, R.layout.drawer_list_item, this.navBarItems)
-        this.navDrawerListView?.onItemClickListener = this
-
-        this.navDrawerToggle = ActionBarDrawerToggle(this, this.navDrawerLayout, R.string.nav_drawer_open, R.string.nav_drawer_closed)
-        this.navDrawerLayout!!.setDrawerListener(this.navDrawerToggle)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
@@ -77,12 +65,10 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         // Sync the toggle state after onRestoreInstanceState has occurred.
-        this.navDrawerToggle?.syncState()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig)
-        this.navDrawerToggle?.onConfigurationChanged(newConfig)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -101,11 +87,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         if (id == R.id.action_settings) {
             return true
         }
-        // Pass the event to ActionBarDrawerToggle, if it returns
-        // true, then it has handled the app icon touch event
-        if (this.navDrawerToggle!!.onOptionsItemSelected(item)) {
-            return true
-        }
+
         // Handle your other action bar items...
 
         return super<AppCompatActivity>.onOptionsItemSelected(item)
@@ -122,7 +104,6 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 foursquareAuthManager.startAuthRequest(this)
             }
         }
-        navDrawerLayout?.closeDrawers()
     }
 
     /** Foursquare Connect Intent  */
@@ -200,31 +181,14 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         }
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            val rootView = inflater!!.inflate(R.layout.fragment_main, container, false)
+            val rootView = inflater!!.inflate(R.layout.main_fragment, container, false)
 
             val activity = getActivity();
 
-            val floatingActionsMenu = rootView.findViewById(R.id.main_floating_action_menu) as FloatingActionsMenu
-            val logMealButton = rootView.findViewById(R.id.fab_log_meal_item) as FloatingActionButton
-            logMealButton.setOnClickListener(object : View.OnClickListener {
-                override fun onClick(view: View) {
-                    val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
+                    val intent = Intent(rootView.getContext(), LogBolusEventActivity::class.java)
                     intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
 
                     activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
-                    floatingActionsMenu.collapse()
-                }
-            })
-            val logSnackButton = rootView.findViewById(R.id.fab_log_snack_item) as FloatingActionButton
-            logSnackButton.setOnClickListener(object : View.OnClickListener {
-                override fun onClick(view: View) {
-                    val intent = Intent(view.getContext(), LogBolusEventActivity::class.java)
-                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeSnack.name)
-
-                    activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
-                    floatingActionsMenu.collapse()
-                }
-            })
 
             return rootView
         }
