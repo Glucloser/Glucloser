@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.models.parcelable
 import android.os.Parcel
 import android.os.Parcelable
 import com.nlefler.glucloser.a.models.BloodSugar
+import com.nlefler.glucloser.a.models.BloodSugarEntity
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
@@ -29,7 +30,7 @@ public class SnackParcelable() : Parcelable, BolusEventParcelable {
         carbs = parcel.readInt()
         insulin = parcel.readFloat()
         isCorrection = parcel.readInt() != 0
-        bloodSugarParcelable = parcel.readParcelable<BloodSugarParcelable>(BloodSugar::class.java.classLoader)
+        bloodSugarParcelable = parcel.readParcelable<BloodSugarParcelable>(BloodSugarEntity::class.java.classLoader)
         val time = parcel.readLong()
         if (time > 0) {
             date = Date()

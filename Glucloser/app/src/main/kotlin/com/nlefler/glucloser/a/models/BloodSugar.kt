@@ -1,9 +1,6 @@
 package com.nlefler.glucloser.a.models
 
-import io.requery.Entity
-import io.requery.Generated
-import io.requery.Key
-import io.requery.Persistable
+import io.requery.*
 import java.util.*
 
 /**
@@ -12,9 +9,15 @@ import java.util.*
 @Entity
 interface BloodSugar: Persistable {
     @get:Key
-    @get:Generated
-    @get:io.requery.ForeignKey
+    @get:ForeignKey
     var primaryId: String
     var readingValue: Int
     var recordedDate: Date
+
+
+    // Resolving requery processing
+    @get:OneToOne(mappedBy = "primaryId")
+    var snack: Snack?
+    @get:OneToOne(mappedBy = "primaryId")
+    var meal: Meal?
 }

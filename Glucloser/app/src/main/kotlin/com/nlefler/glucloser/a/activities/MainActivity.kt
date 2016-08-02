@@ -45,7 +45,8 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         if (savedInstanceState == null) {
             val fragment = HistoryListFragment()
             dataFactory?.inject(fragment)
-            supportFragmentManager.beginTransaction().add(R.id.container, fragment, MainActivity.Companion.HistoryFragmentId).commit()
+            supportFragmentManager.beginTransaction().add(R.id.main_container,
+                    fragment, MainActivity.Companion.HistoryFragmentId).commit()
         }
 
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName

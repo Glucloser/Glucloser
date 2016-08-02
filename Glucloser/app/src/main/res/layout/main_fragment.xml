@@ -1,4 +1,4 @@
-<ListView android:id="@+id/container"
+<ListView android:id="@+id/main_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="start"

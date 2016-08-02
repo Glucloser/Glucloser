@@ -42,9 +42,9 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager) {
         return parcelable
     }
 
-    fun jsonAdapter(): JsonAdapter<BloodSugar> {
+    fun jsonAdapter(): JsonAdapter<BloodSugarEntity> {
         return Moshi.Builder()
                 .build()
-                .adapter(BloodSugar::class.java)
+                .adapter(BloodSugarEntity::class.java)
     }
 }

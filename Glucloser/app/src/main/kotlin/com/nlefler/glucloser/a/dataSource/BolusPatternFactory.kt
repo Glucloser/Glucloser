@@ -28,11 +28,11 @@ class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolu
         return parcel
     }
 
-    fun jsonAdapter(): JsonAdapter<BolusPattern> {
+    fun jsonAdapter(): JsonAdapter<BolusPatternEntity> {
         return Moshi.Builder()
                 .add(BolusPatternJsonAdapter())
                 .build()
-                .adapter(BolusPattern::class.java)
+                .adapter(BolusPatternEntity::class.java)
     }
 
     fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
@@ -51,10 +51,10 @@ class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolu
         return bp
     }
 
-    private fun bolusPatternForId(id: String): Observable<Result<BolusPattern>> {
+    private fun bolusPatternForId(id: String): Observable<Result<BolusPatternEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid ID"))
         }
-        return dbManager.data.select(BolusPattern::class).where(BolusPattern::primaryId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(BolusPatternEntity::class).where(BolusPattern::primaryId.eq(id)).get().toSelfObservable()
     }
 }

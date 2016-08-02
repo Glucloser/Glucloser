@@ -56,11 +56,11 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
         return parcelable
     }
 
-    fun jsonAdapter(): JsonAdapter<Meal> {
+    fun jsonAdapter(): JsonAdapter<MealEntity> {
         return Moshi.Builder()
                 .add(MealJsonAdapter())
                 .build()
-                .adapter(Meal::class.java)
+                .adapter(MealEntity::class.java)
     }
 
     fun mealFromParcelable(parcelable: MealParcelable): Meal {
@@ -83,10 +83,10 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
         return meal
     }
 
-    private fun mealForMealId(id: String): Observable<Result<Meal>> {
+    private fun mealForMealId(id: String): Observable<Result<MealEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(Meal::class).where(Meal::primaryId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(MealEntity::class).where(Meal::primaryId.eq(id)).get().toSelfObservable()
     }
 }

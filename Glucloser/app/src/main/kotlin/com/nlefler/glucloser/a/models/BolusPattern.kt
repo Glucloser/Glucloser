@@ -10,8 +10,14 @@ import java.util.*
 @Entity
 interface BolusPattern: Persistable {
     @get:Key
-    @get:Generated
-    @get:io.requery.ForeignKey
+    @get:ForeignKey
     var primaryId: String
+    @get:OneToMany
     var rates: MutableList<BolusRate>
+
+    // Resolving requery processing
+    @get:OneToMany
+    var snack: Snack?
+    @get:OneToMany
+    var meal: Meal?
 }
