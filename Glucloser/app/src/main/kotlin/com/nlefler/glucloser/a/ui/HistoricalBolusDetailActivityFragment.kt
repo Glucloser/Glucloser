@@ -10,12 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.ChartData
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+//import com.github.mikephil.charting.charts.LineChart
+//import com.github.mikephil.charting.data.ChartData
+//import com.github.mikephil.charting.data.Entry
+//import com.github.mikephil.charting.data.LineData
+//import com.github.mikephil.charting.data.LineDataSet
+//import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.FoodFactory
@@ -44,7 +44,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
     private var beforeSugarValueField: TextView? = null
     private var correctionValueBox: CheckBox? = null
 
-    private var sensorChart: LineChart? = null
+//    private var sensorChart: LineChart? = null
 
     private var foodListView: RecyclerView? = null
     private var foodListLayoutManager: RecyclerView.LayoutManager? = null
@@ -89,7 +89,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         this.beforeSugarValueField = rootView.findViewById(R.id.historical_bolus_detail_blood_sugar_before_value) as TextView
         this.correctionValueBox = rootView.findViewById(R.id.historical_bolus_detail_correction_value) as CheckBox
 
-        sensorChart = rootView.findViewById(R.id.historical_bolus_detail_sensor_chart) as LineChart
+//        sensorChart = rootView.findViewById(R.id.historical_bolus_detail_sensor_chart) as LineChart
 
         this.foodListView = rootView.findViewById(R.id.historical_bolus_detail_food_list) as RecyclerView
 
@@ -112,41 +112,41 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
     }
 
     private fun loadSensorValues() {
-        val dataList = ArrayList<Entry>()
-        var minReading = Float.MAX_VALUE
-        var maxReading = Float.MIN_VALUE
-
-        val date = bolusEventParcelable?.date ?: return
-        pumpDataFactory?.sensorReadingsAfter(date)
-                ?.subscribeOn(Schedulers.newThread())
-                ?.observeOn(AndroidSchedulers.mainThread())
-                ?.subscribe(object: Observer<SensorReading> {
-                    override fun onNext(reading: SensorReading) {
-                        val fReading = reading.reading.toFloat()
-                        dataList.add(Entry(fReading, dataList.count() + 1))
-                        minReading = if (fReading < minReading) fReading else minReading
-                        maxReading = if (fReading > maxReading) fReading else maxReading
-                    }
-
-                    override fun onCompleted() {
-                        val dataSet = LineDataSet(dataList, getString(R.string.sensor_readings_chart_label))
-                        dataSet.lineWidth = 2f
-                        dataSet.setDrawCircles(false)
-                        dataSet.color = R.color.bright_foreground_material_dark
-
-                        sensorChart?.data = LineData(ChartData.generateXVals(0, dataSet.entryCount), listOf(dataSet))
-                        sensorChart?.setDescription(getString(R.string.sensor_readings_chart_label))
-
-                        sensorChart?.axisLeft?.setAxisMinValue(minReading)
-                        sensorChart?.axisLeft?.setAxisMaxValue(maxReading)
-                        sensorChart?.axisRight?.isEnabled = false
-                        sensorChart?.invalidate()
-                    }
-
-                    override fun onError(t: Throwable) {
-
-                    }
-                })
+//        val dataList = ArrayList<Entry>()
+//        var minReading = Float.MAX_VALUE
+//        var maxReading = Float.MIN_VALUE
+//
+//        val date = bolusEventParcelable?.date ?: return
+//        pumpDataFactory?.sensorReadingsAfter(date)
+//                ?.subscribeOn(Schedulers.newThread())
+//                ?.observeOn(AndroidSchedulers.mainThread())
+//                ?.subscribe(object: Observer<SensorReading> {
+//                    override fun onNext(reading: SensorReading) {
+//                        val fReading = reading.reading.toFloat()
+//                        dataList.add(Entry(fReading, dataList.count() + 1))
+//                        minReading = if (fReading < minReading) fReading else minReading
+//                        maxReading = if (fReading > maxReading) fReading else maxReading
+//                    }
+//
+//                    override fun onCompleted() {
+//                        val dataSet = LineDataSet(dataList, getString(R.string.sensor_readings_chart_label))
+//                        dataSet.lineWidth = 2f
+//                        dataSet.setDrawCircles(false)
+//                        dataSet.color = R.color.bright_foreground_material_dark
+//
+//                        sensorChart?.data = LineData(ChartData.generateXVals(0, dataSet.entryCount), listOf(dataSet))
+//                        sensorChart?.setDescription(getString(R.string.sensor_readings_chart_label))
+//
+//                        sensorChart?.axisLeft?.setAxisMinValue(minReading)
+//                        sensorChart?.axisLeft?.setAxisMaxValue(maxReading)
+//                        sensorChart?.axisRight?.isEnabled = false
+//                        sensorChart?.invalidate()
+//                    }
+//
+//                    override fun onError(t: Throwable) {
+//
+//                    }
+//                })
 
 
     }

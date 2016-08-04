@@ -1,9 +1,6 @@
 package com.nlefler.glucloser.a.models
 
-import io.requery.Entity
-import io.requery.Generated
-import io.requery.Key
-import io.requery.Persistable
+import io.requery.*
 import java.util.*
 
 /**
@@ -12,9 +9,14 @@ import java.util.*
 @Entity
 interface Food: Persistable {
     @get:Key
-    @get:Generated
-    @get:io.requery.ForeignKey
+    @get:ForeignKey
     var primaryID: String
     var carbs: Int
     var foodName: String
+
+    // Trying to resolve requery annotation parsing issues
+    @get:ManyToOne
+    var meal: Meal?
+    @get:ManyToOne
+    var snack: Snack?
 }

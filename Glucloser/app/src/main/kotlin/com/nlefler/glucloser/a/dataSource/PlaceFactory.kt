@@ -27,15 +27,15 @@ import javax.inject.Inject
 class PlaceFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "PlaceFactory"
 
-    fun placeForId(id: String): Observable<Result<Place>> {
+    fun placeForId(id: String): Observable<Result<PlaceEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(Place::class).where(Place::primaryId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(PlaceEntity::class).where(Place::primaryId.eq(id)).get().toSelfObservable()
     }
 
-    fun mostUsedPlaces(limit: Int = 10): Observable<Result<Place>> {
-        return dbManager.data.select(Place::class).orderBy(Place::visitCount.desc()).limit(limit).get().toSelfObservable()
+    fun mostUsedPlaces(limit: Int = 10): Observable<Result<PlaceEntity>> {
+        return dbManager.data.select(PlaceEntity::class).orderBy(Place::visitCount.desc()).limit(limit).get().toSelfObservable()
     }
 
     fun parcelableFromFoursquareVenue(venue: NLFoursquareVenue?): PlaceParcelable? {
@@ -53,10 +53,10 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         return parcelable
     }
 
-    fun jsonAdapter(): JsonAdapter<Place> {
+    fun jsonAdapter(): JsonAdapter<PlaceEntity> {
         return Moshi.Builder()
                 .add(PlaceJsonAdapter())
-                .build().adapter(Place::class.java)
+                .build().adapter(PlaceEntity::class.java)
     }
 
     fun placeFromFoursquareVenue(venue: NLFoursquareVenue?): Observable<Place> {
@@ -145,11 +145,11 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         return placeParcelable
     }
 
-    private fun placeForFoursquareId(id: String): Observable<Result<Place>> {
+    private fun placeForFoursquareId(id: String): Observable<Result<PlaceEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(Place::class).where(Place::foursquareId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(PlaceEntity::class).where(Place::foursquareId.eq(id)).get().toSelfObservable()
     }
 
     private fun IsVenueValid(venue: NLFoursquareVenue?): Boolean {

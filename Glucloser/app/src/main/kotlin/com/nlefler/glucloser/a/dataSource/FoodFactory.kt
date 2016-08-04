@@ -20,11 +20,11 @@ import javax.inject.Inject
 public class FoodFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "BloodSugarFactory"
 
-    fun jsonAdapter(): JsonAdapter<Food> {
+    fun jsonAdapter(): JsonAdapter<FoodEntity> {
         return Moshi.Builder()
                 .add(FoodJsonAdapter())
                 .build()
-                .adapter(Food::class.java)
+                .adapter(FoodEntity::class.java)
     }
 
     fun foodFromParcelable(parcelable: FoodParcelable): Food {
@@ -54,10 +54,10 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
         return nameOK && carbsOK
     }
 
-    private fun foodForFoodId(id: String): Observable<Result<Food>> {
+    private fun foodForFoodId(id: String): Observable<Result<FoodEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(Food::class).where(Food::primaryID.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(FoodEntity::class).where(Food::primaryID.eq(id)).get().toSelfObservable()
     }
 }

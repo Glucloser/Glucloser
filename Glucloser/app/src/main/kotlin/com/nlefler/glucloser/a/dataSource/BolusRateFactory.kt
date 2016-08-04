@@ -40,19 +40,19 @@ class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
         return parcel
     }
 
-    fun jsonAdapter(): JsonAdapter<BolusRate> {
+    fun jsonAdapter(): JsonAdapter<BolusRateEntity> {
         return Moshi.Builder()
                 .add(BolusRateJsonAdapter())
                 .build()
-                .adapter(BolusRate::class.java)
+                .adapter(BolusRateEntity::class.java)
     }
 
-    private fun bolusRateForId(id: String): Observable<Result<BolusRate>> {
+    private fun bolusRateForId(id: String): Observable<Result<BolusRateEntity>> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
 
-        return dbManager.data.select(BolusRate::class).where(BolusRate::primaryId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(BolusRateEntity::class).where(BolusRate::primaryId.eq(id)).get().toSelfObservable()
     }
 
 }

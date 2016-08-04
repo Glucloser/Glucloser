@@ -23,7 +23,7 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
                                               val foodFactory: FoodFactory) {
     private val LOG_TAG = "SnackFactory"
 
-    public fun fetchSnack(id: String): Observable<Snack> {
+    public fun fetchSnack(id: String): Observable<SnackEntity> {
         return snackForSnackId(id)
     }
 
@@ -47,11 +47,11 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
         return parcelable
     }
 
-    fun jsonAdapter(): JsonAdapter<Snack> {
+    fun jsonAdapter(): JsonAdapter<SnackEntity> {
         return Moshi.Builder()
                 .add(SnackJsonAdapter())
                 .build()
-                .adapter(Snack::class.java)
+                .adapter(SnackEntity::class.java)
     }
 
     public fun snackFromParcelable(parcelable: SnackParcelable): Snack {
@@ -85,10 +85,10 @@ public class SnackFactory @Inject constructor(val dbManager: DBManager,
         return snack
     }
 
-    private fun snackForSnackId(id: String): Observable<Snack> {
+    private fun snackForSnackId(id: String): Observable<SnackEntity> {
         return Observable.create { s ->
             dbManager.data {
-                val result = select(Snack::class) where (Snack::primaryId eq id)
+                val result = select(SnackEntity::class) where (Snack::primaryId eq id)
                 val snack = result.invoke().firstOrNull()
                 if (snack != null) {
                     s.onNext(snack)

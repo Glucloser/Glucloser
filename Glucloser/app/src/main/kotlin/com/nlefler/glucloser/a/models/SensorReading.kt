@@ -12,8 +12,6 @@ import java.util.*
 @Entity
 interface SensorReading: Persistable {
     @get:Key
-    @get:Generated
-    @get:io.requery.ForeignKey
     var primaryId: String
     var readingTimestamp: Date
     var reading: Int

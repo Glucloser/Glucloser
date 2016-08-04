@@ -8,12 +8,17 @@ import java.util.*
  */
 @Entity
 interface Snack: Persistable {
+    @get:Key
+    @get:ForeignKey
     var primaryId: String
     var eatenDate: Date
+    @get:ManyToOne
     var bolusPattern: BolusPattern?
     var carbs: Int
     var insulin: Float
+    @get:OneToOne(mappedBy = "primaryId")
     var beforeSugar: BloodSugar?
     var isCorrection: Boolean
+    @get:OneToMany
     var foods: MutableList<Food>
 }

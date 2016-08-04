@@ -1,9 +1,6 @@
 package com.nlefler.glucloser.a.models
 
-import io.requery.Entity
-import io.requery.Generated
-import io.requery.Key
-import io.requery.Persistable
+import io.requery.*
 import java.util.*
 
 /**
@@ -11,12 +8,16 @@ import java.util.*
  */
 @Entity
 interface BolusRate: Persistable {
-        @get:Key
-        @get:Generated
-        @get:io.requery.ForeignKey
-        var primaryId: String
-        var ordinal: Int
-        var carbsPerUnit: Int
-        var startTime: Int
+    @get:Key
+    @get:ForeignKey
+    var primaryId: String
+    var ordinal: Int
+    var carbsPerUnit: Int
+    var startTime: Int
+
+
+    // Resolving requery
+    @get:ManyToOne
+    var pattern: BolusPattern?
 }
 
