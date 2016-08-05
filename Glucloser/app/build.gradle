@@ -97,6 +97,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-base:9.4.0'
     compile 'com.google.android.gms:play-services-gcm:9.4.0'
     compile 'com.google.android.gms:play-services-location:9.4.0'
+    compile 'com.google.android.gms:play-services-wearable:9.4.0'
 
     compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'com.android.support:multidex:1.0.1'

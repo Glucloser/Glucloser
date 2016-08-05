@@ -1,3 +1,3 @@
-include ':app', ':libNLFoursquare'
+include ':app', ':libNLFoursquare', ':wearCGM'
 include ':foursquareoauthlibrary'
 project(':libNLFoursquare').projectDir = new File('nlfoursquare/libNLFoursquare')
