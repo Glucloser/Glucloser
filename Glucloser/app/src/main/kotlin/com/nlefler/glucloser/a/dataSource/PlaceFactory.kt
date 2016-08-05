@@ -67,10 +67,11 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         }
 
         return placeForFoursquareId(venue.id).map { result ->
-            if (result.count() > 0) {
-                return@map result.first()
+            var place = result.firstOrNull()
+            if (place != null) {
+                return@map place
             }
-            val place = PlaceEntity()
+            place = PlaceEntity()
             place.foursquareId = venue.id
             place.name = venue.name
             place.latitude = venue.location.lat

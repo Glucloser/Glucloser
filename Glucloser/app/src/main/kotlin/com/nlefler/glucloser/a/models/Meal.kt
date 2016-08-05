@@ -9,7 +9,6 @@ import java.util.*
 @Entity
 interface Meal: Persistable, HasPlace, BolusEvent {
     @get:Key
-    @get:ForeignKey
     var primaryId: String
     var eatenDate: Date
     @get:ManyToOne
@@ -17,6 +16,7 @@ interface Meal: Persistable, HasPlace, BolusEvent {
     var carbs: Int
     var insulin: Float
     @get:OneToOne(mappedBy = "primaryId")
+    @get:ForeignKey(referencedColumn = "primaryId")
     var beforeSugar: BloodSugar?
     var isCorrection: Boolean
     @get:OneToMany

@@ -10,7 +10,6 @@ import java.util.*
 @Entity
 interface BolusPattern: Persistable {
     @get:Key
-    @get:ForeignKey
     var primaryId: String
     @get:OneToMany
     var rates: MutableList<BolusRate>

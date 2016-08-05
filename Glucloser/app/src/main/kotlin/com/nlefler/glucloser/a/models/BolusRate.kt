@@ -9,7 +9,6 @@ import java.util.*
 @Entity
 interface BolusRate: Persistable {
     @get:Key
-    @get:ForeignKey
     var primaryId: String
     var ordinal: Int
     var carbsPerUnit: Int
