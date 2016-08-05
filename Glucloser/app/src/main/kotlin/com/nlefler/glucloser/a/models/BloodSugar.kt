@@ -9,15 +9,7 @@ import java.util.*
 @Entity
 interface BloodSugar: Persistable {
     @get:Key
-    @get:ForeignKey
     var primaryId: String
     var readingValue: Int
     var recordedDate: Date
-
-
-    // Resolving requery processing
-    @get:OneToOne(mappedBy = "primaryId")
-    var snack: Snack?
-    @get:OneToOne(mappedBy = "primaryId")
-    var meal: Meal?
 }

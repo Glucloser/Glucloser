@@ -20,10 +20,10 @@ import javax.inject.Inject
 class PlaceSelectionViewHolder @Inject constructor(itemView: View, val delegate: PlaceSelectionDelegate?,
                                                    val placeFactory: PlaceFactory) : RecyclerView.ViewHolder(itemView) {
 
-    internal var venue: NLFoursquareVenue? = null
-    internal var place: Place? = null
-    internal var placeName: TextView
-    internal var placeDistance: TextView
+    var venue: NLFoursquareVenue? = null
+    var place: Place? = null
+    var placeName: TextView
+    var placeDistance: TextView
     protected var clickListener: View.OnClickListener
 
     init {

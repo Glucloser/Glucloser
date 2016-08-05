@@ -63,7 +63,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         foursquareHelper = FoursquarePlaceHelper(getActivity(), foursquareAuthManager)
         subscriptionScheduler = Schedulers.newThread()
         getClosestPlaces(null)
-        placeFactory.mostUsedPlaces(4).map { result ->
+        placeFactory.mostUsedPlaces(4).subscribe { result ->
             placeSelectionAdapter?.mostUsedPlaces = result.toList()
             placeSelectionAdapter?.notifyDataSetChanged()
         }

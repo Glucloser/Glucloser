@@ -9,7 +9,6 @@ import java.util.*
 @Entity
 interface Food: Persistable {
     @get:Key
-    @get:ForeignKey
     var primaryID: String
     var carbs: Int
     var foodName: String
