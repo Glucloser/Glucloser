@@ -6,34 +6,20 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.dataSource.BolusEventFactory
-import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
-import com.nlefler.glucloser.a.models.*
-import com.nlefler.glucloser.a.ui.main.MainHistoryListAdapter
-import io.requery.kotlin.desc
-import io.requery.query.Result
-import rx.Observable
-import java.util.*
+import com.nlefler.glucloser.a.ui.main.MainHistoryListFragment
 import javax.inject.Inject
 
 class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
     lateinit var foursquareAuthManager: FoursquareAuthManager
-    @Inject set
-    lateinit var bolusEventFactory: BolusEventFactory
     @Inject set
 
     private var navBarItems: Array<String>? = null
@@ -46,8 +32,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         dataFactory?.inject(this)
 
         if (savedInstanceState == null) {
-            val fragment = HistoryListFragment()
-            dataFactory?.inject(fragment)
+            val fragment = MainHistoryListFragment()
             supportFragmentManager.beginTransaction().add(R.id.main_container,
                     fragment, MainActivity.Companion.HistoryFragmentId).commit()
         }
@@ -176,53 +161,6 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
 //            // other 'case' lines to check for other
 //            // permissions this app might request
 //        }
-    }
-
-    class HistoryListFragment constructor(): Fragment() {
-
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-        }
-
-        override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            val rootView = inflater!!.inflate(R.layout.main_fragment, container, false)
-            val listView: ListView = rootView.findViewById(R.id.main_list) as ListView
-
-            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
-            val dbManager = dataFactory?.dbFactory()
-            val recentMeals: Observable<MealEntity> =
-                    dbManager?.data?.select(MealEntity::class)
-                            ?.orderBy(MealEntity::eatenDate.desc())
-                            ?.limit(30)?.get()?.toObservable()
-                            ?: Observable.empty()
-            val recentSnacks: Observable<SnackEntity> =
-                    dbManager?.data?.select(SnackEntity::class)
-                            ?.orderBy(SnackEntity::eatenDate.desc())
-                            ?.limit(30)?.get()?.toObservable()
-                            ?: Observable.empty()
-
-            val bolusEvents: Observable<BolusEvent> = Observable.merge(recentMeals, recentSnacks)
-            val results: Observable<List<BolusEvent>> = bolusEvents.toSortedList { be1 , be2 ->
-                if (!(be1 is BolusEvent) || !(be2 is BolusEvent)) {
-                    return@toSortedList 0
-                }
-                return@toSortedList be1.eatenDate.compareTo(be2.eatenDate)
-            }
-            listView.adapter = MainHistoryListAdapter(context, results)
-
-////            val activity = getActivity();
-//
-//                    val intent = Intent(rootView.getContext(), LogBolusEventActivity::class.java)
-//                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
-//
-//                    activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
-
-            return rootView
-        }
-
-        companion object {
-            private val LOG_TAG = "PlaceholderFragment"
-        }
     }
 
     companion object {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main_no_history_fragment" >
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="384dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/main_no_history_prompt_text"
+        app:layout_constraintTop_toTopOf="@+id/main_no_history_fragment"
+        app:layout_constraintLeft_toLeftOf="@+id/main_no_history_fragment"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="@+id/main_no_history_fragment"
+        app:layout_constraintHorizontal_bias="0.0" />
+
+    <Button
+        android:text="Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/main_no_history_log_button"
+        app:layout_constraintTop_toBottomOf="@+id/main_no_history_prompt_text"
+        android:layout_marginStart="16dp"
+        app:layout_constraintLeft_toLeftOf="@+id/main_no_history_fragment"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="@+id/main_no_history_fragment"
+        app:layout_constraintBottom_toBottomOf="@+id/main_no_history_fragment"
+        app:layout_constraintVertical_bias="1.0" />
+
+</android.support.constraint.ConstraintLayout>

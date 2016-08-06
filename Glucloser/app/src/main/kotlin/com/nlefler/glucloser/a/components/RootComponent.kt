@@ -63,7 +63,6 @@ interface RootComponent {
     fun inject(client: PlaceSelectionFragment)
     fun inject(client: PlaceSelectionViewHolder)
     fun inject(client: LoginActivityFragment)
-    fun inject(client: MainActivity.HistoryListFragment)
     fun inject(client: CairoServices)
     fun inject(client: UserManager)
 
