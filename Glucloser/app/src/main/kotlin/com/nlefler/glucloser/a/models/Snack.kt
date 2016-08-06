@@ -7,18 +7,18 @@ import java.util.*
  * Created by Nathan Lefler on 5/8/15.
  */
 @Entity
-interface Snack: Persistable {
+interface Snack: BolusEvent, Persistable {
     @get:Key
-    var primaryId: String
-    var eatenDate: Date
+    override var primaryId: String
+    override var eatenDate: Date
     @get:ManyToOne
-    var bolusPattern: BolusPattern?
-    var carbs: Int
-    var insulin: Float
+    override var bolusPattern: BolusPattern?
+    override var carbs: Int
+    override var insulin: Float
     @get:OneToOne(mappedBy = "primaryId")
     @get:ForeignKey(referencedColumn = "primaryId")
-    var beforeSugar: BloodSugar?
-    var isCorrection: Boolean
+    override var beforeSugar: BloodSugar?
+    override var isCorrection: Boolean
     @get:OneToMany
-    var foods: MutableList<Food>
+    override var foods: MutableList<Food>
 }

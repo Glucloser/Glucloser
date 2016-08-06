@@ -22,8 +22,11 @@ import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.BolusEventFactory
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
-import com.nlefler.glucloser.a.models.BolusEventType
-import com.nlefler.glucloser.a.models.Meal
+import com.nlefler.glucloser.a.models.*
+import com.nlefler.glucloser.a.ui.main.MainHistoryListAdapter
+import io.requery.kotlin.desc
+import io.requery.query.Result
+import rx.Observable
 import java.util.*
 import javax.inject.Inject
 
@@ -183,13 +186,36 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val rootView = inflater!!.inflate(R.layout.main_fragment, container, false)
+            val listView: ListView = rootView.findViewById(R.id.main_list) as ListView
 
-            val activity = getActivity();
+            val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+            val dbManager = dataFactory?.dbFactory()
+            val recentMeals: Observable<MealEntity> =
+                    dbManager?.data?.select(MealEntity::class)
+                            ?.orderBy(MealEntity::eatenDate.desc())
+                            ?.limit(30)?.get()?.toObservable()
+                            ?: Observable.empty()
+            val recentSnacks: Observable<SnackEntity> =
+                    dbManager?.data?.select(SnackEntity::class)
+                            ?.orderBy(SnackEntity::eatenDate.desc())
+                            ?.limit(30)?.get()?.toObservable()
+                            ?: Observable.empty()
 
-                    val intent = Intent(rootView.getContext(), LogBolusEventActivity::class.java)
-                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
+            val bolusEvents: Observable<BolusEvent> = Observable.merge(recentMeals, recentSnacks)
+            val results: Observable<List<BolusEvent>> = bolusEvents.toSortedList { be1 , be2 ->
+                if (!(be1 is BolusEvent) || !(be2 is BolusEvent)) {
+                    return@toSortedList 0
+                }
+                return@toSortedList be1.eatenDate.compareTo(be2.eatenDate)
+            }
+            listView.adapter = MainHistoryListAdapter(results)
 
-                    activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
+////            val activity = getActivity();
+//
+//                    val intent = Intent(rootView.getContext(), LogBolusEventActivity::class.java)
+//                    intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
+//
+//                    activity.startActivityForResult(intent, LogBolusEventActivityIntentCode)
 
             return rootView
         }
