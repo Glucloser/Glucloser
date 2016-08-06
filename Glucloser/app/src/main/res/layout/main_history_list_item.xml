@@ -8,7 +8,7 @@
     android:id="@+id/main_history_list_item" >
 
     <View
-        android:id="@+id/hero"
+        android:id="@+id/main_history_list_item_hero"
         android:background="@color/blue"
         android:layout_height="164dp"
         android:layout_width="384dp"
@@ -19,22 +19,22 @@
         app:layout_constraintLeft_toLeftOf="parent"/>
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/main_history_list_item_title"
         android:background="#a7a"
-        app:layout_constraintTop_toTopOf="@+id/hero"
-        app:layout_constraintBottom_toBottomOf="@+id/hero"
-        app:layout_constraintLeft_toLeftOf="@+id/hero"
+        app:layout_constraintTop_toTopOf="@+id/main_history_list_item_hero"
+        app:layout_constraintBottom_toBottomOf="@+id/main_history_list_item_hero"
+        app:layout_constraintLeft_toLeftOf="@+id/main_history_list_item_hero"
         app:layout_constraintVertical_bias="0.1"
-        app:layout_constraintRight_toRightOf="@+id/hero"
+        app:layout_constraintRight_toRightOf="@+id/main_history_list_item_hero"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="42dp"
         android:layout_width="320dp"
         android:layout_height="32dp" />
 
     <TextView
-        android:id="@+id/description"
+        android:id="@+id/main_history_list_item_description"
         android:background="#47a"
-        app:layout_constraintTop_toBottomOf="@+id/hero"
+        app:layout_constraintTop_toBottomOf="@+id/main_history_list_item_hero"
         app:layout_constraintVertical_bias="0.9"
         android:layout_width="320dp"
         android:layout_height="32dp"

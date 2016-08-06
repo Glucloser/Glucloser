@@ -6,10 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListAdapter
+import android.widget.TextView
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.models.BolusEvent
+import com.nlefler.glucloser.a.models.HasPlace
 import io.requery.query.Result
 import rx.Observable
+import rx.Subscription
 import java.util.*
 
 /**
@@ -18,12 +21,13 @@ import java.util.*
 
 class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<List<BolusEvent>>): ListAdapter {
 
-    var results: List<BolusEvent>? = null
+    var results: List<BolusEvent> = emptyList()
+    val resultSub: Subscription
     var observers = ArrayList<DataSetObserver>()
     val layoutInflater = ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
     init {
-        resultObservable.subscribe { list ->
+        resultSub = resultObservable.subscribe { list ->
             results = list
             observers.forEach { o -> o.onChanged() }
         }
@@ -43,19 +47,30 @@ class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<
             view = layoutInflater.inflate(R.id.main_history_list_item, parent, false)
         }
 
+        val bolusEvent = results.get(idx)
+
+        val titleView = view?.findViewById(R.id.main_history_list_item_title) as TextView
+        val place = if (bolusEvent is HasPlace) bolusEvent.place else null
+        if (place != null) {
+            titleView.text = place.name
+        }
+        else {
+            titleView.text = ctx.getString(R.string.snack)
+        }
+
         return view
     }
 
     override fun getItem(idx: Int): Any? {
-        return results?.get(idx)
+        return results.get(idx)
     }
 
     override fun getCount(): Int {
-        return results?.count() ?: 0
+        return results.count()
     }
 
     override fun isEmpty(): Boolean {
-        return results?.isEmpty() ?: true
+        return results.isEmpty()
     }
 
     override fun registerDataSetObserver(ob: DataSetObserver?) {
@@ -74,7 +89,7 @@ class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<
     }
 
     override fun getItemId(idx: Int): Long {
-        return results?.get(idx)?.primaryId?.hashCode()?.toLong() ?: 0
+        return results.get(idx).primaryId.hashCode().toLong()
     }
 
     override fun hasStableIds(): Boolean {

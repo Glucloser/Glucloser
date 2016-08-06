@@ -208,7 +208,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 }
                 return@toSortedList be1.eatenDate.compareTo(be2.eatenDate)
             }
-            listView.adapter = MainHistoryListAdapter(results)
+            listView.adapter = MainHistoryListAdapter(context, results)
 
 ////            val activity = getActivity();
 //
