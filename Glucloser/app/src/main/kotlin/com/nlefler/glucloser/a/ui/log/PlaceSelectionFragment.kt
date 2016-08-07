@@ -57,7 +57,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), PlaceSelectionD
 
         val toolbar = (activity as AppCompatActivity).supportActionBar
         toolbar?.title = getString(R.string.place_selection_toolbar_title)
-        toolbar?.setDefaultDisplayHomeAsUpEnabled(true)
+        toolbar?.setDisplayHomeAsUpEnabled(true)
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)

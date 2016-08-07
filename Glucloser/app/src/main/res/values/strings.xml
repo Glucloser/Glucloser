@@ -19,6 +19,7 @@
 
     <!-- Place Selection Fragment -->
     <string name="place_selection_toolbar_title">Select a place</string>
+    <string name="place_selection_list_item_image_description">A logo or image of this place</string>
 
     <string name="title_activity_log_meal">Log A Meal</string>
     <string name="carbs_noun">Carbs</string>

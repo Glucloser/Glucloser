@@ -22,7 +22,7 @@
         app:layout_constraintRight_toRightOf="@+id/main_no_history_fragment"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="@+id/main_no_history_fragment"
-        app:layout_constraintVertical_bias="0.32999998"
+        app:layout_constraintVertical_bias="0.52"
         android:textAppearance="@android:style/TextAppearance.Material.Headline" />
 
     <Button
@@ -40,15 +40,15 @@
         app:layout_constraintVertical_bias="0.25" />
 
     <ImageView
-        android:layout_width="33dp"
-        android:layout_height="33dp"
-        app:srcCompat="@drawable/ic_launcher"
+        android:layout_width="150dp"
+        app:srcCompat="@drawable/circle"
         android:id="@+id/imageView"
         app:layout_constraintTop_toTopOf="@+id/main_no_history_fragment"
         app:layout_constraintBottom_toTopOf="@+id/main_no_history_prompt_text"
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="@+id/main_no_history_fragment"
         android:layout_marginStart="16dp"
-        app:layout_constraintLeft_toLeftOf="@+id/main_no_history_fragment" />
+        app:layout_constraintLeft_toLeftOf="@+id/main_no_history_fragment"
+        android:layout_height="150dp" />
 
 </android.support.constraint.ConstraintLayout>

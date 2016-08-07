@@ -68,7 +68,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
                 val fragment = PlaceSelectionFragment()
 
                 if (savedInstanceState == null) {
-                    getSupportFragmentManager().beginTransaction().add(R.id.log_bolus_event_activity_container, fragment).commit()
+                    getSupportFragmentManager().beginTransaction().add(R.id.log_bolus_container, fragment).commit()
                 }
 
                 val intent = intent
@@ -114,7 +114,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
         args.putParcelable(BolusEventDetailsFragment.BolusEventDetailBolusEventParcelableBundleKey, bolusEventParcelable as Parcelable)
         fragment.setArguments(args)
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.log_bolus_event_activity_container, fragment, LogBolusEventActivity.Companion.BolusEventFragmentId).addToBackStack(null).commit()
+        getSupportFragmentManager().beginTransaction().replace(R.id.log_bolus_container, fragment, LogBolusEventActivity.Companion.BolusEventFragmentId).addToBackStack(null).commit()
     }
 
     private fun finishLoggingBolusEvent() {

@@ -22,16 +22,15 @@ class PlaceSelectionViewHolder @Inject constructor(itemView: View, val delegate:
 
     var venue: NLFoursquareVenue? = null
     var place: Place? = null
-    var placeName: TextView
-    var placeDistance: TextView
-    protected var clickListener: View.OnClickListener
+    var detail1: TextView
+    var detail2: TextView
+    var clickListener: View.OnClickListener
 
     init {
-
-        this.placeName = itemView.findViewById(R.id.place_selection_place_detail_name) as TextView
-        this.placeDistance = itemView.findViewById(R.id.place_selection_place_detail_distance) as TextView
+        this.detail1 = itemView.findViewById(R.id.place_selection_list_item_detail1) as TextView
+        this.detail2 = itemView.findViewById(R.id.place_selection_list_item_detail2) as TextView
         this.clickListener = View.OnClickListener {
-            var placeParcelable = getPlaceParcelable()
+            val placeParcelable = getPlaceParcelable()
             if (placeParcelable != null) {
                 delegate?.placeSelected(placeParcelable)
             }

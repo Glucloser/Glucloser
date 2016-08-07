@@ -36,13 +36,13 @@ public class PlaceSelectionRecyclerAdapter(private val delegate: PlaceSelectionD
         if (i < mostUsedPlaces.size) {
             val place = mostUsedPlaces[i]
             viewHolder.place = place
-            viewHolder.placeName.text = place.name
+            viewHolder.detail1.text = place.name
         }
         else if (i - mostUsedPlaces.size < nearestVenues.size) {
             val idx = i - mostUsedPlaces.size
             val venue = nearestVenues[idx]
             viewHolder.venue = venue
-            viewHolder.placeName.text = venue.name
+            viewHolder.detail1.text = venue.name
         }
     }
 

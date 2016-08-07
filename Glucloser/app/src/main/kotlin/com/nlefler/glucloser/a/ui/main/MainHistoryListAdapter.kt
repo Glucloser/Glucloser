@@ -21,6 +21,7 @@ import java.util.*
 
 class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<List<BolusEvent>>): ListAdapter {
 
+    // TODO(nl): This should be a recycler adapter
     var results: List<BolusEvent> = emptyList()
     val resultSub: Subscription
     var observers = ArrayList<DataSetObserver>()
