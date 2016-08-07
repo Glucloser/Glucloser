@@ -14,7 +14,7 @@ import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
-import com.nlefler.glucloser.a.ui.PlaceSelectionFragment
+import com.nlefler.glucloser.a.ui.log.PlaceSelectionFragment
 import com.nlefler.glucloser.a.ui.PlaceSelectionViewHolder
 import com.nlefler.glucloser.a.user.UserManager
 import dagger.Component

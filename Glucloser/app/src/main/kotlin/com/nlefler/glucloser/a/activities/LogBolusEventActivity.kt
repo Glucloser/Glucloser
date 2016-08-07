@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.activities
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import com.nlefler.glucloser.a.GlucloserApplication
@@ -16,7 +17,7 @@ import com.nlefler.glucloser.a.models.BolusEventType
 import com.nlefler.glucloser.a.models.FoodDetailDelegate
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.models.parcelable.*
-import com.nlefler.glucloser.a.ui.PlaceSelectionFragment
+import com.nlefler.glucloser.a.ui.log.PlaceSelectionFragment
 import javax.inject.Inject
 
 class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusEventDetailDelegate, FoodDetailDelegate {
@@ -29,6 +30,9 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_bolus_event)
+
+        val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
+        setSupportActionBar(toolbar)
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)

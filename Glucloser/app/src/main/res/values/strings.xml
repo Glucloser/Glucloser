@@ -15,6 +15,11 @@
     <string name="nav_drawer_open">Open</string>
     <string name="nav_drawer_closed">Closed</string>
 
+    <!-- Log Bolus Activity -->
+
+    <!-- Place Selection Fragment -->
+    <string name="place_selection_toolbar_title">Select a place</string>
+
     <string name="title_activity_log_meal">Log A Meal</string>
     <string name="carbs_noun">Carbs</string>
     <string name="insulin_noun">Insulin</string>

@@ -1,8 +1,19 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/log_bolus_event_activity_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.LogBolusEventActivity"
-    tools:ignore="MergeRootFrame" >
+    tools:ignore="MergeRootFrame">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/log_bolus_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/AppTheme"
+        app:popupTheme="@style/AppTheme"/>
+
 </FrameLayout>

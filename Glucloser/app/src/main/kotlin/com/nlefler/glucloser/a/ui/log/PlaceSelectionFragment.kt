@@ -1,8 +1,9 @@
-package com.nlefler.glucloser.a.ui
+package com.nlefler.glucloser.a.ui.log
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.view.MenuItemCompat
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
@@ -22,6 +23,7 @@ import com.nlefler.glucloser.a.foursquare.FoursquarePlaceHelper
 import com.nlefler.glucloser.a.models.Place
 import com.nlefler.glucloser.a.models.parcelable.PlaceParcelable
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
+import com.nlefler.glucloser.a.ui.DividerItemDecoration
 import com.nlefler.nlfoursquare.Model.Venue.NLFoursquareVenue
 
 import java.util.ArrayList
@@ -57,6 +59,9 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
         this.setHasOptionsMenu(true)
 
+        val toolbar = (activity as AppCompatActivity).supportActionBar
+        toolbar?.title = getString(R.string.place_selection_toolbar_title)
+
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
 
@@ -70,7 +75,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val rootView = inflater!!.inflate(R.layout.fragment_select_place, container, false)
+        val rootView = inflater!!.inflate(R.layout.place_selection_fragment, container, false)
         this.placeSelectionList = rootView.findViewById(R.id.place_selection_list) as RecyclerView
 
         this.placeSelectionLayoutManager = LinearLayoutManager(getActivity())
@@ -117,7 +122,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
     override fun onError(e: Throwable) {
         // TODO: Show UI
-        Log.e(PlaceSelectionFragment.Companion.LOG_TAG, "Unable to get places from 4sq " + e.toString())
+        Log.e(LOG_TAG, "Unable to get places from 4sq " + e.toString())
         activity.finish()
     }
 
