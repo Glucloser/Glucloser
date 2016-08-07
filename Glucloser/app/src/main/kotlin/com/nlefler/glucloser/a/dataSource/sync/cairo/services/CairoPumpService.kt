@@ -1,6 +1,7 @@
 package com.nlefler.glucloser.a.dataSource.sync.cairo.services
 
 import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.BolusPatternEntity
 import com.nlefler.glucloser.a.models.SensorReading
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -18,5 +19,5 @@ interface CairoPumpService {
     fun cgmReadingsBetween(@Body body: CGMReadingsBetweenBody): Observable<SensorReading>
 
     @GET("pump/bolusPattern/current")
-    fun currentBolusPattern(): Observable<BolusPattern>
+    fun currentBolusPattern(): Observable<BolusPatternEntity>
 }

@@ -27,15 +27,20 @@ import javax.inject.Inject
 class PlaceFactory @Inject constructor(val dbManager: DBManager) {
     private val LOG_TAG = "PlaceFactory"
 
-    fun placeForId(id: String): Observable<Result<PlaceEntity>> {
+    fun placeForId(id: String): Observable<PlaceEntity> {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(PlaceEntity::class).where(Place::primaryId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(PlaceEntity::class).where(PlaceEntity::primaryId.eq(id)).get().toObservable()
     }
 
-    fun mostUsedPlaces(limit: Int = 10): Observable<Result<PlaceEntity>> {
-        return dbManager.data.select(PlaceEntity::class).orderBy(Place::visitCount.desc()).limit(limit).get().toSelfObservable()
+    fun mostUsedPlaces(limit: Int = 10): Observable<PlaceEntity> {
+        val a = dbManager.data.select(PlaceEntity::class)
+        val b = a.orderBy(PlaceEntity::visitCount.desc())
+        val c = b.limit(limit)
+        val d = c.get()
+        val e = d.toObservable()
+        return e
     }
 
     fun parcelableFromFoursquareVenue(venue: NLFoursquareVenue?): PlaceParcelable? {
@@ -150,7 +155,7 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(PlaceEntity::class).where(Place::foursquareId.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(PlaceEntity::class).where(PlaceEntity::foursquareId.eq(id)).get().toSelfObservable()
     }
 
     private fun IsVenueValid(venue: NLFoursquareVenue?): Boolean {

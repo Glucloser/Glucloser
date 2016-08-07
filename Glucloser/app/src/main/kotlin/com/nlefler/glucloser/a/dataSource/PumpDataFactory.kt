@@ -4,6 +4,7 @@ import android.util.Log
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.BolusPatternEntity
 import com.nlefler.glucloser.a.models.SensorReading
 import rx.Observable
 import java.util.*
@@ -17,7 +18,7 @@ public class PumpDataFactory @Inject constructor(userServices: CairoServices) {
     private val LOG_TAG = "PumpDataFactory"
     private val pumpService = userServices.pumpService()
 
-    fun currentCarbRatios(uuid: String): Observable<BolusPattern> {
+    fun currentCarbRatios(uuid: String): Observable<BolusPatternEntity> {
         return pumpService.currentBolusPattern()
     }
 

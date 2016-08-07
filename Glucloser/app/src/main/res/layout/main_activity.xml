@@ -6,7 +6,7 @@
     app:flexWrap="wrap"
     app:alignItems="stretch"
     app:alignContent="stretch"
-    android:background="#000"
+    android:background="#eee"
     android:id="@+id/main_container">
 
 </com.google.android.flexbox.FlexboxLayout>

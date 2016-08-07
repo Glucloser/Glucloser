@@ -16,6 +16,7 @@ import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
 import com.nlefler.glucloser.a.ui.main.MainHistoryListFragment
+import com.nlefler.glucloser.a.ui.main.MainNoHistoryPromptFragment
 import javax.inject.Inject
 
 class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
@@ -32,9 +33,9 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         dataFactory?.inject(this)
 
         if (savedInstanceState == null) {
-            val fragment = MainHistoryListFragment()
+            val fragment = MainNoHistoryPromptFragment()
             supportFragmentManager.beginTransaction().add(R.id.main_container,
-                    fragment, MainActivity.Companion.HistoryFragmentId).commit()
+                    fragment, MainActivity.Companion.NoHistoryFragmentId).commit()
         }
 
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName
@@ -104,8 +105,6 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
             FoursquareAuthManager.FOURSQUARE_TOKEN_EXCHG_INTENT_CODE -> {
                 foursquareAuthManager.gotTokenExchangeResponse(this, resultCode, data ?: Intent())
             }
-            LogBolusEventActivityIntentCode -> {
-            }
         }
     }
 
@@ -166,7 +165,7 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
     companion object {
         private val LOG_TAG = "MainActivity"
         private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 22
-        internal val LogBolusEventActivityIntentCode: Int = 4136
-        internal val HistoryFragmentId: String = "HistoryFragmentId"
+        internal val HistoryListFragmentId: String = "HistoryListFragmentId"
+        internal val NoHistoryFragmentId: String = "NoHistoryFragmentId"
     }
 }
