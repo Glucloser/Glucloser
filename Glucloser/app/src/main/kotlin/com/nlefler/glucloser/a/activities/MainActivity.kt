@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -45,11 +46,10 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
                 getString(R.string.nav_drawer_item_foursquare_login),
                 "v$versionName.$versionCode")
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
+        val toolbar = findViewById(R.id.main_toolbar) as Toolbar
+        setSupportActionBar(toolbar)
 
         requestLocationPermission()
-
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
