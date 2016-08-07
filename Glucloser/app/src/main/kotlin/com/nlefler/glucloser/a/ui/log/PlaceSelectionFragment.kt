@@ -34,7 +34,7 @@ import javax.inject.Inject
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<NLFoursquareVenue>>, PlaceSelectionDelegate {
+class PlaceSelectionFragment @Inject constructor() : Fragment(), PlaceSelectionDelegate {
 
     lateinit var foursquareAuthManager: FoursquareAuthManager
     @Inject set
@@ -44,7 +44,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
     private var foursquareHelper: FoursquarePlaceHelper? = null
     private var closestPlacesSubscription: Subscription? = null
-    private var subscriptionScheduler: Scheduler? = null
+    private var placesNetworkScheduler: Scheduler? = null
 
     private var placeSelectionList: RecyclerView? = null
     private var placeSelectionAdapter: PlaceSelectionRecyclerAdapter? = null
@@ -63,12 +63,8 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         dataFactory?.inject(this)
 
         foursquareHelper = FoursquarePlaceHelper(getActivity(), foursquareAuthManager)
-        subscriptionScheduler = Schedulers.newThread()
-        getClosestPlaces(null)
-        placeFactory.mostUsedPlaces(4).toList().subscribe { list ->
-            placeSelectionAdapter?.mostUsedPlaces = list
-            placeSelectionAdapter?.notifyDataSetChanged()
-        }
+        placesNetworkScheduler = Schedulers.io()
+
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -82,6 +78,12 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         this.placeSelectionList!!.adapter = this.placeSelectionAdapter
         this.placeSelectionList!!.addItemDecoration(DividerItemDecoration(getActivity()))
 
+        getClosestPlaces(null)
+        placeFactory.mostUsedPlaces(4).toList().subscribeOn(placesNetworkScheduler).subscribe { list ->
+            placeSelectionAdapter?.mostUsedPlaces = list
+            placeSelectionAdapter?.notifyDataSetChanged()
+        }
+
         return rootView
     }
 
@@ -91,7 +93,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
         val toolbar = (activity as AppCompatActivity).supportActionBar
         val searchItem = menu!!.findItem(R.id.action_place_search)
-        searchItem.setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
+        MenuItemCompat.setOnActionExpandListener(searchItem, object: MenuItemCompat.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 item == searchItem ?: return false
                 toolbar?.title = ""
@@ -128,22 +130,6 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         closestPlacesSubscription!!.unsubscribe()
     }
 
-    /** Observer  */
-    override fun onCompleted() {
-        this.closestPlacesSubscription!!.unsubscribe()
-    }
-
-    override fun onError(e: Throwable) {
-        // TODO: Show UI
-        Log.e(LOG_TAG, "Unable to get places from 4sq " + e.toString())
-        activity.finish()
-    }
-
-    override fun onNext(nlFoursquareVenues: List<NLFoursquareVenue>) {
-        placeSelectionAdapter?.nearestVenues = nlFoursquareVenues
-        placeSelectionAdapter?.notifyDataSetChanged()
-    }
-
     /** PlaceSelectionDelegate  */
     override fun placeSelected(placeParcelable: PlaceParcelable) {
         if (getActivity() !is PlaceSelectionDelegate) {
@@ -157,7 +143,22 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
         if (closestPlacesSubscription != null) {
             closestPlacesSubscription!!.unsubscribe()
         }
-        closestPlacesSubscription = foursquareHelper!!.closestVenues(searchTerm).subscribeOn(subscriptionScheduler).subscribe(this)
+        closestPlacesSubscription = foursquareHelper!!.closestVenues(searchTerm)
+                .subscribeOn(placesNetworkScheduler).subscribe(object: Observer<List<NLFoursquareVenue>> {
+            override fun onCompleted() {
+                closestPlacesSubscription!!.unsubscribe()
+            }
+
+            override fun onError(e: Throwable?) {
+                Log.e(LOG_TAG, "Unable to get places from 4sq " + e.toString())
+                activity.finish()
+            }
+
+            override fun onNext(venues: List<NLFoursquareVenue>?) {
+                placeSelectionAdapter?.nearestVenues = venues ?: emptyList()
+                placeSelectionAdapter?.notifyDataSetChanged()
+            }
+        })
 
     }
 
