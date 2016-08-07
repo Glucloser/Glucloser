@@ -8,11 +8,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import com.nlefler.glucloser.a.GlucloserApplication
 
 import com.nlefler.glucloser.a.R
@@ -61,6 +57,7 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
         val toolbar = (activity as AppCompatActivity).supportActionBar
         toolbar?.title = getString(R.string.place_selection_toolbar_title)
+        toolbar?.setDefaultDisplayHomeAsUpEnabled(true)
 
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
@@ -90,7 +87,23 @@ class PlaceSelectionFragment @Inject constructor() : Fragment(), Observer<List<N
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         inflater!!.inflate(R.menu.menu_place_selection, menu)
+
+
+        val toolbar = (activity as AppCompatActivity).supportActionBar
         val searchItem = menu!!.findItem(R.id.action_place_search)
+        searchItem.setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                item == searchItem ?: return false
+                toolbar?.title = ""
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                item == searchItem ?: return false
+                toolbar?.title = activity.getString(R.string.place_selection_toolbar_title)
+                return true
+            }
+        })
         val searchView = MenuItemCompat.getActionView(searchItem) as SearchView
         searchView.setOnSearchClickListener(object : View.OnClickListener {
             override fun onClick(v: View) {
