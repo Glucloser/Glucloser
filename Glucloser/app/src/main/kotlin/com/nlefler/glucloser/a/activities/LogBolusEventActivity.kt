@@ -29,7 +29,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_log_bolus_event)
+        setContentView(R.layout.log_bolus_activity)
 
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
         setSupportActionBar(toolbar)
@@ -38,8 +38,7 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
         dataFactory?.inject(this)
 //        dataFactory?.inject(logBolusEventAction)
 
-        val bolusEventType = getBolusEventTypeFromBundle(savedInstanceState, getIntent().getExtras()) ?: return
-        setupFragmentForEventType(bolusEventType, savedInstanceState)
+        setupFragment(savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -49,9 +48,6 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         val id = item!!.getItemId()
 
         //noinspection SimplifiableIfStatement
@@ -62,26 +58,19 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
         return super<AppCompatActivity>.onOptionsItemSelected(item)
     }
 
-    private fun setupFragmentForEventType(eventType: BolusEventType, savedInstanceState: Bundle?) {
-        when (eventType) {
-            BolusEventType.BolusEventTypeMeal -> {
-                val fragment = PlaceSelectionFragment()
+    private fun setupFragment(savedInstanceState: Bundle?) {
+        val fragment = PlaceSelectionFragment()
 
-                if (savedInstanceState == null) {
-                    getSupportFragmentManager().beginTransaction().add(R.id.log_bolus_container, fragment).commit()
-                }
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().add(R.id.log_bolus_container, fragment).commit()
+        }
 
-                val intent = intent
-                val extras = intent.extras
-                if (extras != null) {
-                    val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
-                    if (placeParcelable != null) {
-                        this.placeSelected(placeParcelable)
-                    }
-                }
-            }
-            BolusEventType.BolusEventTypeSnack -> {
-                switchToBolusEventDetailsFragment(SnackParcelable(), null)
+        val intent = intent
+        val extras = intent.extras
+        if (extras != null) {
+            val placeParcelable = placeFactory.placeParcelableFromCheckInData(extras)
+            if (placeParcelable != null) {
+                this.placeSelected(placeParcelable)
             }
         }
     }
@@ -123,23 +112,10 @@ class LogBolusEventActivity: AppCompatActivity(), PlaceSelectionDelegate, BolusE
         finish()
     }
 
-    private fun getBolusEventTypeFromBundle(savedInstanceState: Bundle?, extras: Bundle?): BolusEventType? {
-        for (bundle in arrayOf<Bundle?>(savedInstanceState, extras)) {
-            if (bundle?.containsKey(LogBolusEventActivity.Companion.BolusEventTypeKey) ?: null != null) {
-                val eventName = bundle!!.getString(LogBolusEventActivity.Companion.BolusEventTypeKey)
-                return try { BolusEventType.valueOf(eventName) } catch (e: Exception ) { null }
-            }
-        }
-        return null
-    }
-
     companion object {
         private val LOG_TAG = "LogBolusEventActivity"
         private val BolusEventFragmentId = "BolusEventFragmentId"
         private val LogFoodActivityResultKey: Int = 2134
-
-        public val BolusEventTypeKey: String = "BolusEventTypeKey"
-
 
     }
 }
