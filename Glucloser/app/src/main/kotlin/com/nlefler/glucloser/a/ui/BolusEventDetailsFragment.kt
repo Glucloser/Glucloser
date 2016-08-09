@@ -20,10 +20,10 @@ import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.BolusEventDetailDelegate
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
-import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.FoodDetailDelegate
+import com.nlefler.glucloser.a.models.parcelable.MealParcelable
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import java.util.*
 
@@ -36,7 +36,7 @@ public class BolusEventDetailsFragment : Fragment() {
     var pumpDataFactory: PumpDataFactory? = null
 
     private var placeName: String? = null
-    private var bolusEventParcelable: BolusEventParcelable? = null
+    private var mealParcelable: MealParcelable? = null
 
     private var carbValueField: EditText? = null
     private var insulinValueField: EditText? = null
@@ -63,7 +63,7 @@ public class BolusEventDetailsFragment : Fragment() {
         foodFactory = dataFactory?.foodFactory()
         pumpDataFactory = dataFactory?.pumpDataFactory()
 
-        this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
+        this.mealParcelable = getBolusEventParcelableFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
         this.placeName = getPlaceNameFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
 
         val bolusPatternParcelable = getBolusPatternFromBundle(bundle, getArguments(), getActivity().getIntent().getExtras())
@@ -87,8 +87,8 @@ public class BolusEventDetailsFragment : Fragment() {
         if (this.placeName != null) {
             outState?.putString(BolusEventDetailsFragment.Companion.BolusEventDetailPlaceNameBundleKey, this.placeName)
         }
-        if (this.bolusEventParcelable != null) {
-            outState?.putParcelable(BolusEventDetailsFragment.Companion.BolusEventDetailBolusEventParcelableBundleKey, this.bolusEventParcelable)
+        if (this.mealParcelable != null) {
+            outState?.putParcelable(BolusEventDetailsFragment.Companion.BolusEventDetailBolusEventParcelableBundleKey, this.mealParcelable)
         }
     }
 
@@ -171,35 +171,35 @@ public class BolusEventDetailsFragment : Fragment() {
     }
 
     internal fun saveEventClicked() {
-        if (getActivity() !is BolusEventDetailDelegate || this.bolusEventParcelable == null) {
+        if (getActivity() !is BolusEventDetailDelegate || this.mealParcelable == null) {
             return
         }
 
         addFoodFromFields()
 
-        this.bolusEventParcelable!!.date = Date()
+        this.mealParcelable!!.date = Date()
 
         val beforeSugarString = this.beforeSugarValueField!!.getText().toString()
         if (!beforeSugarString.isEmpty()) {
             val beforeSugarParcelable = BloodSugarParcelable()
-            beforeSugarParcelable.date = this.bolusEventParcelable!!.date
+            beforeSugarParcelable.date = this.mealParcelable!!.date
             beforeSugarParcelable.value = Integer.valueOf(beforeSugarString)
-            this.bolusEventParcelable!!.bloodSugarParcelable = beforeSugarParcelable
+            this.mealParcelable!!.bloodSugarParcelable = beforeSugarParcelable
         }
 
         if (this.insulinValueField!!.getText() != null && this.insulinValueField!!.getText().length > 0) {
-            this.bolusEventParcelable!!.insulin = java.lang.Float.valueOf(this.insulinValueField!!.getText().toString())
+            this.mealParcelable!!.insulin = java.lang.Float.valueOf(this.insulinValueField!!.getText().toString())
         }
         if (this.carbValueField!!.getText() != null && this.carbValueField!!.getText().length > 0) {
-            this.bolusEventParcelable!!.carbs = Integer.valueOf(this.carbValueField!!.getText().toString())!!
+            this.mealParcelable!!.carbs = Integer.valueOf(this.carbValueField!!.getText().toString())!!
         }
-        this.bolusEventParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
+        this.mealParcelable!!.isCorrection = this.correctionValueBox!!.isSelected()
 
         if (this.bolusPattern != null) {
-            this.bolusEventParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(this.bolusPattern!!)
+            this.mealParcelable!!.bolusPatternParcelable = bolusPatternFactory?.parcelableFromBolusPattern(this.bolusPattern!!)
         }
 
-        (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.bolusEventParcelable!!)
+        (getActivity() as BolusEventDetailDelegate).bolusEventDetailUpdated(this.mealParcelable!!)
     }
 
     private fun getPlaceNameFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): String {
@@ -222,10 +222,10 @@ public class BolusEventDetailsFragment : Fragment() {
         return null
     }
 
-    private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): BolusEventParcelable? {
+    private fun getBolusEventParcelableFromBundle(savedInstanceState: Bundle?, args: Bundle?, extras: Bundle?): MealParcelable? {
         for (bundle in arrayOf<Bundle?>(savedInstanceState, args, extras)) {
             if (bundle?.containsKey(BolusEventDetailsFragment.Companion.BolusEventDetailBolusEventParcelableBundleKey) ?: null != null) {
-                return bundle!!.getParcelable<Parcelable>(BolusEventDetailsFragment.Companion.BolusEventDetailBolusEventParcelableBundleKey) as BolusEventParcelable?
+                return bundle!!.getParcelable<Parcelable>(BolusEventDetailsFragment.Companion.BolusEventDetailBolusEventParcelableBundleKey) as MealParcelable?
             }
         }
         return null

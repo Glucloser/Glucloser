@@ -20,8 +20,8 @@
     <string name="log_bolus_activity_place_name_placeholder">Tap below link a place to this meal</string>
     <string name="log_bolus_activity_add_food_button_text">+</string>
 
-    <!-- Place Selection Fragment -->
-    <string name="place_selection_toolbar_title">Select a place</string>
+    <!-- Place Selection Activity-->
+    <string name="place_selection_activity_title">Select a place</string>
     <string name="place_selection_list_item_image_description">A logo or image of this place</string>
 
     <string name="title_activity_log_meal">Log A Meal</string>

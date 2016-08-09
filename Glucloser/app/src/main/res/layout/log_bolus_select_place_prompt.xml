@@ -11,9 +11,9 @@
         android:text="@string/log_bolus_select_place_prompt_button_text"
         android:layout_width="70dp"
         android:id="@+id/log_bolus_select_place_prompt_button"
-        app:layout_constraintBottom_toBottomOf="@+id/log_bolus_select_place_prompt"
-        app:layout_constraintRight_toRightOf="@+id/log_bolus_select_place_prompt"
-        app:layout_constraintLeft_toLeftOf="@+id/log_bolus_select_place_prompt"
-        app:layout_constraintTop_toTopOf="@+id/log_bolus_select_place_prompt"
+        app:layout_constraintBottom_toBottomOf="@id/log_bolus_select_place_prompt"
+        app:layout_constraintRight_toRightOf="@id/log_bolus_select_place_prompt"
+        app:layout_constraintLeft_toLeftOf="@id/log_bolus_select_place_prompt"
+        app:layout_constraintTop_toTopOf="@id/log_bolus_select_place_prompt"
         android:layout_height="70dp" />
 </android.support.constraint.ConstraintLayout>

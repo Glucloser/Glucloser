@@ -8,8 +8,7 @@ import android.view.ViewGroup
 import android.widget.ListAdapter
 import android.widget.TextView
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.models.BolusEvent
-import com.nlefler.glucloser.a.models.HasPlace
+import com.nlefler.glucloser.a.models.MealEntity
 import io.requery.query.Result
 import rx.Observable
 import rx.Subscription
@@ -19,10 +18,10 @@ import java.util.*
  * Created by nathan on 8/5/16.
  */
 
-class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<List<BolusEvent>>): ListAdapter {
+class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<List<MealEntity>>): ListAdapter {
 
     // TODO(nl): This should be a recycler adapter
-    var results: List<BolusEvent> = emptyList()
+    var results: List<MealEntity> = emptyList()
     val resultSub: Subscription
     var observers = ArrayList<DataSetObserver>()
     val layoutInflater = ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -51,7 +50,7 @@ class MainHistoryListAdapter(val ctx: Context, val resultObservable: Observable<
         val bolusEvent = results.get(idx)
 
         val titleView = view?.findViewById(R.id.main_history_list_item_title) as TextView
-        val place = if (bolusEvent is HasPlace) bolusEvent.place else null
+        val place = bolusEvent.place
         if (place != null) {
             titleView.text = place.name
         }

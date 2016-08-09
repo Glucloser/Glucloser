@@ -10,7 +10,7 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/log_bolus_toolbar"
-        android:layout_width="384dp"
+        android:layout_width="0dp"
         android:layout_height="56dp"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
@@ -18,9 +18,8 @@
         app:popupTheme="@style/AppTheme"
         app:layout_constraintRight_toRightOf="@+id/log_bolus_activity"
         app:layout_constraintTop_toTopOf="@+id/log_bolus_activity"
-        android:layout_marginStart="16dp"
         app:layout_constraintLeft_toLeftOf="@+id/log_bolus_activity"
-        app:layout_constraintHorizontal_bias="1.0" />
+        app:layout_constraintHorizontal_bias="0.0" />
 
     <TextView
         android:text="@string/log_bolus_activity_place_name_placeholder"
@@ -31,16 +30,9 @@
         app:layout_constraintLeft_toLeftOf="@+id/log_bolus_activity"
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="@+id/log_bolus_activity"
-        app:layout_constraintTop_toBottomOf="@+id/log_bolus_toolbar" />
-
-    <View
-        android:layout_width="0dp"
-        android:id="@+id/log_bolus_activity_place_info_container"
-        app:layout_constraintLeft_toLeftOf="@+id/log_bolus_activity"
-        app:layout_constraintTop_toBottomOf="@+id/log_bolus_toolbar"
-        app:layout_constraintRight_toRightOf="@+id/log_bolus_activity"
-        app:layout_constraintHorizontal_bias="0.0"
-        android:layout_height="115dp" />
+        app:layout_constraintTop_toBottomOf="@id/log_bolus_toolbar"
+        app:layout_constraintBottom_toBottomOf="@+id/log_bolus_activity_place_info_container"
+        app:layout_constraintVertical_bias="0.18" />
 
     <Button
         android:text="@string/log_bolus_activity_add_food_button_text"
@@ -58,5 +50,15 @@
         app:layout_constraintRight_toRightOf="@+id/log_bolus_activity"
         app:layout_constraintBottom_toBottomOf="@+id/log_bolus_activity"
         android:layout_height="0dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:orientation="horizontal"
+        android:id="@+id/log_bolus_activity_place_info_container"
+        app:layout_constraintLeft_toLeftOf="@+id/log_bolus_activity"
+        app:layout_constraintTop_toBottomOf="@id/log_bolus_toolbar"
+        app:layout_constraintRight_toRightOf="@+id/log_bolus_activity"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_height="115dp" />
 
 </android.support.constraint.ConstraintLayout>

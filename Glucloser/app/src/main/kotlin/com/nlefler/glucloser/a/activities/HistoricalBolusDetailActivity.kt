@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 
 public class HistoricalBolusDetailActivity : AppCompatActivity() {
 

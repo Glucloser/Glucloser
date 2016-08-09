@@ -35,8 +35,6 @@ class MainNoHistoryPromptFragment constructor(): Fragment() {
         val activity = getActivity();
 
         val intent = Intent(context, LogBolusEventActivity::class.java)
-        intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
-
         activity.startActivity(intent)
     }
 

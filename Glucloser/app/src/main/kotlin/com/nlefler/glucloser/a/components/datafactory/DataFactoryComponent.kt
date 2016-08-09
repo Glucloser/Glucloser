@@ -22,7 +22,6 @@
 //@Subcomponent(modules = arrayOf(DataFactoryModule::class))
 //interface DataFactoryComponent {
 //    fun inject(client: BloodSugarFactory)
-//    fun inject(client: BolusEventFactory)
 //    fun inject(client: BolusPatternFactory)
 //    fun inject(client: BolusRateFactory)
 //    fun inject(client: FoodFactory)
@@ -31,7 +30,6 @@
 //    fun inject(client: SnackFactory)
 //
 //    fun bloodSugarFactory(): BloodSugarFactory
-//    fun bolusEventFactory(): BolusEventFactory
 //    fun bolusPatternFactory(): BolusPatternFactory
 //    fun bolusRateFactory(): BolusRateFactory
 //    fun foodFactory(): FoodFactory

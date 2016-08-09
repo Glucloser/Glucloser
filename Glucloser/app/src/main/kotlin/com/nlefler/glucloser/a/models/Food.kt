@@ -16,6 +16,4 @@ interface Food: Persistable {
     // Trying to resolve requery annotation parsing issues
     @get:ManyToOne
     var meal: Meal?
-    @get:ManyToOne
-    var snack: Snack?
 }

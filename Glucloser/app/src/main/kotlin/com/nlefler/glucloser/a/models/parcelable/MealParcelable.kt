@@ -6,24 +6,23 @@ import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BloodSugarEntity
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
-import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import java.util.*
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealParcelable() : Parcelable, BolusEventParcelable {
+public class MealParcelable() : Parcelable {
 
     var placeParcelable: PlaceParcelable? = null
-    override var primaryId: String = UUID.randomUUID().toString()
-    override var date: Date = Date()
-    override var bolusPatternParcelable: BolusPatternParcelable? = null
-    override var carbs: Int = 0
-    override var insulin: Float = 0f
-    override var bloodSugarParcelable: BloodSugarParcelable? = null
-    override var isCorrection: Boolean = false
-    override var foodParcelables: MutableList<FoodParcelable> = ArrayList<FoodParcelable>()
+    var primaryId: String = UUID.randomUUID().toString()
+    var date: Date = Date()
+    var bolusPatternParcelable: BolusPatternParcelable? = null
+    var carbs: Int = 0
+    var insulin: Float = 0f
+    var bloodSugarParcelable: BloodSugarParcelable? = null
+    var isCorrection: Boolean = false
+    var foodParcelables: MutableList<FoodParcelable> = ArrayList<FoodParcelable>()
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {

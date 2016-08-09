@@ -21,9 +21,9 @@ import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.FoodFactory
 import com.nlefler.glucloser.a.dataSource.FoodListRecyclerAdapter
 import com.nlefler.glucloser.a.dataSource.PumpDataFactory
-import com.nlefler.glucloser.a.models.parcelable.BolusEventParcelable
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.SensorReading
+import com.nlefler.glucloser.a.models.parcelable.MealParcelable
 import rx.Observer
 import rx.Scheduler
 import rx.Subscriber
@@ -36,7 +36,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
     var pumpDataFactory: PumpDataFactory? = null
 
     private var placeName: String? = null
-    private var bolusEventParcelable: BolusEventParcelable? = null
+    private var mealParcelable: MealParcelable? = null
 
     private var placeNameField: TextView? = null
     private var carbValueField: TextView? = null
@@ -58,10 +58,10 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         foodFactory = dataFactory?.foodFactory()
         pumpDataFactory = dataFactory?.pumpDataFactory()
 
-        this.bolusEventParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)
+        this.mealParcelable = getBolusEventParcelableFromBundle(bundle, arguments, activity.intent.extras)
         this.placeName = getPlaceNameFromBundle(bundle, arguments, activity.intent.extras)
 
-        for (foodPar in this.bolusEventParcelable?.foodParcelables ?: ArrayList()) {
+        for (foodPar in this.mealParcelable?.foodParcelables ?: ArrayList()) {
             // TODO(nl) make food
             val food = foodFactory?.foodFromParcelable(foodPar)
             if (food != null) {
@@ -100,10 +100,10 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
 
     private fun setValuesInViews() {
         this.placeNameField?.text = this.placeName ?: ""
-        this.carbValueField?.text = "${this.bolusEventParcelable?.carbs}"
-        this.insulinValueField?.text = "${this.bolusEventParcelable?.insulin}"
-        this.beforeSugarValueField?.text = "${this.bolusEventParcelable?.bloodSugarParcelable?.value}"
-        this.correctionValueBox?.isChecked = this.bolusEventParcelable?.isCorrection ?: false
+        this.carbValueField?.text = "${this.mealParcelable?.carbs}"
+        this.insulinValueField?.text = "${this.mealParcelable?.insulin}"
+        this.beforeSugarValueField?.text = "${this.mealParcelable?.bloodSugarParcelable?.value}"
+        this.correctionValueBox?.isChecked = this.mealParcelable?.isCorrection ?: false
 
         this.foodListAdapter = FoodListRecyclerAdapter(this.foods)
         this.foodListView?.adapter = this.foodListAdapter
@@ -116,7 +116,7 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
 //        var minReading = Float.MAX_VALUE
 //        var maxReading = Float.MIN_VALUE
 //
-//        val date = bolusEventParcelable?.date ?: return
+//        val date = mealParcelable?.date ?: return
 //        pumpDataFactory?.sensorReadingsAfter(date)
 //                ?.subscribeOn(Schedulers.newThread())
 //                ?.observeOn(AndroidSchedulers.mainThread())
@@ -161,10 +161,10 @@ class HistoricalBolusDetailActivityFragment : Fragment() {
         return ""
     }
 
-    private fun getBolusEventParcelableFromBundle(vararg bundles: Bundle?): BolusEventParcelable? {
+    private fun getBolusEventParcelableFromBundle(vararg bundles: Bundle?): MealParcelable? {
         for (bundle in bundles) {
             if (bundle?.containsKey(HistoricalBolusDetailActivityFragment.Companion.HistoricalBolusEventBolusDetailParcelableBundleKey) ?: false) {
-                return bundle?.getParcelable<Parcelable>(HistoricalBolusDetailActivityFragment.Companion.HistoricalBolusEventBolusDetailParcelableBundleKey) as BolusEventParcelable?
+                return bundle?.getParcelable<Parcelable>(HistoricalBolusDetailActivityFragment.Companion.HistoricalBolusEventBolusDetailParcelableBundleKey) as MealParcelable?
             }
         }
         return null

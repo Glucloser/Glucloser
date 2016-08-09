@@ -8,9 +8,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.models.BolusEvent
 import com.nlefler.glucloser.a.models.MealEntity
-import com.nlefler.glucloser.a.models.SnackEntity
 import io.requery.kotlin.desc
 import rx.Observable
 
@@ -35,17 +33,7 @@ class MainHistoryListFragment constructor(): Fragment() {
                         ?.orderBy(MealEntity::eatenDate.desc())
                         ?.limit(30)?.get()?.toObservable()
                         ?: Observable.empty()
-        val recentSnacks: Observable<SnackEntity> =
-                dbManager?.data?.select(SnackEntity::class)
-                        ?.orderBy(SnackEntity::eatenDate.desc())
-                        ?.limit(30)?.get()?.toObservable()
-                        ?: Observable.empty()
-
-        val bolusEvents: Observable<BolusEvent> = Observable.merge(recentMeals, recentSnacks)
-        val results: Observable<List<BolusEvent>> = bolusEvents.toSortedList { be1 , be2 ->
-            if (!(be1 is BolusEvent) || !(be2 is BolusEvent)) {
-                return@toSortedList 0
-            }
+        val results: Observable<List<MealEntity>> = recentMeals.toSortedList { be1 , be2 ->
             return@toSortedList be1.eatenDate.compareTo(be2.eatenDate)
         }
         listView.adapter = MainHistoryListAdapter(context, results)

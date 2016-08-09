@@ -19,10 +19,10 @@ import javax.inject.Inject
  * Created by Nathan Lefler on 12/24/14.
  */
 class MealFactory @Inject constructor(val dbManager: DBManager,
-                                             val bolusPatternFactory: BolusPatternFactory,
-                                             val bloodSugarFactory: BloodSugarFactory,
-                                             val placeFactory: PlaceFactory,
-                                             val foodFactory: FoodFactory) {
+                                      val bolusPatternFactory: BolusPatternFactory,
+                                      val bloodSugarFactory: BloodSugarFactory,
+                                      val placeFactory: PlaceFactory,
+                                      val foodFactory: FoodFactory) {
     private val LOG_TAG = "MealFactory"
 
     fun parcelableFromMeal(meal: Meal): MealParcelable {

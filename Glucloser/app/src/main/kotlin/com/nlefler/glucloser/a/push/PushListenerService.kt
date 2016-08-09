@@ -33,7 +33,6 @@ class PushListenerService: GcmListenerService() {
 
         val intent = Intent(this, LogBolusEventActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(LogBolusEventActivity.BolusEventTypeKey, BolusEventType.BolusEventTypeMeal.name)
         // TODO(nl) Extract key
         intent.putExtra("venueData", foursquareData)
 
