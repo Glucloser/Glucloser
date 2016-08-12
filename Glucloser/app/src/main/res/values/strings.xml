@@ -17,12 +17,17 @@
 
     <!-- Log Bolus Activity -->
     <string name="log_bolus_select_place_prompt_button_text">+</string>
-    <string name="log_bolus_activity_place_name_placeholder">Tap below link a place to this meal</string>
-    <string name="log_bolus_activity_add_food_button_text">+</string>
+    <string name="log_bolus_activity_place_name_placeholder"></string>
+    <string name="log_bolus_activity_add_food_button_text">+ Add a Food</string>
 
     <!-- Place Selection Activity-->
     <string name="place_selection_activity_title">Select a place</string>
     <string name="place_selection_list_item_image_description">A logo or image of this place</string>
+
+    <!-- Food List Item -->
+    <string name="log_bolus_activity_food_list_item_food_name_placeholder">Food Name</string>
+    <string name="log_bolus_activity_food_list_item_carb_placeholder">Carbs</string>
+    <string name="log_bolus_activity_food_list_item_insulin_placeholder">Insulin</string>
 
     <string name="title_activity_log_meal">Log A Meal</string>
     <string name="carbs_noun">Carbs</string>

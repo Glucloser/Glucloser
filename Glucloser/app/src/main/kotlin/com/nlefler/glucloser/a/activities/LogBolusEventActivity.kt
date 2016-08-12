@@ -7,12 +7,15 @@ import android.os.Parcelable
 import android.os.PersistableBundle
 import android.support.constraint.ConstraintLayout
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ListView
 import android.widget.TextView
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
@@ -21,6 +24,9 @@ import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.models.BolusEventDetailDelegate
 import com.nlefler.glucloser.a.models.FoodDetailDelegate
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
+import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
+import rx.Observable
+import rx.subjects.BehaviorSubject
 import javax.inject.Inject
 
 class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, FoodDetailDelegate {
@@ -29,6 +35,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
         @Inject set
 
     private var bolusParcelable = MealParcelable()
+    private var foodsSubject = BehaviorSubject.create(emptyList<FoodParcelable>())
 //    private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +43,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
         setContentView(R.layout.log_bolus_activity)
 
         bolusParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: bolusParcelable
+        foodsSubject.onNext(bolusParcelable.foodParcelables)
 
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
         setSupportActionBar(toolbar)
@@ -84,18 +92,20 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
         if (placePar != null) {
             placeSelected(placePar)
         }
-        else {
-            val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            val container = root.findViewById(R.id.log_bolus_activity_place_info_container) as ViewGroup
-            val prompt = inflater.inflate(R.layout.log_bolus_select_place_prompt, container, true)
-            val button = prompt.findViewById(R.id.log_bolus_select_place_prompt_button) as Button
-            button.setOnClickListener { view -> showPlaceSelection() }
-        }
+
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val container = root.findViewById(R.id.log_bolus_activity_place_info_container) as ViewGroup
+        inflater.inflate(R.layout.log_bolus_select_place_prompt, container, true)
+
+        val setPlaceButton = root.findViewById(R.id.log_bolus_activity_set_place_button) as ImageButton
+        setPlaceButton.setOnClickListener { view -> showPlaceSelection() }
 
         val addFoodButton = root.findViewById(R.id.log_bolus_activity_add_food_button) as Button
         addFoodButton.setOnClickListener { view -> addNewFood() }
 
-        bolusParcelable.foodParcelables.forEach { fp -> addViewForFood(fp) }
+        // TODO(nl): recycler view
+        val foodListView = root.findViewById(R.id.log_bolus_activity_food_list) as ListView
+        foodListView.adapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -134,9 +144,6 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
 
     }
 
-    private fun addViewForFood(fp: FoodParcelable) {
-
-    }
 
     /** FoodDetailDelegate */
     override fun foodDetailUpdated(foodParcelable: FoodParcelable) {
