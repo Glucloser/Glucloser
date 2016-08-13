@@ -9,6 +9,7 @@ import android.support.constraint.ConstraintLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
+import android.text.Layout
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -22,25 +23,29 @@ import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.models.BolusEventDetailDelegate
-import com.nlefler.glucloser.a.models.FoodDetailDelegate
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
 import rx.Observable
 import rx.subjects.BehaviorSubject
 import javax.inject.Inject
 
-class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, FoodDetailDelegate {
+class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
 
     lateinit var placeFactory: PlaceFactory
         @Inject set
 
     private var bolusParcelable = MealParcelable()
     private var foodsSubject = BehaviorSubject.create(emptyList<FoodParcelable>())
+    private var inflater: LayoutInflater? = null
+    private var foodsAdapter: LogBolusFoodListAdapter? = null
+
 //    private var logBolusEventAction: LogBolusEventAction = LogBolusEventAction()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.log_bolus_activity)
+
+        inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         bolusParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: bolusParcelable
         foodsSubject.onNext(bolusParcelable.foodParcelables)
@@ -51,6 +56,15 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
         val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
         dataFactory?.inject(this)
 //        dataFactory?.inject(logBolusEventAction)
+
+        foodsAdapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
+        foodsAdapter?.foodEdited?.asObservable()?.subscribe { food ->
+            val idx = bolusParcelable.foodParcelables.indexOfFirst { el -> el.foodId == food.foodId }
+            if (idx >= 0 && idx <= bolusParcelable.foodParcelables.count()) {
+                bolusParcelable.foodParcelables.removeAt(idx)
+                bolusParcelable.foodParcelables.add(idx, food)
+            }
+        }
 
         setupView()
     }
@@ -93,9 +107,8 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
             placeSelected(placePar)
         }
 
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val container = root.findViewById(R.id.log_bolus_activity_place_info_container) as ViewGroup
-        inflater.inflate(R.layout.log_bolus_select_place_prompt, container, true)
+        inflater?.inflate(R.layout.log_bolus_select_place_prompt, container, true)
 
         val setPlaceButton = root.findViewById(R.id.log_bolus_activity_set_place_button) as ImageButton
         setPlaceButton.setOnClickListener { view -> showPlaceSelection() }
@@ -105,7 +118,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
 
         // TODO(nl): recycler view
         val foodListView = root.findViewById(R.id.log_bolus_activity_food_list) as ListView
-        foodListView.adapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
+        foodListView.adapter = foodsAdapter
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -141,13 +154,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate, Food
     }
 
     private fun addNewFood() {
-
-    }
-
-
-    /** FoodDetailDelegate */
-    override fun foodDetailUpdated(foodParcelable: FoodParcelable) {
-//        this.logBolusEventAction.addFoodParcelable(foodParcelable)
+        foodsAdapter?.addNewItem()
     }
 
     private fun finishLoggingBolusEvent() {

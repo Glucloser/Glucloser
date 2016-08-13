@@ -13,7 +13,6 @@ import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.activities.LogBolusEventActivity
 import com.nlefler.glucloser.a.activities.MainActivity
 import com.nlefler.glucloser.a.models.BolusEventType
-import com.nlefler.glucloser.a.ui.BolusEventDetailsFragment
 
 /**
  * Created by nathan on 1/28/16.

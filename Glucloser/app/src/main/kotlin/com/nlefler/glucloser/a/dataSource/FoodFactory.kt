@@ -30,7 +30,7 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
     fun foodFromParcelable(parcelable: FoodParcelable): Food {
         val f = FoodEntity()
         f.primaryID = parcelable.foodId
-        f.carbs = parcelable.carbs
+        f.carbs = parcelable.carbs ?: 0
         f.foodName = parcelable.foodName
         return f
     }
