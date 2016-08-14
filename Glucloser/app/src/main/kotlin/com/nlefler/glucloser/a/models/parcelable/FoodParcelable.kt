@@ -37,6 +37,22 @@ class FoodParcelable : Parcelable {
         dest.writeString(insulin.toString())
     }
 
+    override fun equals(other: Any?): Boolean{
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+
+        other as FoodParcelable
+
+        if (foodId != other.foodId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int{
+        return foodId.hashCode()
+    }
+
+
     companion object {
 
         @SuppressWarnings("unused")
