@@ -27,6 +27,7 @@ import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
 import rx.Observable
 import rx.subjects.BehaviorSubject
+import java.util.*
 import javax.inject.Inject
 
 class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
@@ -35,6 +36,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
         @Inject set
 
     private var bolusParcelable = MealParcelable()
+    private var foodsMap = HashMap<String, FoodParcelable>()
     private var foodsSubject = BehaviorSubject.create(emptyList<FoodParcelable>())
     private var inflater: LayoutInflater? = null
     private var foodsAdapter: LogBolusFoodListAdapter? = null
@@ -48,6 +50,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
         inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         bolusParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: bolusParcelable
+        bolusParcelable.foodParcelables.forEach { p -> foodsMap.put(p.foodId, p) }
         foodsSubject.onNext(bolusParcelable.foodParcelables)
 
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
@@ -59,11 +62,7 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
 
         foodsAdapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
         foodsAdapter?.foodEdited?.asObservable()?.subscribe { food ->
-            val idx = bolusParcelable.foodParcelables.indexOfFirst { el -> el.foodId == food.foodId }
-            if (idx >= 0 && idx <= bolusParcelable.foodParcelables.count()) {
-//                bolusParcelable.foodParcelables.removeAt(idx)
-//                bolusParcelable.foodParcelables.add(idx, food)
-            }
+            foodsMap.put(food.foodId, food)
         }
 
         setupView()
