@@ -61,8 +61,8 @@ class LogBolusEventActivity: AppCompatActivity(), BolusEventDetailDelegate {
         foodsAdapter?.foodEdited?.asObservable()?.subscribe { food ->
             val idx = bolusParcelable.foodParcelables.indexOfFirst { el -> el.foodId == food.foodId }
             if (idx >= 0 && idx <= bolusParcelable.foodParcelables.count()) {
-                bolusParcelable.foodParcelables.removeAt(idx)
-                bolusParcelable.foodParcelables.add(idx, food)
+//                bolusParcelable.foodParcelables.removeAt(idx)
+//                bolusParcelable.foodParcelables.add(idx, food)
             }
         }
 

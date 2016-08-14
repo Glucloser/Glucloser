@@ -35,7 +35,6 @@ class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<
     private var listSub: Subscription
     private var observers = ArrayList<DataSetObserver>()
     private val layoutInflater = ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-    private val activeTextChangeSubs = HashMap<View, Subscription>()
 
     init {
         listSub = foodsListObservable.subscribe { newList ->
@@ -60,63 +59,89 @@ class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<
 
     override fun getView(idx: Int, existingView: View?, parent: ViewGroup?): View? {
         var view = existingView
+        var addTextChangeListeners = false
         if (view == null) {
             view = layoutInflater.inflate(R.layout.log_bolus_activity_food_list_item, parent, false)
+            addTextChangeListeners = true
+        }
+
+        val nameField = view?.findViewById(R.id.log_bolus_activity_food_list_item_food_name) as EditText
+        val carbField = view?.findViewById(R.id.log_bolus_activity_food_list_item_carb) as EditText
+        val insulinField = view?.findViewById(R.id.log_bolus_activity_food_list_item_insulin) as EditText
+        if (addTextChangeListeners) {
+            RxTextView.afterTextChangeEvents(nameField)
+                    .distinctUntilChanged()
+                    .debounce(800, TimeUnit.MILLISECONDS)
+                    .subscribe { event ->
+                        val food = this.getItem(idx) as FoodParcelable
+                        val text = event.editable().toString()
+                        if (food.foodName != text) {
+                            food.foodName = text
+                            foodEdited.onNext(food)
+                        }
+            }
+            RxTextView.afterTextChangeEvents(carbField)
+                    .distinctUntilChanged()
+                    .debounce(800, TimeUnit.MILLISECONDS)
+                    .subscribe { event ->
+                        val food = this.getItem(idx) as FoodParcelable
+                        val text = event.editable().toString()
+                        try {
+                            val carbs = text.toInt()
+                            if (food.carbs != carbs) {
+                                food.carbs = carbs
+                                foodEdited.onNext(food)
+                            }
+                        }
+                        catch (e: Exception) {
+
+                        }
+            }
+            RxTextView.afterTextChangeEvents(insulinField)
+                    .distinctUntilChanged()
+                    .debounce(800, TimeUnit.MILLISECONDS)
+                    .subscribe { event ->
+                        val food = this.getItem(idx) as FoodParcelable
+                        val text = event.editable().toString()
+                        try {
+                            val insulin = text.toFloat()
+                            if (food.insulin != insulin) {
+                                food.insulin = insulin
+                                foodEdited.onNext(food)
+                            }
+                        }
+                        catch (e: Exception) {
+
+                        }
+            }
         }
 
         val food = foods.get(idx)
 
-        val nameField = view?.findViewById(R.id.log_bolus_activity_food_list_item_food_name) as EditText
-        if (!activeTextChangeSubs.containsKey(nameField)) {
-            val sub = RxTextView.afterTextChangeEvents(nameField).debounce(200, TimeUnit.MILLISECONDS).subscribe { event ->
-                if (idx > foods.count()) {
-                    return@subscribe
-                }
-
-                val curFood = foods[idx]
-                curFood.foodName = event.editable().toString()
-                foodEdited.onNext(curFood)
-            }
-            activeTextChangeSubs.put(nameField, sub)
-        }
-
         val foodName = food.foodName
-        if (foodName != null && !foodName.isEmpty()) {
+        if (foodName != nameField.text.toString() && foodName != null && !foodName.isEmpty()) {
             nameField.setText(food.foodName, TextView.BufferType.EDITABLE)
         }
 
-        val carbField = view?.findViewById(R.id.log_bolus_activity_food_list_item_carb) as EditText
-        if (!activeTextChangeSubs.containsKey(carbField)) {
-            val sub = RxTextView.afterTextChangeEvents(carbField).debounce(200, TimeUnit.MILLISECONDS).subscribe { event ->
-                if (idx > foods.count()) {
-                    return@subscribe
-                }
-
-                val curFood = foods[idx]
-                curFood.carbs = event.editable().toString().toInt()
-                foodEdited.onNext(curFood)
+        try {
+            val carbs = carbField.text.toString().toInt()
+            if (food.carbs != carbs) {
+                carbField.setText(food.carbs.toString(), TextView.BufferType.EDITABLE)
             }
-            activeTextChangeSubs.put(nameField, sub)
         }
-        if (food.carbs != null) {
-            carbField.setText(food.carbs.toString(), TextView.BufferType.EDITABLE)
+        catch (e: Exception) {
+
         }
 
-        val insulinField = view?.findViewById(R.id.log_bolus_activity_food_list_item_insulin) as EditText
-        if (!activeTextChangeSubs.containsKey(insulinField)) {
-            val sub = RxTextView.afterTextChangeEvents(insulinField).debounce(200, TimeUnit.MILLISECONDS).subscribe { event ->
-                if (idx > foods.count()) {
-                    return@subscribe
-                }
-
-                val curFood = foods[idx]
-                // TODO(nl): set insulin on food
-                foodEdited.onNext(curFood)
+        try {
+            val insulin = insulinField.text.toString().toFloat()
+            if (food.insulin != insulin) {
+                insulinField.setText(food.insulin.toString(), TextView.BufferType.EDITABLE)
             }
-            activeTextChangeSubs.put(nameField, sub)
         }
-        // TODO(nl): Insulin per food
-        insulinField.setText(0.toString(), TextView.BufferType.EDITABLE)
+        catch (e: Exception) {
+
+        }
 
         return view
     }

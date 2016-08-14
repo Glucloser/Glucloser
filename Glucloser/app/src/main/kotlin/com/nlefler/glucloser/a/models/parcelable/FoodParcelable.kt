@@ -13,6 +13,7 @@ class FoodParcelable : Parcelable {
     var foodId: String = UUID.randomUUID().toString()
     var carbs: Int? = null
     var foodName: String? = null
+    var insulin: Float? = null
 
     constructor() {
     }
@@ -22,6 +23,7 @@ class FoodParcelable : Parcelable {
         foodId = `in`.readString()
         carbs = `in`.readString()?.toInt()
         foodName = `in`.readString()
+        insulin = `in`.readString()?.toFloat()
     }
 
     override fun describeContents(): Int {
@@ -32,6 +34,7 @@ class FoodParcelable : Parcelable {
         dest.writeString(foodId)
         dest.writeString(carbs.toString())
         dest.writeString(foodName)
+        dest.writeString(insulin.toString())
     }
 
     companion object {
