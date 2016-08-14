@@ -118,30 +118,13 @@ class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<
 
         val food = foods.get(idx)
 
-        val foodName = food.foodName
-        if (foodName != nameField.text.toString() && foodName != null && !foodName.isEmpty()) {
-            nameField.setText(food.foodName, TextView.BufferType.EDITABLE)
-        }
+        nameField.setText(food.foodName, TextView.BufferType.EDITABLE)
 
-        try {
-            val carbs = carbField.text.toString().toInt()
-            if (food.carbs != carbs) {
-                carbField.setText(food.carbs.toString(), TextView.BufferType.EDITABLE)
-            }
-        }
-        catch (e: Exception) {
+        val carbsText = food.carbs?.toString() ?: ""
+        carbField.setText(carbsText, TextView.BufferType.EDITABLE)
 
-        }
-
-        try {
-            val insulin = insulinField.text.toString().toFloat()
-            if (food.insulin != insulin) {
-                insulinField.setText(food.insulin.toString(), TextView.BufferType.EDITABLE)
-            }
-        }
-        catch (e: Exception) {
-
-        }
+        val insulinText = food.insulin?.toString() ?: ""
+        insulinField.setText(insulinText, TextView.BufferType.EDITABLE)
 
         return view
     }
