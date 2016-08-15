@@ -24,6 +24,7 @@ import com.nlefler.glucloser.a.dataSource.BloodSugarFactory
 import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.a.dataSource.MealFactory
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
@@ -46,6 +47,9 @@ class LogBolusEventActivity: AppCompatActivity() {
         @Inject set
 
     lateinit var mealFactory: MealFactory
+        @Inject set
+
+    lateinit var services: CairoServices
         @Inject set
 
     private var mealParcelable = MealParcelable()
@@ -176,8 +180,9 @@ class LogBolusEventActivity: AppCompatActivity() {
         mealParcelable.carbs = mealParcelable.foodParcelables.sumBy { fp -> fp.carbs ?: 0 }
         mealParcelable.insulin = mealParcelable.foodParcelables.sumByDouble { fp -> fp.insulin?.toDouble() ?: 0.0 }.toFloat()
 
-        mealFactory.save(mealParcelable)
-        // TODO(nl): upload
+        val meal = mealFactory.mealFromParcelable(mealParcelable)
+        mealFactory.save(meal)
+        services.collectionService().addMeal(meal)
 
         finish()
     }

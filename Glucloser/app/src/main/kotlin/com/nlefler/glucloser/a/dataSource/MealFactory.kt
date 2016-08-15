@@ -27,36 +27,6 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
         dbManager.data.upsert(meal)
     }
 
-    fun save(mealParcelable: MealParcelable) {
-        val meal = MealEntity()
-        meal.primaryId = mealParcelable.primaryId
-        meal.carbs = mealParcelable.carbs
-        meal.insulin = mealParcelable.insulin
-        meal.isCorrection = mealParcelable.isCorrection
-        meal.eatenDate = mealParcelable.date
-
-        val bloodSugarParcelable = mealParcelable.bloodSugarParcelable
-        if (bloodSugarParcelable != null) {
-            meal.beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(bloodSugarParcelable)
-        }
-
-        val bolusPatternParcelable = mealParcelable.bolusPatternParcelable
-        if (bolusPatternParcelable != null) {
-            meal.bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusPatternParcelable)
-        }
-
-        val placeParcelable = mealParcelable.placeParcelable
-        if (placeParcelable != null) {
-            meal.place = placeFactory.placeFromParcelable(placeParcelable)
-        }
-
-        val foods = ArrayList<Food>()
-        mealParcelable.foodParcelables.forEach { fp -> foods.add(foodFactory.foodFromParcelable(fp)) }
-        meal.foods = foods
-
-        save(meal)
-    }
-
     fun parcelableFromMeal(meal: Meal): MealParcelable {
         val parcelable = MealParcelable()
         val place = meal.place
@@ -95,23 +65,33 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
                 .adapter(MealEntity::class.java)
     }
 
-    fun mealFromParcelable(parcelable: MealParcelable): Meal {
-        val patternPar = parcelable.bolusPatternParcelable
-        val pattern = if (patternPar != null) {bolusPatternFactory.bolusPatternFromParcelable(patternPar)} else null
-        val sugar = if (parcelable.bloodSugarParcelable != null) {bloodSugarFactory.bloodSugarFromParcelable(parcelable.bloodSugarParcelable!!)} else {null}
-        val foods = parcelable.foodParcelables.map {fp -> foodFactory.foodFromParcelable(fp)}
-        val placePar = parcelable.placeParcelable
-        val place = if (placePar != null) placeFactory.placeFromParcelable(placePar) else null
+    fun mealFromParcelable(mealParcelable: MealParcelable): Meal {
         val meal = MealEntity()
-        meal.primaryId = parcelable.primaryId
-        meal.eatenDate = parcelable.date
-        meal.bolusPattern = pattern
-        meal.carbs = parcelable.carbs
-        meal.insulin = parcelable.insulin
-        meal.beforeSugar = sugar
-        meal.isCorrection = parcelable.isCorrection
+        meal.primaryId = mealParcelable.primaryId
+        meal.carbs = mealParcelable.carbs
+        meal.insulin = mealParcelable.insulin
+        meal.isCorrection = mealParcelable.isCorrection
+        meal.eatenDate = mealParcelable.date
+
+        val bloodSugarParcelable = mealParcelable.bloodSugarParcelable
+        if (bloodSugarParcelable != null) {
+            meal.beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(bloodSugarParcelable)
+        }
+
+        val bolusPatternParcelable = mealParcelable.bolusPatternParcelable
+        if (bolusPatternParcelable != null) {
+            meal.bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusPatternParcelable)
+        }
+
+        val placeParcelable = mealParcelable.placeParcelable
+        if (placeParcelable != null) {
+            meal.place = placeFactory.placeFromParcelable(placeParcelable)
+        }
+
+        val foods = ArrayList<Food>()
+        mealParcelable.foodParcelables.forEach { fp -> foods.add(foodFactory.foodFromParcelable(fp)) }
         meal.foods = foods
-        meal.place = place
+
         return meal
     }
 
