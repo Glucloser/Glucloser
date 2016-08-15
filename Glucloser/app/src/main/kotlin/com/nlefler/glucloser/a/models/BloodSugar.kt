@@ -7,9 +7,9 @@ import java.util.*
  * Created by Nathan Lefler on 1/4/15.
  */
 @Entity
-interface BloodSugar: Persistable {
+interface BloodSugar: SugarReading, Persistable {
     @get:Key
     var primaryId: String
-    var readingValue: Int
-    var recordedDate: Date
+    override var readingValue: Int
+    override var recordedDate: Date
 }

@@ -5,6 +5,7 @@ import android.os.Parcelable
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BloodSugarEntity
 import com.nlefler.glucloser.a.models.BolusPattern
+import com.nlefler.glucloser.a.models.Meal
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import java.util.*
@@ -12,7 +13,7 @@ import java.util.*
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealParcelable() : Parcelable {
+public class MealParcelable() :  Parcelable {
 
     var placeParcelable: PlaceParcelable? = null
     var primaryId: String = UUID.randomUUID().toString()

@@ -9,18 +9,24 @@ import java.util.*
  * Created by nathan on 9/20/15.
  */
 public class BolusPatternParcelable(): Parcelable {
-    public var id: String = UUID.randomUUID().toString()
-    public var rateCount: Int = 0
-    public var rates: MutableList<BolusRateParcelable> = ArrayList()
+    var id: String = UUID.randomUUID().toString()
+    var updatedOn: Date? = null
+    var rateCount: Int = 0
+    var rates: MutableList<BolusRateParcelable> = ArrayList()
 
     private constructor(parcel: Parcel) : this() {
         id = parcel.readString()
+        val time = parcel.readLong()
+        if (time > 0) {
+            updatedOn = Date(parcel.readLong())
+        }
         rateCount = parcel.readInt()
         parcel.readTypedList<BolusRateParcelable>(rates, BolusRateParcelable.CREATOR)
     }
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
         dest?.writeString(id)
+        dest?.writeLong(updatedOn?.time ?: 0)
         dest?.writeInt(rateCount)
         dest?.writeTypedList<BolusRateParcelable>(rates)
     }

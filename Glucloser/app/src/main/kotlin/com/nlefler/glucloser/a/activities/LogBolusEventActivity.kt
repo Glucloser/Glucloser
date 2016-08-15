@@ -20,11 +20,16 @@ import android.widget.ListView
 import android.widget.TextView
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
+import com.nlefler.glucloser.a.dataSource.BloodSugarFactory
+import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
+import com.nlefler.glucloser.a.dataSource.MealFactory
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
 import rx.Observable
+import rx.Subscription
+import rx.android.schedulers.AndroidSchedulers
 import rx.subjects.BehaviorSubject
 import java.util.*
 import javax.inject.Inject
@@ -34,10 +39,22 @@ class LogBolusEventActivity: AppCompatActivity() {
     lateinit var placeFactory: PlaceFactory
         @Inject set
 
-    private var bolusParcelable = MealParcelable()
+    lateinit var bolusPatternFactory: BolusPatternFactory
+        @Inject set
+
+    lateinit var bloodSugarFactory: BloodSugarFactory
+        @Inject set
+
+    lateinit var mealFactory: MealFactory
+        @Inject set
+
+    private var mealParcelable = MealParcelable()
     private var foodsSubject = BehaviorSubject.create(emptyList<FoodParcelable>())
     private var inflater: LayoutInflater? = null
     private var foodsAdapter: LogBolusFoodListAdapter? = null
+
+    private var bolusPatternSub: Subscription? = null
+    private var bloodSugarSub: Subscription? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +62,10 @@ class LogBolusEventActivity: AppCompatActivity() {
 
         inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-        bolusParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: bolusParcelable
-        foodsSubject.onNext(bolusParcelable.foodParcelables)
+        mealParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: mealParcelable
+        fetchAsyncBolusData()
+
+        foodsSubject.onNext(mealParcelable.foodParcelables)
 
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
         setSupportActionBar(toolbar)
@@ -61,7 +80,7 @@ class LogBolusEventActivity: AppCompatActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
-        outState?.putParcelable(SavedStateBolusParcelableKey, bolusParcelable)
+        outState?.putParcelable(SavedStateBolusParcelableKey, mealParcelable)
         super.onSaveInstanceState(outState, outPersistentState)
     }
 
@@ -91,7 +110,7 @@ class LogBolusEventActivity: AppCompatActivity() {
             placePar = placeFactory.placeParcelableFromCheckInData(extras)
         }
         else {
-            placePar = bolusParcelable.placeParcelable
+            placePar = mealParcelable.placeParcelable
         }
 
         if (placePar != null) {
@@ -130,6 +149,8 @@ class LogBolusEventActivity: AppCompatActivity() {
     }
 
     fun placeSelected(placeParcelable: PlaceParcelable) {
+        mealParcelable.placeParcelable = placeParcelable
+
         val root = findViewById(R.id.log_bolus_activity) as ConstraintLayout
         val placeNameView = root.findViewById(R.id.log_bolus_activity_place_name) as TextView
         val placeDetailView = root.findViewById(R.id.log_bolus_activity_place_info_container)
@@ -140,19 +161,46 @@ class LogBolusEventActivity: AppCompatActivity() {
 
     private fun addNewFood() {
         val fp = FoodParcelable()
-        bolusParcelable.foodParcelables.add(0, fp)
-        foodsSubject.onNext(bolusParcelable.foodParcelables)
+        mealParcelable.foodParcelables.add(0, fp)
+        foodsSubject.onNext(mealParcelable.foodParcelables)
     }
 
     private fun foodEdited(fp: FoodParcelable) {
-        val idx = bolusParcelable.foodParcelables.indexOfFirst { n -> n.foodId == fp.foodId }
-        bolusParcelable.foodParcelables.removeAt(idx)
-        bolusParcelable.foodParcelables.add(idx, fp)
+        val idx = mealParcelable.foodParcelables.indexOfFirst { n -> n.foodId == fp.foodId }
+        mealParcelable.foodParcelables.removeAt(idx)
+        mealParcelable.foodParcelables.add(idx, fp)
     }
 
     private fun finishLoggingBolusEvent() {
-        // TODO(nl) log
+        // TODO(nl): is correction
+        mealParcelable.carbs = mealParcelable.foodParcelables.sumBy { fp -> fp.carbs ?: 0 }
+        mealParcelable.insulin = mealParcelable.foodParcelables.sumByDouble { fp -> fp.insulin?.toDouble() ?: 0.0 }.toFloat()
+
+        mealFactory.save(mealParcelable)
+        // TODO(nl): upload
+
         finish()
+    }
+
+    private fun fetchAsyncBolusData() {
+        bolusPatternSub = bolusPatternFactory.currentBolusPattern()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { pattern ->
+                    if (mealParcelable.bolusPatternParcelable == null ||
+                            (mealParcelable.bolusPatternParcelable?.updatedOn?.before(pattern.updatedOn) ?: true)) {
+                        mealParcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(pattern)
+                    }
+                }
+        bloodSugarSub = bloodSugarFactory.lastBloodSugarFromCGM()
+                .observeOn(AndroidSchedulers.mainThread()).subscribe { sugar ->
+                    if (mealParcelable.bloodSugarParcelable == null ||
+                            (mealParcelable.bloodSugarParcelable?.date?.before(sugar.recordedDate) ?: true)) {
+                        val sugarPar = BloodSugarParcelable()
+                        sugarPar.date = sugar.recordedDate
+                        sugarPar.value = sugar.readingValue
+                        mealParcelable.bloodSugarParcelable = sugarPar
+                    }
+        }
     }
 
     companion object {

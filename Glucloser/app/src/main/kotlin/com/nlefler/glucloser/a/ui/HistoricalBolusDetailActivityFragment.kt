@@ -20,7 +20,6 @@ import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
 import com.nlefler.glucloser.a.dataSource.FoodFactory
 import com.nlefler.glucloser.a.dataSource.FoodListRecyclerAdapter
-import com.nlefler.glucloser.a.dataSource.PumpDataFactory
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.SensorReading
 import com.nlefler.glucloser.a.models.parcelable.MealParcelable

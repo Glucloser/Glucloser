@@ -9,9 +9,7 @@ import com.squareup.moshi.Moshi
 import io.requery.kotlin.eq
 import io.requery.query.Result
 import rx.Observable
-
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 import javax.inject.Inject
 
@@ -24,6 +22,40 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
                                       val placeFactory: PlaceFactory,
                                       val foodFactory: FoodFactory) {
     private val LOG_TAG = "MealFactory"
+
+    fun save(meal: Meal) {
+        dbManager.data.upsert(meal)
+    }
+
+    fun save(mealParcelable: MealParcelable) {
+        val meal = MealEntity()
+        meal.primaryId = mealParcelable.primaryId
+        meal.carbs = mealParcelable.carbs
+        meal.insulin = mealParcelable.insulin
+        meal.isCorrection = mealParcelable.isCorrection
+        meal.eatenDate = mealParcelable.date
+
+        val bloodSugarParcelable = mealParcelable.bloodSugarParcelable
+        if (bloodSugarParcelable != null) {
+            meal.beforeSugar = bloodSugarFactory.bloodSugarFromParcelable(bloodSugarParcelable)
+        }
+
+        val bolusPatternParcelable = mealParcelable.bolusPatternParcelable
+        if (bolusPatternParcelable != null) {
+            meal.bolusPattern = bolusPatternFactory.bolusPatternFromParcelable(bolusPatternParcelable)
+        }
+
+        val placeParcelable = mealParcelable.placeParcelable
+        if (placeParcelable != null) {
+            meal.place = placeFactory.placeFromParcelable(placeParcelable)
+        }
+
+        val foods = ArrayList<Food>()
+        mealParcelable.foodParcelables.forEach { fp -> foods.add(foodFactory.foodFromParcelable(fp)) }
+        meal.foods = foods
+
+        save(meal)
+    }
 
     fun parcelableFromMeal(meal: Meal): MealParcelable {
         val parcelable = MealParcelable()

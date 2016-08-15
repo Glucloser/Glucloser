@@ -41,7 +41,6 @@ interface RootComponent {
     fun inject(client: FoodFactory)
     fun inject(client: MealFactory)
     fun inject(client: PlaceFactory)
-    fun inject(client: PumpDataFactory)
 
     fun bloodSugarFactory(): BloodSugarFactory
     fun mealFactory(): MealFactory
@@ -49,7 +48,6 @@ interface RootComponent {
     fun bolusRateFactory(): BolusRateFactory
     fun foodFactory(): FoodFactory
     fun placeFactory(): PlaceFactory
-    fun pumpDataFactory(): PumpDataFactory
 
     fun dbFactory(): DBManager
     fun inject(client: DBManager)

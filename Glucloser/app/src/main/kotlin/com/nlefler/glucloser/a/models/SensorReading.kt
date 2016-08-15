@@ -10,9 +10,9 @@ import java.util.*
  * Created by nathan on 3/26/16.
  */
 @Entity
-interface SensorReading: Persistable {
+interface SensorReading: SugarReading, Persistable {
     @get:Key
     var primaryId: String
-    var readingTimestamp: Date
-    var reading: Int
+    override var recordedDate: Date
+    override var readingValue: Int
 }

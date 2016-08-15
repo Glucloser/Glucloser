@@ -2,6 +2,8 @@ package com.nlefler.glucloser.a.dataSource
 
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
+import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BolusPattern
 import com.nlefler.glucloser.a.models.BolusPatternEntity
@@ -11,6 +13,7 @@ import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.nlefler.glucloser.a.models.json.BolusRateJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import io.requery.kotlin.desc
 import io.requery.kotlin.eq
 import io.requery.query.Result
 import rx.Observable
@@ -20,7 +23,19 @@ import javax.inject.Inject
 /**
  * Created by nathan on 9/19/15.
  */
-class BolusPatternFactory @Inject constructor(val dbManager: DBManager, val bolusRateFactory: BolusRateFactory) {
+class BolusPatternFactory @Inject constructor(val dbManager: DBManager,
+                                              val bolusRateFactory: BolusRateFactory, val services: CairoServices) {
+
+    /**
+     * Fetches from db and network and returns both results.
+     */
+    fun currentBolusPattern(): Observable<BolusPatternEntity> {
+        val dbObservable = dbManager.data.select(BolusPatternEntity::class)
+                .orderBy(BolusPatternEntity::updatedOn.desc())
+                .limit(1).get().toObservable()
+        val networkObservable = services.pumpService().currentBolusPattern()
+        return Observable.merge(dbObservable, networkObservable)
+    }
 
     fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
         val parcel = BolusPatternParcelable()
