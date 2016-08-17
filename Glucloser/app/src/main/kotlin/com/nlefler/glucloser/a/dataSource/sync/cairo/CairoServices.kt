@@ -6,6 +6,7 @@ import com.facebook.crypto.Crypto
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
 import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.DateJsonAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
@@ -56,7 +57,7 @@ class CairoServices @Inject constructor(val ctx: Context) {
     private val moshi = Moshi.Builder()
             .add(DateJsonAdapter())
             .add(BolusPatternJsonAdapter())
-            .add(BolusPatternJsonAdapter())
+            .add(BolusRateJsonAdapter())
             .build()
 
     private val retrofit = Retrofit.Builder()

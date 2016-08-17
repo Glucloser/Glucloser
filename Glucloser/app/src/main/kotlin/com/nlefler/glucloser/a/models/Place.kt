@@ -15,6 +15,7 @@ interface Place: Persistable {
     var latitude: Float
     var longitude: Float
     var visitCount: Int
+    var needsUpload: Boolean
 
     // Resolving requery
     @get:OneToMany

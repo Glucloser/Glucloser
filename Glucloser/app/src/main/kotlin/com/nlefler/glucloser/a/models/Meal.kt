@@ -23,4 +23,5 @@ interface Meal: Persistable {
     var foods: MutableList<Food>
     @get:ManyToOne
     var place: Place?
+    var needsUpload: Boolean
 }

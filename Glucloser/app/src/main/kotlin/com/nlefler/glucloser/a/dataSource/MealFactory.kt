@@ -24,6 +24,7 @@ class MealFactory @Inject constructor(val dbManager: DBManager,
     private val LOG_TAG = "MealFactory"
 
     fun save(meal: Meal) {
+        meal.needsUpload = true
         dbManager.data.upsert(meal)
     }
 

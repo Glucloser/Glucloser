@@ -64,6 +64,9 @@ class LogBolusEventActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.log_bolus_activity)
 
+        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
+        dataFactory?.inject(this)
+
         inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         mealParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: mealParcelable
@@ -74,8 +77,6 @@ class LogBolusEventActivity: AppCompatActivity() {
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        val dataFactory = GlucloserApplication.sharedApplication?.rootComponent
-        dataFactory?.inject(this)
 
         foodsAdapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
         foodsAdapter?.foodEdited?.asObservable()?.subscribe { fp -> foodEdited(fp) }
