@@ -160,7 +160,9 @@ class FoursquareAuthManager @Inject constructor(val ctx: Context, val userManage
 
             override fun onFailure(call: Call<NLFoursquareResponse<NLFoursquareUserInfoResponse>>, t: Throwable) {
                 Log.e(FoursquareAuthManager.Companion.LOG_TAG, "Unable to get Foursquare user id")
-                Log.e(FoursquareAuthManager.Companion.LOG_TAG, t.message)
+                if (t.message != null) {
+                    Log.e(FoursquareAuthManager.Companion.LOG_TAG, t.message)
+                }
             }
         })
 

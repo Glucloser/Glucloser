@@ -5,6 +5,7 @@ import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BloodSugarEntity
+import com.nlefler.glucloser.a.models.SensorReading
 import com.nlefler.glucloser.a.models.SugarReading
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
@@ -25,22 +26,23 @@ import javax.inject.Inject
 class BloodSugarFactory @Inject constructor(val dbManager: DBManager, val cairoServices: CairoServices) {
     private val LOG_TAG = "BloodSugarFactory"
 
-    fun lastBloodSugarFromCGM(): Observable<SugarReading> {
+    fun lastBloodSugarFromCGM(): Observable<SugarReading?> {
         val dbObservable = dbManager.data.select(BloodSugarEntity::class)
                 .orderBy(BloodSugarEntity::recordedDate.desc())
                 .limit(1).get().toObservable()
 
         // TODO(nl): use diff endpoint for last sugar
-        val date = Date()
         val cal = Calendar.getInstance()
-        cal.time = date
-        cal.add(Calendar.MINUTE, -30)
         val endDate = cal.time
+        cal.time = Date()
+        cal.add(Calendar.MINUTE, -30)
+        val startDate = cal.time
 
        val network = cairoServices.pumpService().
-               cgmReadingsBetween(CairoPumpService.CGMReadingsBetweenBody(date, endDate))
+               cgmReadingsBetween(CairoPumpService.CGMReadingsBetweenBody(startDate, endDate))
+               .map { response -> return@map response.readings.lastOrNull() }
 
-       return Observable.merge(dbObservable, network).subscribeOn(Schedulers.io()) as Observable<SugarReading>
+       return Observable.merge(dbObservable, network).subscribeOn(Schedulers.io()) as Observable<SugarReading?>
     }
 
     fun areBloodSugarsEqual(sugar1: BloodSugar?, sugar2: BloodSugar?): Boolean {

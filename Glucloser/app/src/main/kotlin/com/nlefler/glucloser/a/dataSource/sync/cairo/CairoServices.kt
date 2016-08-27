@@ -68,7 +68,7 @@ class CairoServices @Inject constructor(val ctx: Context) {
             .client(httpClient)
             .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl("https://cairo.glucloser.com/")
+            .baseUrl("https://cairo.glucloser.com:4443/")
             .build()
 
     fun clearAuthentication() {

@@ -215,9 +215,11 @@ class LogBolusEventActivity: AppCompatActivity() {
                     }
                 })
         bloodSugarSub = bloodSugarFactory.lastBloodSugarFromCGM()
-                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { sugar ->
+                    if (sugar == null) {
+                        return@subscribe
+                    }
                     if (mealParcelable.bloodSugarParcelable == null ||
                             (mealParcelable.bloodSugarParcelable?.date?.before(sugar.recordedDate) ?: true)) {
                         val sugarPar = BloodSugarParcelable()

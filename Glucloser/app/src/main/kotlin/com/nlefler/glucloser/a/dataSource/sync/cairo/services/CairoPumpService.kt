@@ -15,8 +15,20 @@ import java.util.Date
  */
 interface CairoPumpService {
     data class CGMReadingsBetweenBody(val start: Date, val end: Date) {}
+    data class CGMReadingsBetweenResponse(val readings: Array<SensorReading>) {
+        override fun equals(other: Any?): Boolean {
+            if (!(other is CGMReadingsBetweenResponse)) {
+                return false
+            }
+            return other.readings.equals(readings)
+        }
+
+        override fun hashCode(): Int {
+            return readings.hashCode()
+        }
+    }
     @POST("pump/cgm/readingsBetween")
-    fun cgmReadingsBetween(@Body body: CGMReadingsBetweenBody): Observable<SensorReading>
+    fun cgmReadingsBetween(@Body body: CGMReadingsBetweenBody): Observable<CGMReadingsBetweenResponse>
 
     @GET("pump/bolusPattern/current")
     fun currentBolusPattern(): Observable<BolusPatternEntity>
