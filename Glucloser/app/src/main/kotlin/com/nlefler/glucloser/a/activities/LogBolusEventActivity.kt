@@ -25,12 +25,16 @@ import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
 import com.nlefler.glucloser.a.dataSource.MealFactory
 import com.nlefler.glucloser.a.dataSource.PlaceFactory
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
+import com.nlefler.glucloser.a.models.BolusPatternEntity
 import com.nlefler.glucloser.a.models.parcelable.*
 import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
 import rx.Observable
+import rx.Scheduler
+import rx.Subscriber
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import rx.subjects.BehaviorSubject
 import java.util.*
 import javax.inject.Inject
@@ -190,15 +194,30 @@ class LogBolusEventActivity: AppCompatActivity() {
 
     private fun fetchAsyncBolusData() {
         bolusPatternSub = bolusPatternFactory.currentBolusPattern()
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { pattern ->
-                    if (mealParcelable.bolusPatternParcelable == null ||
-                            (mealParcelable.bolusPatternParcelable?.updatedOn?.before(pattern.updatedOn) ?: true)) {
-                        mealParcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(pattern)
+                .subscribe(object: Subscriber<BolusPatternEntity>() {
+                    override fun onError(e: Throwable?) {
+                        print(e)
                     }
-                }
+
+                    override fun onNext(pattern: BolusPatternEntity?) {
+                        if (pattern == null) {
+                            return
+                        }
+                        if (mealParcelable.bolusPatternParcelable == null ||
+                                (mealParcelable.bolusPatternParcelable?.updatedOn?.before(pattern.updatedOn) ?: true)) {
+                            mealParcelable.bolusPatternParcelable = bolusPatternFactory.parcelableFromBolusPattern(pattern)
+                        }
+                    }
+
+                    override fun onCompleted() {
+                    }
+                })
         bloodSugarSub = bloodSugarFactory.lastBloodSugarFromCGM()
-                .observeOn(AndroidSchedulers.mainThread()).subscribe { sugar ->
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { sugar ->
                     if (mealParcelable.bloodSugarParcelable == null ||
                             (mealParcelable.bloodSugarParcelable?.date?.before(sugar.recordedDate) ?: true)) {
                         val sugarPar = BloodSugarParcelable()

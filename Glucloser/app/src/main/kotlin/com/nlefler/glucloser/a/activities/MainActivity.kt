@@ -20,7 +20,7 @@ import com.nlefler.glucloser.a.ui.main.MainHistoryListFragment
 import com.nlefler.glucloser.a.ui.main.MainNoHistoryPromptFragment
 import javax.inject.Inject
 
-class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
+class MainActivity: AppCompatActivity() {
     lateinit var foursquareAuthManager: FoursquareAuthManager
     @Inject set
 
@@ -74,26 +74,22 @@ class MainActivity: AppCompatActivity(), AdapterView.OnItemClickListener {
         val id = item!!.getItemId()
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.main_menu_login) {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            return true
+        }
+        else if (id == R.id.main_menu_foursquare_login) {
+            foursquareAuthManager.startAuthRequest(this)
+            return true
+        }
+        else if (id == R.id.action_settings) {
             return true
         }
 
         // Handle your other action bar items...
 
         return super<AppCompatActivity>.onOptionsItemSelected(item)
-    }
-
-    /** OnClickListener  */
-    override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        when (position) {
-            1 -> {
-                val intent = Intent(view.getContext(), LoginActivity::class.java)
-                startActivity(intent)
-            }
-            2 -> {
-                foursquareAuthManager.startAuthRequest(this)
-            }
-        }
     }
 
     /** Foursquare Connect Intent  */

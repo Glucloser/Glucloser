@@ -24,15 +24,24 @@ import javax.inject.Inject
  * Created by nathan on 9/19/15.
  */
 class BolusPatternFactory @Inject constructor(val dbManager: DBManager,
-                                              val bolusRateFactory: BolusRateFactory, val services: CairoServices) {
+                                              val bolusRateFactory: BolusRateFactory,
+                                              val services: CairoServices) {
 
     /**
      * Fetches from db and network and returns both results.
      */
     fun currentBolusPattern(): Observable<BolusPatternEntity> {
-        val dbObservable = dbManager.data.select(BolusPatternEntity::class)
-                .orderBy(BolusPatternEntity::updatedOn.desc())
-                .limit(1).get().toObservable()
+//        val dbObservable = dbManager.data.select(BolusPatternEntity::class)
+//                .orderBy(BolusPatternEntity::updatedOn.desc())
+//                .limit(1).get().toObservable()
+        var dbObservable: Observable<BolusPatternEntity> = Observable.empty()
+        dbManager.data.invoke {
+            val result = select(BolusPatternEntity::class)
+            val f = result.get().firstOrNull()
+            if (f != null) {
+                dbObservable = Observable.just(f)
+            }
+        }
         val networkObservable = services.pumpService().currentBolusPattern()
         return Observable.merge(dbObservable, networkObservable)
     }

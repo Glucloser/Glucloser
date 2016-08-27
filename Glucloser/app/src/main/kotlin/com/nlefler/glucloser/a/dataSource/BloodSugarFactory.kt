@@ -10,6 +10,9 @@ import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import io.requery.kotlin.desc
+import io.requery.meta.Attribute
+import io.requery.meta.AttributeDelegate
+import io.requery.meta.Type
 import rx.Observable
 import rx.schedulers.Schedulers
 import java.util.*

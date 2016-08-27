@@ -2,7 +2,13 @@
 <resources>
 
     <string name="app_name">Glucloser</string>
-    <string name="action_settings">Settings</string>
+
+    <!-- Main menu -->
+    <string name="main_menu_settings">Settings</string>
+    <string name="main_menu_foursquare_link">Link to Foursquare</string>
+    <string name="main_menu_login">Login</string>
+
+
     <string name="action_search">Search</string>
 
     <!-- Main, No History -->

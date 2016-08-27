@@ -5,10 +5,8 @@ import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
 import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
 import com.nlefler.glucloser.a.db.DBManager
-import com.nlefler.glucloser.a.dataSource.jsonAdapter.DateJsonAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
@@ -58,6 +56,12 @@ class CairoServices @Inject constructor(val ctx: Context) {
             .add(DateJsonAdapter())
             .add(BolusPatternJsonAdapter())
             .add(BolusRateJsonAdapter())
+            .add(SensorReadingJsonAdapter())
+            .add(MealJsonAdapter())
+            .add(PlaceJsonAdapter())
+            .add(FoodJsonAdapter())
+            .add(BloodSugarJsonAdapter())
+            .add(UrlJsonAdapter())
             .build()
 
     private val retrofit = Retrofit.Builder()

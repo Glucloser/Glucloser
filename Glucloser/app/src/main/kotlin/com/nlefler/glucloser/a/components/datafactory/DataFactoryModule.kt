@@ -4,6 +4,7 @@ import android.content.Context
 import com.nlefler.glucloser.a.db.DBManager
 import dagger.Module
 import dagger.Provides
+import javax.inject.Singleton
 
 /**
  * Created by nathan on 10/20/15.
@@ -11,7 +12,7 @@ import dagger.Provides
 @Module
 class DataFactoryModule() {
 
-    @Provides fun dbFactory(ctx: Context): DBManager {
+    @Provides @Singleton fun dbFactory(ctx: Context): DBManager {
         return DBManager(ctx)
     }
 

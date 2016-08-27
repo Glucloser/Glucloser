@@ -11,13 +11,10 @@ import java.util.*
 interface BolusPattern: Persistable {
     @get:Key
     var primaryId: String
+
     var updatedOn: Date
+
     @get:OneToMany(mappedBy = "primaryId")
     var rates: MutableList<BolusRate>
-//
-//    // Resolving requery processing
-//    @get:OneToMany
-//    var snack: Snack?
-//    @get:OneToMany
-//    var meal: Meal?
+
 }
