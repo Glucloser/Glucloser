@@ -14,7 +14,7 @@ interface BolusPattern: Persistable {
 
     var updatedOn: Date
 
-    @get:OneToMany(mappedBy = "primaryId")
+    @get:OneToMany(mappedBy = "pattern")
     var rates: MutableList<BolusRate>
 
 }

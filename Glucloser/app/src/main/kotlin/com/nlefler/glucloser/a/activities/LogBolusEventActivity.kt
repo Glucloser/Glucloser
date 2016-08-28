@@ -86,6 +86,9 @@ class LogBolusEventActivity: AppCompatActivity() {
         foodsAdapter?.foodEdited?.asObservable()?.subscribe { fp -> foodEdited(fp) }
 
         setupView()
+        if (mealParcelable.foodParcelables.count() == 0) {
+            addNewFood()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
@@ -95,7 +98,7 @@ class LogBolusEventActivity: AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_log_meal, menu)
+        menuInflater.inflate(R.menu.menu_log_meal, menu)
         return true
     }
 
@@ -103,7 +106,8 @@ class LogBolusEventActivity: AppCompatActivity() {
         val id = item!!.getItemId()
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.menu_log_meal_save) {
+            finishLoggingBolusEvent()
             return true
         }
 
@@ -187,6 +191,7 @@ class LogBolusEventActivity: AppCompatActivity() {
 
         val meal = mealFactory.mealFromParcelable(mealParcelable)
         mealFactory.save(meal)
+        // TODO(nl): mark meal for upload and move upload into service
         services.collectionService().addMeal(meal)
 
         finish()

@@ -25,6 +25,7 @@
     <string name="log_bolus_select_place_prompt_button_text">+</string>
     <string name="log_bolus_activity_place_name_placeholder"></string>
     <string name="log_bolus_activity_add_food_button_text">+ Add a Food</string>
+    <string name="menu_log_meal_save">Save</string>
 
     <!-- Place Selection Activity-->
     <string name="place_selection_activity_title">Select a place</string>
