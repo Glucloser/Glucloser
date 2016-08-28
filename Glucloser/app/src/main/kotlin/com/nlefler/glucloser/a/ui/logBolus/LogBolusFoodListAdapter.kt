@@ -12,6 +12,7 @@ import android.widget.ListAdapter
 import android.widget.TextView
 import com.jakewharton.rxbinding.widget.RxTextView
 import com.nlefler.glucloser.a.R
+import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.FoodEntity
 import com.nlefler.glucloser.a.models.MealEntity
 import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
@@ -29,11 +30,11 @@ import java.util.concurrent.TimeUnit
  */
 
 // TODO(nl): This should be a recycler adapter
-class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<List<FoodParcelable>>): ListAdapter {
+class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<List<Food>>): ListAdapter {
 
-    val foodEdited = PublishSubject.create<FoodParcelable>()
+    val foodEdited = PublishSubject.create<Food>()
 
-    private var foods = ArrayList<FoodParcelable>()
+    private var foods = ArrayList<Food>()
     private var listSub: Subscription
     private val viewHolders = HashMap<View, ViewHolder>()
     private var observers = ArrayList<DataSetObserver>()
@@ -172,7 +173,7 @@ class LogBolusFoodListAdapter(val ctx: Context, foodsListObservable: Observable<
 
     override fun getItemId(idx: Int): Long {
         val food = getItem(idx) as FoodParcelable
-        return food.foodId.hashCode().toLong()
+        return food.primaryId.hashCode().toLong()
     }
 
     override fun hasStableIds(): Boolean {

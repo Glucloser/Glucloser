@@ -2,43 +2,65 @@ package com.nlefler.glucloser.a.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.nlefler.glucloser.a.models.BloodSugar
-import com.nlefler.glucloser.a.models.BloodSugarEntity
-import com.nlefler.glucloser.a.models.BolusPattern
-import com.nlefler.glucloser.a.models.Meal
+import com.nlefler.glucloser.a.GlucloserApplication
+import com.nlefler.glucloser.a.dataSource.BloodSugarFactory
+import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
+import com.nlefler.glucloser.a.dataSource.FoodFactory
+import com.nlefler.glucloser.a.dataSource.PlaceFactory
+import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class MealParcelable() :  Parcelable {
+public class MealParcelable @Inject constructor(val placeFactory: PlaceFactory,
+                                                val bloodSugarFactory: BloodSugarFactory,
+                                                val bolusPatternFactory: BolusPatternFactory,
+                                                val foodFactory: FoodFactory) : Meal, Parcelable {
 
-    var placeParcelable: PlaceParcelable? = null
-    var primaryId: String = UUID.randomUUID().toString()
-    var date: Date = Date()
-    var bolusPatternParcelable: BolusPatternParcelable? = null
-    var carbs: Int = 0
-    var insulin: Float = 0f
-    var bloodSugarParcelable: BloodSugarParcelable? = null
-    var isCorrection: Boolean = false
-    var foodParcelables: MutableList<FoodParcelable> = ArrayList<FoodParcelable>()
+    override var place: Place? = null
+    override var primaryId: String = UUID.randomUUID().toString()
+    override var eatenDate: Date = Date()
+    override var bolusPattern: BolusPattern? = null
+    override var carbs: Int = 0
+    override var insulin: Float = 0f
+    override var beforeSugar: BloodSugar? = BloodSugarParcelable()
+    override var isCorrection: Boolean = false
+    override var foods: MutableList<Food> = ArrayList()
+    override var needsUpload: Boolean = false
 
     /** Parcelable  */
-    protected constructor(parcel: Parcel): this() {
+    protected constructor(parcel: Parcel): this({
+        // TODO(nl): Eh
+        GlucloserApplication.sharedApplication?.rootComponent?.placeFactory() as PlaceFactory
+    }(),
+    {
+        // TODO(nl): Eh
+        GlucloserApplication.sharedApplication?.rootComponent?.bloodSugarFactory() as BloodSugarFactory
+    }(),
+    {
+        // TODO(nl): Eh
+        GlucloserApplication.sharedApplication?.rootComponent?.bolusPatternFactory() as BolusPatternFactory
+    }(),
+    {
+        // TODO(nl): Eh
+        GlucloserApplication.sharedApplication?.rootComponent?.foodFactory() as FoodFactory
+    }()) {
         primaryId = parcel.readString()
-        placeParcelable = parcel.readParcelable<PlaceParcelable>(PlaceParcelable::class.java.classLoader)
+        place = parcel.readParcelable<PlaceParcelable>(PlaceParcelable::class.java.classLoader)
         carbs = parcel.readInt()
         insulin = parcel.readFloat()
         isCorrection = parcel.readInt() != 0
-        bloodSugarParcelable = parcel.readParcelable<BloodSugarParcelable>(BloodSugarEntity::class.java.classLoader)
+        beforeSugar = parcel.readParcelable<BloodSugarParcelable>(BloodSugarEntity::class.java.classLoader)
         val time = parcel.readLong()
         if (time > 0) {
-            date = Date(time)
+            eatenDate = Date(time)
         }
-        bolusPatternParcelable = parcel.readParcelable<BolusPatternParcelable>(BolusPatternParcelable::class.java.classLoader)
-        parcel.readTypedList(this.foodParcelables, FoodParcelable.CREATOR)
+        bolusPattern = parcel.readParcelable<BolusPatternParcelable>(BolusPatternParcelable::class.java.classLoader)
+        parcel.readTypedList(this.foods, FoodParcelable.CREATOR)
     }
 
     override fun describeContents(): Int {
@@ -47,14 +69,35 @@ public class MealParcelable() :  Parcelable {
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(primaryId)
-        dest.writeParcelable(placeParcelable, flags)
+
+        val p = place
+        if (p != null) {
+            dest.writeParcelable(placeFactory.parcelableFromPlace(p), flags)
+        }
+        else {
+            dest.writeValue(null)
+        }
         dest.writeInt(carbs)
         dest.writeFloat(insulin)
         dest.writeInt(if (isCorrection) 1 else 0)
-        dest.writeParcelable(bloodSugarParcelable, flags)
-        dest.writeLong(date.time)
-        dest.writeParcelable(bolusPatternParcelable, flags)
-        dest.writeTypedList(this.foodParcelables)
+
+        val bs = beforeSugar
+        if (bs != null) {
+            dest.writeParcelable(bloodSugarFactory.parcelableFromBloodSugar(bs), flags)
+        }
+        else {
+            dest.writeValue(null)
+        }
+        dest.writeLong(eatenDate.time)
+
+        val bp = bolusPattern
+        if (bp != null) {
+            dest.writeParcelable(bolusPatternFactory.parcelableFromBolusPattern(bp), flags)
+        }
+        else {
+            dest.writeValue(null)
+        }
+        dest.writeTypedList(this.foods.map { f -> foodFactory.parcelableFromFood(f) })
     }
 
     companion object {
@@ -65,7 +108,12 @@ public class MealParcelable() :  Parcelable {
             }
 
             override fun newArray(size: Int): Array<MealParcelable> {
-                return Array(size, {i -> MealParcelable() })
+                // TODO(nl): Eh
+                val pf = GlucloserApplication.sharedApplication?.rootComponent?.placeFactory() as PlaceFactory
+                val bsf = GlucloserApplication.sharedApplication?.rootComponent?.bloodSugarFactory() as BloodSugarFactory
+                val bpf = GlucloserApplication.sharedApplication?.rootComponent?.bolusPatternFactory() as BolusPatternFactory
+                val ff = GlucloserApplication.sharedApplication?.rootComponent?.foodFactory() as FoodFactory
+                return Array(size, {i -> MealParcelable(pf, bsf, bpf, ff) })
             }
         }
     }

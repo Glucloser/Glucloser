@@ -58,17 +58,17 @@ class BloodSugarFactory @Inject constructor(val dbManager: DBManager, val cairoS
 
     fun bloodSugarFromParcelable(parcelable: BloodSugarParcelable): BloodSugar {
         val bs = BloodSugarEntity()
-        bs.primaryId = parcelable.id
-        bs.readingValue = parcelable.value
-        bs.recordedDate = parcelable.date
+        bs.primaryId = parcelable.primaryId
+        bs.readingValue = parcelable.readingValue
+        bs.recordedDate = parcelable.recordedDate
         return bs
     }
 
     fun parcelableFromBloodSugar(sugar: BloodSugar): BloodSugarParcelable {
         val parcelable = BloodSugarParcelable()
-        parcelable.id = sugar.primaryId
-        parcelable.value = sugar.readingValue
-        parcelable.date = sugar.recordedDate
+        parcelable.primaryId = sugar.primaryId
+        parcelable.readingValue = sugar.readingValue
+        parcelable.recordedDate = sugar.recordedDate
         return parcelable
     }
 

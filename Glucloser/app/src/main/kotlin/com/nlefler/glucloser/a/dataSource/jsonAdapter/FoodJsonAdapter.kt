@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.dataSource.jsonAdapter
 import com.nlefler.glucloser.a.models.Food
 import com.nlefler.glucloser.a.models.FoodEntity
 import com.nlefler.glucloser.a.models.json.FoodJson
+import com.nlefler.glucloser.a.models.parcelable.FoodParcelable
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
@@ -11,8 +12,8 @@ import com.squareup.moshi.ToJson
  */
 public class FoodJsonAdapter() {
     @FromJson fun fromJson(json: FoodJson): Food {
-        val food = FoodEntity()
-        food.primaryID = json.primaryId
+        val food = FoodParcelable()
+        food.primaryId = json.primaryId
         food.carbs = json.carbs
         food.foodName = json.foodName
         return food
@@ -20,7 +21,7 @@ public class FoodJsonAdapter() {
 
     @ToJson fun toJson(food: Food): FoodJson {
         return FoodJson(
-                primaryId = food.primaryID,
+                primaryId = food.primaryId,
                 foodName = food.foodName,
                 carbs = food.carbs
         )

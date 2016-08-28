@@ -2,6 +2,8 @@ package com.nlefler.glucloser.a.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.nlefler.glucloser.a.models.Food
+import com.nlefler.glucloser.a.models.Meal
 
 import java.util.UUID
 
@@ -9,21 +11,21 @@ import java.util.UUID
 /**
  * Created by Nathan Lefler on 5/16/15.
  */
-class FoodParcelable : Parcelable {
-    var foodId: String = UUID.randomUUID().toString()
-    var carbs: Int? = null
-    var foodName: String? = null
-    var insulin: Float? = null
+class FoodParcelable() : Food, Parcelable {
+    override var primaryId: String = UUID.randomUUID().toString()
+    override var carbs: Int = 0
+    override var foodName: String = ""
+    override var insulin: Float = 0f
 
-    constructor() {
-    }
+    // TODO(nl): for requery
+    override var meal: Meal? = null
 
     /** Parcelable  */
-    protected constructor(`in`: Parcel) {
-        foodId = `in`.readString()
-        carbs = `in`.readString()?.toInt()
+    protected constructor(`in`: Parcel): this() {
+        primaryId = `in`.readString()
+        carbs = `in`.readInt()
         foodName = `in`.readString()
-        insulin = `in`.readString()?.toFloat()
+        insulin = `in`.readFloat()
     }
 
     override fun describeContents(): Int {
@@ -31,10 +33,10 @@ class FoodParcelable : Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(foodId)
-        dest.writeString(carbs.toString())
+        dest.writeString(primaryId)
+        dest.writeInt(carbs)
         dest.writeString(foodName)
-        dest.writeString(insulin.toString())
+        dest.writeFloat(insulin)
     }
 
     override fun equals(other: Any?): Boolean{
@@ -43,25 +45,25 @@ class FoodParcelable : Parcelable {
 
         other as FoodParcelable
 
-        if (foodId != other.foodId) return false
+        if (primaryId!= other.primaryId) return false
 
         return true
     }
 
     override fun hashCode(): Int{
-        return foodId.hashCode()
+        return primaryId.hashCode()
     }
 
 
     companion object {
 
         @SuppressWarnings("unused")
-        @JvmField val CREATOR: Parcelable.Creator<FoodParcelable> = object : Parcelable.Creator<FoodParcelable> {
+        @JvmField val CREATOR: Parcelable.Creator<Food> = object : Parcelable.Creator<Food> {
             override fun createFromParcel(`in`: Parcel): FoodParcelable {
                 return FoodParcelable(`in`)
             }
 
-            override fun newArray(size: Int): Array<FoodParcelable> {
+            override fun newArray(size: Int): Array<Food> {
                 return Array(size, {i -> FoodParcelable() })
             }
         }

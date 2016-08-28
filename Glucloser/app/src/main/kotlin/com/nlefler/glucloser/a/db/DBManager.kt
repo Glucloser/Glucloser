@@ -16,7 +16,7 @@ import javax.sql.DataSource
 @Singleton
 class DBManager @Inject constructor(ctx: Context) {
 
-    val dataSource: DatabaseSource = DatabaseSource(ctx, Models.DEFAULT, 1)
+    val dataSource: DatabaseSource = DatabaseSource(ctx, Models.DEFAULT, 2)
     val data: KotlinEntityDataStore<Persistable>
     init {
         dataSource.setLoggingEnabled(true)

@@ -31,5 +31,5 @@ interface CairoPumpService {
     fun cgmReadingsBetween(@Body body: CGMReadingsBetweenBody): Observable<CGMReadingsBetweenResponse>
 
     @GET("pump/bolusPattern/current")
-    fun currentBolusPattern(): Observable<BolusPatternEntity>
+    fun currentBolusPattern(): Observable<BolusPattern>
 }

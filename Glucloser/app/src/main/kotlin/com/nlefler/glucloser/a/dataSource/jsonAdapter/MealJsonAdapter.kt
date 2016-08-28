@@ -1,8 +1,11 @@
 package com.nlefler.glucloser.a.dataSource.jsonAdapter
 
+import com.nlefler.glucloser.a.GlucloserApplication
+import com.nlefler.glucloser.a.components.RootComponent
 import com.nlefler.glucloser.a.models.json.MealJson
 import com.nlefler.glucloser.a.models.Meal
 import com.nlefler.glucloser.a.models.MealEntity
+import com.nlefler.glucloser.a.models.parcelable.MealParcelable
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
@@ -10,7 +13,9 @@ import com.squareup.moshi.ToJson
  * Created by nathan on 1/31/16.
  */
 class MealJsonAdapter() {
-    val bolusPatternAdapter = BolusPatternJsonAdapter()
+    val root = GlucloserApplication.sharedApplication?.rootComponent as RootComponent
+
+    val bolusPatternAdapter = root.bolusPatternJsonAdapter()
     val sugarAdapter = BloodSugarJsonAdapter()
     val foodAdapter = FoodJsonAdapter()
     val placeAdapter = PlaceJsonAdapter()
@@ -22,7 +27,7 @@ class MealJsonAdapter() {
         val bolusPattern = if (json.bolusPattern != null) bolusPatternAdapter.fromJson(json.bolusPattern) else null
         val beforeSugar = if (json.beforeSugar != null) {sugarAdapter.fromJson(json.beforeSugar)} else {null}
 
-        val meal = MealEntity()
+        val meal = root.mealParcelable()
         meal.primaryId = json.primaryId
         meal.eatenDate = json.date
         meal.bolusPattern = bolusPattern
@@ -30,7 +35,7 @@ class MealJsonAdapter() {
         meal.insulin = json.insulin
         meal.beforeSugar = beforeSugar
         meal.isCorrection = json.isCorrection
-        meal.foods = foods
+        meal.foods = foods.toMutableList()
         meal.place = place
         return meal
     }

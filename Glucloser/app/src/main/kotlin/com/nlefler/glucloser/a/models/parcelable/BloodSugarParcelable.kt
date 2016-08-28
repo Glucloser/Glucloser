@@ -2,23 +2,24 @@ package com.nlefler.glucloser.a.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.nlefler.glucloser.a.models.BloodSugar
 import java.util.*
 
 /**
  * Created by Nathan Lefler on 1/4/15.
  */
-public class BloodSugarParcelable() : Parcelable {
-    var id: String = UUID.randomUUID().toString()
-    var value: Int = 0
-    var date: Date = Date()
+class BloodSugarParcelable() : BloodSugar, Parcelable {
+    override var primaryId: String = UUID.randomUUID().toString()
+    override var readingValue: Int = 0
+    override var recordedDate: Date = Date()
 
     /** Parcelable  */
     protected constructor(parcel: Parcel) : this() {
-        id = parcel.readString()
-        value = parcel.readInt()
+        primaryId = parcel.readString()
+        readingValue = parcel.readInt()
         val time = parcel.readLong()
         if (time > 0) {
-            date = Date(time)
+            recordedDate = Date(time)
         }
     }
 
@@ -27,9 +28,9 @@ public class BloodSugarParcelable() : Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(id)
-        dest.writeInt(value)
-        dest.writeLong(date.time)
+        dest.writeString(primaryId)
+        dest.writeInt(readingValue)
+        dest.writeLong(recordedDate.time)
     }
 
     companion object {

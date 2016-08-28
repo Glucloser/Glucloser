@@ -9,9 +9,10 @@ import java.util.*
 @Entity
 interface Food: Persistable {
     @get:Key
-    var primaryID: String
+    var primaryId: String
     var carbs: Int
     var foodName: String
+    var insulin: Float
 
     // Trying to resolve requery annotation parsing issues
     @get:ManyToOne

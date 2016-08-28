@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.dataSource.jsonAdapter
 import com.nlefler.glucloser.a.models.BolusRate
 import com.nlefler.glucloser.a.models.BolusRateEntity
 import com.nlefler.glucloser.a.models.json.BolusRateJson
+import com.nlefler.glucloser.a.models.parcelable.BolusRateParcelable
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
@@ -11,7 +12,7 @@ import com.squareup.moshi.ToJson
  */
 public class BolusRateJsonAdapter() {
     @FromJson fun fromJson(json: BolusRateJson): BolusRate {
-        val br = BolusRateEntity()
+        val br = BolusRateParcelable()
         br.primaryId = json.primaryId
         br.ordinal = json.ordinal
         br.startTime = json.startTime

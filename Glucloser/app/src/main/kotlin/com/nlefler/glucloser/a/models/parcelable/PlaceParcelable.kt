@@ -2,18 +2,24 @@ package com.nlefler.glucloser.a.models.parcelable
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.nlefler.glucloser.a.models.Meal
+import com.nlefler.glucloser.a.models.Place
 import java.util.*
 
 /**
  * Created by Nathan Lefler on 12/24/14.
  */
-public class PlaceParcelable() : Parcelable {
-    var primaryId: String = UUID.randomUUID().toString()
-    var name: String = ""
-    var foursquareId: String = ""
-    var latitude: Float = 0f
-    var longitude: Float = 0f
-    var visitCount: Int = 0
+public class PlaceParcelable() : Place, Parcelable {
+    override var primaryId: String = UUID.randomUUID().toString()
+    override var name: String = ""
+    override var foursquareId: String = ""
+    override var latitude: Float = 0f
+    override var longitude: Float = 0f
+    override var visitCount: Int = 0
+    override var needsUpload: Boolean = false
+
+    // TODO(nl): for requery
+    override var meal: Meal? = null
 
     /** Parcelable  */
     protected constructor(parcel: Parcel): this() {

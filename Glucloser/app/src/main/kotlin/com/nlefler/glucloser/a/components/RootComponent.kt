@@ -8,12 +8,15 @@ import com.nlefler.glucloser.a.activities.PlaceSelectionActivity
 import com.nlefler.glucloser.a.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.*
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
+import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
+import com.nlefler.glucloser.a.models.parcelable.MealParcelable
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
 import com.nlefler.glucloser.a.ui.PlaceSelectionViewHolder
 import com.nlefler.glucloser.a.user.UserManager
@@ -41,6 +44,15 @@ interface RootComponent {
     fun inject(client: FoodFactory)
     fun inject(client: MealFactory)
     fun inject(client: PlaceFactory)
+
+    fun inject(client: BolusPatternJsonAdapter)
+    fun bolusPatternJsonAdapter(): BolusPatternJsonAdapter
+
+    fun inject(client: BolusPatternParcelable)
+    fun bolusPatternParcelable(): BolusPatternParcelable
+
+    fun inject(client: MealParcelable)
+    fun mealParcelable(): MealParcelable
 
     fun bloodSugarFactory(): BloodSugarFactory
     fun mealFactory(): MealFactory

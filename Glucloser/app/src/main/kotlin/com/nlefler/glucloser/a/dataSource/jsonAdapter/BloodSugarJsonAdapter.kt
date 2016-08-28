@@ -3,6 +3,7 @@ package com.nlefler.glucloser.a.dataSource.jsonAdapter
 import com.nlefler.glucloser.a.models.BloodSugar
 import com.nlefler.glucloser.a.models.BloodSugarEntity
 import com.nlefler.glucloser.a.models.json.BloodSugarJson
+import com.nlefler.glucloser.a.models.parcelable.BloodSugarParcelable
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
@@ -11,7 +12,7 @@ import com.squareup.moshi.ToJson
  */
 public class BloodSugarJsonAdapter() {
     @FromJson fun fromJson(json: BloodSugarJson): BloodSugar {
-        val bs = BloodSugarEntity()
+        val bs = BloodSugarParcelable()
         bs.primaryId = json.primaryId
         bs.readingValue = json.value
         bs.recordedDate = json.date
