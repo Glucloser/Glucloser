@@ -14,7 +14,7 @@ interface BolusRate: Persistable {
     var carbsPerUnit: Int
     var startTime: Int
 
-    // Trying to resolve requery annotation parsing issues
+    @get:ManyToOne
     var pattern: BolusPattern?
 }
 

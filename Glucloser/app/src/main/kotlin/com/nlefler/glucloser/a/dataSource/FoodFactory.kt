@@ -27,17 +27,23 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
                 .adapter(FoodEntity::class.java)
     }
 
-    fun foodFromParcelable(parcelable: FoodParcelable): Food {
+    fun entityFrom(food: Food): FoodEntity {
+        if (food is FoodEntity) {
+            return food
+        }
         val f = FoodEntity()
-        f.primaryID = parcelable.foodId
-        f.carbs = parcelable.carbs ?: 0
-        f.foodName = parcelable.foodName
+        f.primaryId = food.primaryId
+        f.carbs = food.carbs
+        f.foodName = food.foodName
         return f
     }
 
-    public fun parcelableFromFood(food: Food): FoodParcelable {
+    public fun parcelableFrom(food: Food): FoodParcelable {
+        if (food is FoodParcelable) {
+            return food
+        }
         val parcelable = FoodParcelable()
-        parcelable.foodId = food.primaryID
+        parcelable.primaryId = food.primaryId
         parcelable.foodName = food.foodName
         parcelable.carbs = food.carbs
         return parcelable
@@ -58,6 +64,6 @@ public class FoodFactory @Inject constructor(val dbManager: DBManager) {
         if (id.isEmpty()) {
             return Observable.error(Exception("Invalid Id"))
         }
-        return dbManager.data.select(FoodEntity::class).where(Food::primaryID.eq(id)).get().toSelfObservable()
+        return dbManager.data.select(FoodEntity::class).where(Food::primaryId.eq(id)).get().toSelfObservable()
     }
 }

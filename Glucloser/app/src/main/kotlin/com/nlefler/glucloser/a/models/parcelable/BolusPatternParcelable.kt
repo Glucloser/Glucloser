@@ -16,7 +16,7 @@ import javax.inject.Inject
 class BolusPatternParcelable @Inject constructor(val bolusRateFactory: BolusRateFactory): BolusPattern, Parcelable {
     override var primaryId: String = UUID.randomUUID().toString()
     override var updatedOn: Date = Date()
-    override var rates: MutableList<BolusRate> = ArrayList()
+    override var rates: MutableSet<BolusRate> = HashSet()
 
     // TODO(nl): bleh
     private constructor(parcel: Parcel) : this({
@@ -27,13 +27,15 @@ class BolusPatternParcelable @Inject constructor(val bolusRateFactory: BolusRate
         if (time > 0) {
             updatedOn = Date(parcel.readLong())
         }
-        parcel.readTypedList<BolusRate>(rates, BolusRateParcelable.CREATOR)
+        val ratesList = ArrayList<BolusRate>()
+        parcel.readTypedList<BolusRate>(ratesList, BolusRateParcelable.CREATOR)
+        rates.addAll(ratesList)
     }
 
         override fun writeToParcel(dest: Parcel?, flags: Int) {
             dest?.writeString(primaryId)
-            dest?.writeLong(updatedOn.time ?: 0)
-            dest?.writeTypedList<BolusRateParcelable>(rates.map { r -> bolusRateFactory.parcelableFromBolusRate(r) })
+            dest?.writeLong(updatedOn.time)
+            dest?.writeTypedList<BolusRateParcelable>(rates.map { r -> bolusRateFactory.parcelableFrom(r) })
         }
 
         override fun describeContents(): Int {

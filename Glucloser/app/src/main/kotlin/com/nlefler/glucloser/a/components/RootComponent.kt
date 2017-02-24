@@ -9,12 +9,14 @@ import com.nlefler.glucloser.a.components.datafactory.DataFactoryModule
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusPatternJsonAdapter
+import com.nlefler.glucloser.a.dataSource.jsonAdapter.BolusRateJsonAdapter
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoPumpService
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoUserService
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.foursquare.FoursquareAuthManager
+import com.nlefler.glucloser.a.models.json.BolusRateJson
 import com.nlefler.glucloser.a.models.parcelable.BolusPatternParcelable
 import com.nlefler.glucloser.a.models.parcelable.MealParcelable
 import com.nlefler.glucloser.a.ui.LoginActivityFragment
@@ -47,6 +49,8 @@ interface RootComponent {
 
     fun inject(client: BolusPatternJsonAdapter)
     fun bolusPatternJsonAdapter(): BolusPatternJsonAdapter
+
+//    fun bolusRateJsonAdapter(): BolusRateJsonAdapter
 
     fun inject(client: BolusPatternParcelable)
     fun bolusPatternParcelable(): BolusPatternParcelable

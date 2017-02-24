@@ -20,24 +20,20 @@ import android.widget.ListView
 import android.widget.TextView
 import com.nlefler.glucloser.a.GlucloserApplication
 import com.nlefler.glucloser.a.R
-import com.nlefler.glucloser.a.dataSource.BloodSugarFactory
-import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
-import com.nlefler.glucloser.a.dataSource.MealFactory
-import com.nlefler.glucloser.a.dataSource.PlaceFactory
+import com.nlefler.glucloser.a.dataSource.*
 import com.nlefler.glucloser.a.dataSource.sync.cairo.CairoServices
-import com.nlefler.glucloser.a.models.BolusPatternEntity
-import com.nlefler.glucloser.a.models.Food
-import com.nlefler.glucloser.a.models.Place
+import com.nlefler.glucloser.a.models.*
 import com.nlefler.glucloser.a.models.parcelable.*
-import com.nlefler.glucloser.a.models.PlaceSelectionDelegate
 import com.nlefler.glucloser.a.ui.logBolus.LogBolusFoodListAdapter
 import rx.Observable
+import rx.Observer
 import rx.Scheduler
 import rx.Subscriber
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subjects.BehaviorSubject
+import rx.subjects.PublishSubject
 import java.util.*
 import javax.inject.Inject
 
@@ -61,7 +57,7 @@ class LogBolusEventActivity: AppCompatActivity() {
     lateinit var mealParcelable: MealParcelable
         @Inject set
 
-    private var foodsSubject = BehaviorSubject.create(emptyList<Food>())
+    private var foodSubject = PublishSubject.create<Food>()
     private var inflater: LayoutInflater? = null
     private var foodsAdapter: LogBolusFoodListAdapter? = null
 
@@ -80,18 +76,19 @@ class LogBolusEventActivity: AppCompatActivity() {
         mealParcelable = savedInstanceState?.getParcelable(SavedStateBolusParcelableKey) ?: mealParcelable
         fetchAsyncBolusData()
 
-        foodsSubject.onNext(mealParcelable.foods)
-
         val toolbar = findViewById(R.id.log_bolus_toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
 
-        foodsAdapter = LogBolusFoodListAdapter(this, foodsSubject.asObservable())
+        foodsAdapter = LogBolusFoodListAdapter(this, foodSubject)
         foodsAdapter?.foodEdited?.asObservable()?.subscribe { fp -> foodEdited(fp) }
 
         setupView()
         if (mealParcelable.foods.count() == 0) {
             addNewFood()
+        }
+        else {
+            mealParcelable.foods.forEach { f -> foodSubject.onNext(f) }
         }
     }
 
@@ -178,14 +175,19 @@ class LogBolusEventActivity: AppCompatActivity() {
 
     private fun addNewFood() {
         val fp = FoodParcelable()
-        mealParcelable.foods.add(0, fp)
-        foodsSubject.onNext(mealParcelable.foods)
+        mealParcelable.foods.add(fp)
+        foodSubject.onNext(fp)
     }
 
     private fun foodEdited(food: Food) {
+        val bolusPattern = mealParcelable.bolusPattern
+        if (bolusPattern != null) {
+            food.insulin = BolusPatternUtils.InsulinForCarbsAtCurrentTime(bolusPattern, food.carbs)
+            foodSubject.onNext(food)
+        }
         val idx = mealParcelable.foods.indexOfFirst { n -> n.primaryId == food.primaryId}
-        mealParcelable.foods.removeAt(idx)
-        mealParcelable.foods.add(idx, food)
+        mealParcelable.foods.remove(food)
+        mealParcelable.foods.add(food)
     }
 
     private fun finishLoggingBolusEvent() {
@@ -193,10 +195,21 @@ class LogBolusEventActivity: AppCompatActivity() {
         mealParcelable.carbs = mealParcelable.foods.sumBy { fp -> fp.carbs }
         mealParcelable.insulin = mealParcelable.foods.sumByDouble { fp -> fp.insulin.toDouble() }.toFloat()
 
-        val meal = mealFactory.mealFromParcelable(mealParcelable)
+        val meal = mealFactory.entityFrom(mealParcelable)
         mealFactory.save(meal)
         // TODO(nl): mark meal for upload and move upload into service
-        services.collectionService().addMeal(meal)
+        services.collectionService().addMeal(meal).subscribeOn(Schedulers.io())
+                .subscribe(object: Observer<Unit> {
+            override fun onNext(t: Unit?) {
+            }
+
+            override fun onCompleted() {
+            }
+
+            override fun onError(e: Throwable?) {
+                print(e)
+            }
+        })
 
         finish()
     }
@@ -205,18 +218,18 @@ class LogBolusEventActivity: AppCompatActivity() {
         bolusPatternSub = bolusPatternFactory.currentBolusPattern()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object: Subscriber<BolusPatternEntity>() {
+                .subscribe(object: Subscriber<BolusPattern>() {
                     override fun onError(e: Throwable?) {
                         print(e)
                     }
 
-                    override fun onNext(pattern: BolusPatternEntity?) {
+                    override fun onNext(pattern: BolusPattern?) {
                         if (pattern == null) {
                             return
                         }
                         if (mealParcelable.bolusPattern == null ||
                                 (mealParcelable.bolusPattern?.updatedOn?.before(pattern.updatedOn) ?: true)) {
-                            mealParcelable.bolusPattern = bolusPatternFactory.parcelableFromBolusPattern(pattern)
+                            mealParcelable.bolusPattern = bolusPatternFactory.parcelableFrom(pattern)
                         }
                     }
 

@@ -29,7 +29,7 @@ public class MealParcelable @Inject constructor(val placeFactory: PlaceFactory,
     override var insulin: Float = 0f
     override var beforeSugar: BloodSugar? = BloodSugarParcelable()
     override var isCorrection: Boolean = false
-    override var foods: MutableList<Food> = ArrayList()
+    override var foods: MutableSet<Food> = HashSet()
     override var needsUpload: Boolean = false
 
     /** Parcelable  */
@@ -60,7 +60,9 @@ public class MealParcelable @Inject constructor(val placeFactory: PlaceFactory,
             eatenDate = Date(time)
         }
         bolusPattern = parcel.readParcelable<BolusPatternParcelable>(BolusPatternParcelable::class.java.classLoader)
-        parcel.readTypedList(this.foods, FoodParcelable.CREATOR)
+        val foodsList = ArrayList<Food>()
+        parcel.readTypedList(foodsList, FoodParcelable.CREATOR)
+        foods.addAll(foodsList)
     }
 
     override fun describeContents(): Int {
@@ -72,7 +74,7 @@ public class MealParcelable @Inject constructor(val placeFactory: PlaceFactory,
 
         val p = place
         if (p != null) {
-            dest.writeParcelable(placeFactory.parcelableFromPlace(p), flags)
+            dest.writeParcelable(placeFactory.parcelableFrom(p), flags)
         }
         else {
             dest.writeValue(null)
@@ -92,12 +94,12 @@ public class MealParcelable @Inject constructor(val placeFactory: PlaceFactory,
 
         val bp = bolusPattern
         if (bp != null) {
-            dest.writeParcelable(bolusPatternFactory.parcelableFromBolusPattern(bp), flags)
+            dest.writeParcelable(bolusPatternFactory.parcelableFrom(bp), flags)
         }
         else {
             dest.writeValue(null)
         }
-        dest.writeTypedList(this.foods.map { f -> foodFactory.parcelableFromFood(f) })
+        dest.writeTypedList(this.foods.map { f -> foodFactory.parcelableFrom(f) })
     }
 
     companion object {

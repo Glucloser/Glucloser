@@ -41,7 +41,7 @@ class PlaceSelectionViewHolder @Inject constructor(itemView: View, val delegate:
     private fun getPlaceParcelable(): PlaceParcelable? {
         val nnPlace = place
         if (nnPlace != null) {
-            return placeFactory.parcelableFromPlace(nnPlace)
+            return placeFactory.parcelableFrom(nnPlace)
         }
         else {
             return placeFactory.parcelableFromFoursquareVenue(venue)

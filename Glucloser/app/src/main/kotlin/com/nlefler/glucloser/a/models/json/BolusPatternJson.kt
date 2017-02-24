@@ -6,7 +6,7 @@ import com.nlefler.glucloser.a.models.BolusRate
  * Created by nathan on 1/31/16.
  */
 data class BolusPatternJson(
-        val primaryId: String,
+        val primaryKey: String,
         val rates: List<BolusRateJson>
 ) {
 

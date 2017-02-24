@@ -27,10 +27,13 @@ class BolusPatternFactory @Inject constructor(val dbManager: DBManager,
                                               val bolusRateFactory: BolusRateFactory,
                                               val services: CairoServices) {
 
+    // TODO(nl): inject
+    val bolusRateJsonAdapter: BolusRateJsonAdapter = BolusRateJsonAdapter()
+
     /**
      * Fetches from db and network and returns both results.
      */
-    fun currentBolusPattern(): Observable<BolusPatternEntity> {
+    fun currentBolusPattern(): Observable<BolusPattern> {
         val dbObservable = dbManager.data.select(BolusPatternEntity::class)
                 .orderBy(BolusPatternEntity::updatedOn.desc())
                 .limit(1).get().toObservable()
@@ -39,36 +42,35 @@ class BolusPatternFactory @Inject constructor(val dbManager: DBManager,
         return Observable.merge(dbObservable, networkObservable)
     }
 
-    fun parcelableFromBolusPattern(pattern: BolusPattern): BolusPatternParcelable {
-        val parcel = BolusPatternParcelable()
-        for (rate in pattern.rates) {
-            parcel.rates.add(bolusRateFactory.parcelableFromBolusRate(rate))
+    fun entityFrom(pattern: BolusPattern): BolusPatternEntity {
+        if (pattern is BolusPatternEntity) {
+            return pattern
         }
-        return parcel
+        val entity = BolusPatternEntity()
+        entity.primaryId = pattern.primaryId
+        entity.updatedOn = pattern.updatedOn
+        entity.rates.addAll(pattern.rates.map { r -> bolusRateFactory.entityFrom(r)})
+        return entity
+    }
+
+    fun parcelableFrom(pattern: BolusPattern): BolusPatternParcelable {
+        if (pattern is BolusPatternParcelable) {
+            return pattern
+        }
+
+        val parcelable = BolusPatternParcelable(bolusRateFactory)
+        parcelable.primaryId = pattern.primaryId
+        parcelable.updatedOn = pattern.updatedOn
+        parcelable.rates = pattern.rates.map { r -> bolusRateFactory.parcelableFrom(r)}.toMutableSet()
+        return parcelable
     }
 
     fun jsonAdapter(): JsonAdapter<BolusPatternEntity> {
         return Moshi.Builder()
                 .add(BolusRateJsonAdapter())
-                .add(BolusPatternJsonAdapter())
+                .add(BolusPatternJsonAdapter(bolusRateFactory))
                 .build()
                 .adapter(BolusPatternEntity::class.java)
-    }
-
-    fun bolusPatternFromParcelable(parcelable: BolusPatternParcelable): BolusPattern {
-        val rates = ArrayList<BolusRate>()
-        parcelable.rates.forEach { rateParcelable ->
-            val br = BolusRateEntity()
-            br.primaryId = rateParcelable.id
-            br.ordinal = rateParcelable.ordinal
-            br.carbsPerUnit = rateParcelable.carbsPerUnit
-            br.startTime = rateParcelable.startTime
-            rates.add(br)
-        }
-        val bp = BolusPatternEntity()
-        bp.primaryId = parcelable.id
-        bp.rates = rates
-        return bp
     }
 
     private fun bolusPatternForId(id: String): Observable<Result<BolusPatternEntity>> {

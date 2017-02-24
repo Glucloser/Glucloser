@@ -18,20 +18,22 @@ import javax.inject.Inject
  */
 class BolusRateFactory @Inject constructor(val dbManager: DBManager) {
 
-    fun emptyRate(): BolusRate {
-        return BolusRateEntity()
-    }
-
-    fun bolusRateFromParcelable(parcelable: BolusRateParcelable): BolusRate {
+    fun entityFrom(rate: BolusRate): BolusRateEntity {
+        if (rate is BolusRateEntity) {
+            return rate
+        }
         val br = BolusRateEntity()
-        br.primaryId = parcelable.id
-        br.ordinal = parcelable.ordinal
-        br.carbsPerUnit = parcelable.carbsPerUnit
-        br.startTime = parcelable.startTime
+        br.primaryId = rate.primaryId
+        br.ordinal = rate.ordinal
+        br.carbsPerUnit = rate.carbsPerUnit
+        br.startTime = rate.startTime
         return br
     }
 
-    fun parcelableFromBolusRate(rate: BolusRate): BolusRateParcelable {
+    fun parcelableFrom(rate: BolusRate): BolusRateParcelable {
+        if (rate is BolusRateParcelable) {
+            return rate
+        }
         val parcel = BolusRateParcelable()
         parcel.ordinal = rate.ordinal
         parcel.carbsPerUnit = rate.carbsPerUnit

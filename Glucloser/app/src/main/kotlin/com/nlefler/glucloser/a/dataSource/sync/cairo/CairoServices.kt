@@ -5,6 +5,7 @@ import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
 import com.facebook.crypto.Crypto
 import com.facebook.crypto.util.SystemNativeCryptoLibrary
 import com.nlefler.glucloser.a.dataSource.BolusPatternFactory
+import com.nlefler.glucloser.a.dataSource.BolusRateFactory
 import com.nlefler.glucloser.a.dataSource.jsonAdapter.*
 import com.nlefler.glucloser.a.db.DBManager
 import com.nlefler.glucloser.a.dataSource.sync.cairo.services.CairoCollectionService
@@ -23,7 +24,7 @@ import javax.inject.Inject
 /**
  * Created by nathan on 4/10/16.
  */
-class CairoServices @Inject constructor(val ctx: Context) {
+class CairoServices @Inject constructor(val ctx: Context, val bolusRateFactory: BolusRateFactory) {
 
     companion object {
         private val SHARED_PREFS_NAME = "com.nlefler.glucloser.a.cairoservices"
@@ -54,7 +55,7 @@ class CairoServices @Inject constructor(val ctx: Context) {
 
     private val moshi = Moshi.Builder()
             .add(DateJsonAdapter())
-            .add(BolusPatternJsonAdapter())
+            .add(BolusPatternJsonAdapter(bolusRateFactory))
             .add(BolusRateJsonAdapter())
             .add(SensorReadingJsonAdapter())
             .add(MealJsonAdapter())

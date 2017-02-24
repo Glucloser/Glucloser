@@ -35,7 +35,7 @@ class MealJsonAdapter() {
         meal.insulin = json.insulin
         meal.beforeSugar = beforeSugar
         meal.isCorrection = json.isCorrection
-        meal.foods = foods.toMutableList()
+        meal.foods = foods.toMutableSet()
         meal.place = place
         return meal
     }

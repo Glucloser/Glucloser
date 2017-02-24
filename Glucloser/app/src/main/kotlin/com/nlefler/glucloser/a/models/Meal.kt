@@ -20,7 +20,7 @@ interface Meal: Persistable {
     var beforeSugar: BloodSugar?
     var isCorrection: Boolean
     @get:OneToMany
-    var foods: MutableList<Food>
+    val foods: MutableSet<Food>
     @get:ManyToOne
     var place: Place?
     var needsUpload: Boolean

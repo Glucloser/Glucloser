@@ -87,7 +87,10 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         }
     }
 
-    fun parcelableFromPlace(place: Place): PlaceParcelable? {
+    fun parcelableFrom(place: Place): PlaceParcelable {
+        if (place is PlaceParcelable) {
+            return place
+        }
         val parcelable = PlaceParcelable()
         parcelable.name = place.name
         parcelable.foursquareId = place.foursquareId
@@ -97,15 +100,19 @@ class PlaceFactory @Inject constructor(val dbManager: DBManager) {
         return parcelable
     }
 
-    fun placeFromParcelable(parcelable: PlaceParcelable): Place {
-        val place = PlaceEntity()
-        place.primaryId = parcelable.primaryId
-        place.foursquareId = parcelable.foursquareId
-        place.name = parcelable.name
-        place.latitude = parcelable.latitude
-        place.longitude = parcelable.longitude
-        place.visitCount = parcelable.visitCount
-        return place
+    fun entityFrom(place: Place): PlaceEntity {
+        if (place is PlaceEntity) {
+            return place
+        }
+
+        val entity = PlaceEntity()
+        entity.primaryId = place.primaryId
+        entity.foursquareId = place.foursquareId
+        entity.name = place.name
+        entity.latitude = place.latitude
+        entity.longitude = place.longitude
+        entity.visitCount = place.visitCount
+        return entity
     }
 
     fun arePlacesEqual(place1: Place?, place2: Place?): Boolean {
